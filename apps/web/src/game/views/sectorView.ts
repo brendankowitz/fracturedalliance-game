@@ -4,17 +4,16 @@ import type { Application } from "pixi.js";
 import { Container, Graphics, Text } from "pixi.js";
 
 const SIZE_RADIUS: Record<string, number> = {
-  S: 8,
-  M: 12,
-  L: 18,
-  XL: 24,
+  small: 8,
+  medium: 12,
+  large: 18,
 };
 
 const COLOUR_HUMAN = 0x3399ff;
 const COLOUR_AI = 0xff4433;
 const COLOUR_NEUTRAL = 0x888888;
 
-const SECTOR_SCALE = 24; // pixels per sector unit at scale=1
+const SECTOR_SCALE = 80; // pixels per sector unit — 7×80=560px fits a typical 768px-tall screen
 
 export class SectorView {
   readonly container: Container;
@@ -44,9 +43,10 @@ export class SectorView {
     this._laserGfx = new Graphics();
     this._worldLayer.addChild(this._laserGfx);
 
-    // Centre the view initially
-    this._offsetX = app.screen.width / 2;
-    this._offsetY = app.screen.height / 2;
+    // Centre the view on the midpoint of the 7×7 sector grid
+    this._offsetX = app.screen.width / 2 - (3 * SECTOR_SCALE);
+    this._offsetY = app.screen.height / 2 - (3 * SECTOR_SCALE);
+    this._applyTransform();
 
     app.stage.addChild(this.container);
     this._attachInputHandlers(app);
