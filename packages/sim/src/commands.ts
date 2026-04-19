@@ -23,4 +23,6 @@ export type Command =
   | { kind: "proposeTreaty"; targetPlayerId: PlayerId; treatyKind: TreatyKind }
   | { kind: "buyBlueprint"; blueprintId: string }
   | { kind: "hireAgent"; agentId: AgentId }
-  | { kind: "assignMission"; agentId: AgentId; missionKind: AgentMissionKind; targetAsteroidId: AsteroidId };
+  | { kind: "assignMission"; agentId: AgentId; missionKind: AgentMissionKind; targetAsteroidId: AsteroidId }
+  | { kind: "setAsteroidDestination"; asteroidId: AsteroidId; destinationId: AsteroidId }
+  | { kind: "cancelAsteroidEngine"; asteroidId: AsteroidId };

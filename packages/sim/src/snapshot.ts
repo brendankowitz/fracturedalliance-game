@@ -42,6 +42,12 @@ export interface AsteroidSnapshot {
     queuedAt: number;
   }>;
   powerBalance: number;
+  engines: {
+    count: number;
+    destinationId: string | null;
+    etaTick: number | null;
+    chargeTick: number | null;
+  };
 }
 
 export interface ShipSnapshot {
@@ -113,6 +119,12 @@ export function takeSnapshot(world: World): HudSnapshot {
       queuedAt: q.queuedAt,
     })),
     powerBalance: computePowerBalance(world, a.id),
+    engines: {
+      count: a.engines.count,
+      destinationId: a.engines.destinationId,
+      etaTick: a.engines.etaTick,
+      chargeTick: a.engines.chargeTick,
+    },
   }));
 
   return {

@@ -686,5 +686,17 @@
     "waterDelta": 0,
     "airDelta": 0,
     "blueprintRequired": "blueprint.galacticExchange"
+  },
+  {
+    "kind": "gravityNullifier",
+    "label": "Gravity Nullifier",
+    "costCredits": 50000,
+    "buildTimeTicks": 800,
+    "powerDelta": -8,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "blueprintRequired": null
   }
 ]

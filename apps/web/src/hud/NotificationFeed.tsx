@@ -26,6 +26,7 @@ const PRIORITY_COLORS: Record<EventPriority, string> = {
   red: "#f44",
   amber: "#fa4",
   grey: "#888",
+  green: "#4f4",
 };
 
 const MAX_ENTRIES = 50;

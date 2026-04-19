@@ -211,5 +211,36 @@ export function applyCommand(world: World, command: Command): void {
       agent.missionCompleteTick = world.tick + MISSION_DURATIONS[command.missionKind];
       break;
     }
+    case "setAsteroidDestination": {
+      const asteroid = world.asteroids.get(command.asteroidId);
+      if (!asteroid) return;
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human || asteroid.ownerId !== human.id) return;
+      if (asteroid.engines.count <= 0) return;
+      const destination = world.asteroids.get(command.destinationId);
+      if (!destination || command.destinationId === command.asteroidId) return;
+      if (asteroid.engines.chargeTick !== null || asteroid.engines.etaTick !== null) return;
+
+      asteroid.engines.destinationId = command.destinationId;
+      asteroid.engines.chargeTick = world.tick + 200;
+      world.eventQueue.push({
+        kind: "asteroid.engine_charging",
+        priority: "amber",
+        asteroidName: asteroid.name,
+        destinationName: destination.name,
+      });
+      break;
+    }
+    case "cancelAsteroidEngine": {
+      const asteroid = world.asteroids.get(command.asteroidId);
+      if (!asteroid) return;
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human || asteroid.ownerId !== human.id) return;
+
+      asteroid.engines.destinationId = null;
+      asteroid.engines.chargeTick = null;
+      asteroid.engines.etaTick = null;
+      break;
+    }
   }
 }

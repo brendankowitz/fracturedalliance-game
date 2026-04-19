@@ -166,7 +166,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <BlueprintShop onCommand={onCommand} />
       <EspionagePanel onCommand={onCommand} />
       <NotificationFeed />
-      <AsteroidInspector />
+      <AsteroidInspector onCommand={onCommand} />
       <TutorialTooltip />
     </>
   );

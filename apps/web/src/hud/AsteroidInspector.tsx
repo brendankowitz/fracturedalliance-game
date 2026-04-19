@@ -1,4 +1,7 @@
 import { findBuildingDef, getOreDef, getRaceDef } from "@fa/content";
+import type { AsteroidId } from "@fa/domain";
+import { asteroidId as mkAsteroidId } from "@fa/domain";
+import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
@@ -7,7 +10,11 @@ function formatKind(kind: string): string {
   return kind.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
 }
 
-export function AsteroidInspector() {
+interface AsteroidInspectorProps {
+  onCommand: (cmd: Command) => void;
+}
+
+export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   const selectedId = useUiStore((s) => s.selectedAsteroidId);
   const selectAsteroid = useUiStore((s) => s.selectAsteroid);
   const snapshot = useGameStore((s) => s.snapshot);
@@ -30,6 +37,11 @@ export function AsteroidInspector() {
     (s) =>
       Math.hypot(s.position.x - asteroid.sector.x, s.position.y - asteroid.sector.y) <= ARRIVAL_RADIUS,
   );
+
+  const isOwnedByHuman = asteroid.ownerId === snapshot.humanPlayerId;
+  const { engines } = asteroid;
+
+  const otherAsteroids = snapshot.asteroids.filter((a) => a.id !== asteroid.id);
 
   return (
     <div
@@ -164,6 +176,50 @@ export function AsteroidInspector() {
         </section>
       )}
 
+      {isOwnedByHuman && engines.count > 0 && (
+        <section style={{ padding: "4px 8px", borderBottom: "1px solid #112" }}>
+          <div style={{ fontWeight: "bold", color: "#c8d8ff", marginBottom: 4 }}>
+            Engines ({engines.count})
+          </div>
+          {engines.chargeTick !== null && engines.etaTick === null && (
+            <div>
+              <div style={{ color: "#fa4", fontSize: 10, marginBottom: 4 }}>
+                Charging... (fires at tick {engines.chargeTick})
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  onCommand({ kind: "cancelAsteroidEngine", asteroidId: asteroid.id as AsteroidId })
+                }
+                style={{
+                  background: "#1a1830",
+                  border: "1px solid #442",
+                  color: "#fa4",
+                  fontFamily: "monospace",
+                  fontSize: 10,
+                  cursor: "pointer",
+                  padding: "2px 8px",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {engines.etaTick !== null && (
+            <div style={{ color: "#4af", fontSize: 10 }}>
+              In transit... (arrives tick {engines.etaTick})
+            </div>
+          )}
+          {engines.chargeTick === null && engines.etaTick === null && (
+            <EngineTargetSelector
+              asteroidId={asteroid.id as AsteroidId}
+              otherAsteroids={otherAsteroids.map((a) => ({ id: a.id as AsteroidId, name: a.name }))}
+              onCommand={onCommand}
+            />
+          )}
+        </section>
+      )}
+
       <section style={{ padding: "4px 8px" }}>
         <div style={{ fontWeight: "bold", color: "#c8d8ff", marginBottom: 2 }}>
           Ships at location: {shipsHere.length}
@@ -176,5 +232,66 @@ export function AsteroidInspector() {
         {shipsHere.length === 0 && <div style={{ color: "#445" }}>None</div>}
       </section>
     </div>
+  );
+}
+
+interface EngineTargetSelectorProps {
+  asteroidId: AsteroidId;
+  otherAsteroids: Array<{ id: AsteroidId; name: string }>;
+  onCommand: (cmd: Command) => void;
+}
+
+function EngineTargetSelector({ asteroidId, otherAsteroids, onCommand }: EngineTargetSelectorProps) {
+  const handleLaunch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const select = form.elements.namedItem("destination") as HTMLSelectElement;
+    const raw = select.value;
+    if (!raw) return;
+    onCommand({
+      kind: "setAsteroidDestination",
+      asteroidId,
+      destinationId: mkAsteroidId(raw),
+    });
+  };
+
+  return (
+    <form onSubmit={handleLaunch} style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      <select
+        name="destination"
+        defaultValue=""
+        style={{
+          background: "#0a1830",
+          border: "1px solid #224",
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          fontSize: 10,
+          flex: 1,
+        }}
+      >
+        <option value="" disabled>
+          Select target...
+        </option>
+        {otherAsteroids.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.name}
+          </option>
+        ))}
+      </select>
+      <button
+        type="submit"
+        style={{
+          background: "#1a1830",
+          border: "1px solid #224",
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          fontSize: 10,
+          cursor: "pointer",
+          padding: "2px 8px",
+        }}
+      >
+        Launch
+      </button>
+    </form>
   );
 }

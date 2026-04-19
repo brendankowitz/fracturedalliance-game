@@ -46,6 +46,7 @@ function makeAsteroid(overrides = {}) {
     buildingKinds: [],
     buildQueue: [],
     powerBalance: 0,
+    engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
     ...overrides,
   };
 }
@@ -58,21 +59,21 @@ afterEach(() => {
 describe("AsteroidInspector", () => {
   it("renders nothing when no asteroid is selected", () => {
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [makeAsteroid()] }) });
-    const { container } = render(<AsteroidInspector />);
+    const { container } = render(<AsteroidInspector onCommand={() => {}} />);
     expect(container.firstChild).toBeNull();
   });
 
   it("renders the asteroid name when selected", () => {
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [makeAsteroid()] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });
-    render(<AsteroidInspector />);
+    render(<AsteroidInspector onCommand={() => {}} />);
     expect(screen.getByText("Vega Prime")).toBeTruthy();
   });
 
   it("shows Unclaimed when asteroid has no owner", () => {
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [makeAsteroid({ ownerId: null })] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });
-    render(<AsteroidInspector />);
+    render(<AsteroidInspector onCommand={() => {}} />);
     expect(screen.getByText(/Unclaimed/)).toBeTruthy();
   });
 
@@ -80,7 +81,7 @@ describe("AsteroidInspector", () => {
     const asteroid = makeAsteroid({ deposits: { iron: 500, carbon: 0, titanium: 300 } });
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [asteroid] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });
-    render(<AsteroidInspector />);
+    render(<AsteroidInspector onCommand={() => {}} />);
     expect(screen.getByText("500")).toBeTruthy();
     expect(screen.getByText("300")).toBeTruthy();
     expect(screen.queryByText("0")).toBeNull();
@@ -92,14 +93,14 @@ describe("AsteroidInspector", () => {
     });
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [asteroid] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });
-    render(<AsteroidInspector />);
+    render(<AsteroidInspector onCommand={() => {}} />);
     expect(screen.getByText("50%")).toBeTruthy();
   });
 
   it("shows Ships at location: 0 when no ships are nearby", () => {
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [makeAsteroid()], ships: [] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });
-    render(<AsteroidInspector />);
+    render(<AsteroidInspector onCommand={() => {}} />);
     expect(screen.getByText(/Ships at location: 0/)).toBeTruthy();
   });
 
@@ -114,7 +115,7 @@ describe("AsteroidInspector", () => {
     };
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [asteroid], ships: [ship] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });
-    render(<AsteroidInspector />);
+    render(<AsteroidInspector onCommand={() => {}} />);
     expect(screen.getByText(/Ships at location: 1/)).toBeTruthy();
   });
 });

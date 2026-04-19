@@ -2,7 +2,7 @@ import type { AgentMissionKind } from "./agent.ts";
 import type { AsteroidId, BlueprintId, PlayerId } from "./ids.ts";
 import type { TreatyKind } from "./treaty.ts";
 
-export type EventPriority = "red" | "amber" | "grey";
+export type EventPriority = "red" | "amber" | "grey" | "green";
 
 export type GameEvent =
   | { kind: "colony.under_attack"; priority: "red"; asteroidId: AsteroidId; attackerId: PlayerId }
@@ -27,4 +27,9 @@ export type GameEvent =
       targetAsteroidName: string;
     }
   | { kind: "agent.captured"; priority: "amber"; agentName: string }
-  | { kind: "agent.mission_failed"; priority: "grey"; agentName: string };
+  | { kind: "agent.mission_failed"; priority: "grey"; agentName: string }
+  | { kind: "asteroid.engine_charging"; priority: "amber"; asteroidName: string; destinationName: string }
+  | { kind: "asteroid.engine_fired"; priority: "red"; asteroidName: string; destinationName: string }
+  | { kind: "asteroid.lost_in_collision"; priority: "red"; asteroidName: string }
+  | { kind: "asteroid.captured_in_collision"; priority: "green"; asteroidName: string }
+  | { kind: "asteroid.deflected"; priority: "amber"; asteroidName: string };
