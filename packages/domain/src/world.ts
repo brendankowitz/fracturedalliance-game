@@ -25,4 +25,5 @@ export interface World {
   eventQueue: GameEvent[];
   prng: Prng;
   readonly schemaVersion: number;
+  nextBuildingSeq: number;
 }

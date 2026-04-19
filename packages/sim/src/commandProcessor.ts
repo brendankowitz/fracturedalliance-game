@@ -1,4 +1,4 @@
-import { getBuildingDefOrNull } from "@fa/content";
+import { findBuildingDef } from "@fa/content";
 import type { World } from "@fa/domain";
 import type { Command } from "./commands.ts";
 
@@ -12,7 +12,7 @@ export function applyCommand(world: World, command: Command): void {
       const player = world.players.get(asteroid.ownerId);
       if (!player) return;
 
-      const def = getBuildingDefOrNull(command.buildingKind);
+      const def = findBuildingDef(command.buildingKind);
       if (!def) return;
       if (player.credits < def.costCredits) return;
 
@@ -32,15 +32,18 @@ export function applyCommand(world: World, command: Command): void {
       const item = asteroid.buildQueue[command.index];
       if (!item) return;
 
+      const def = findBuildingDef(item.buildingKind);
+      if (!def) return;
+
+      asteroid.buildQueue.splice(command.index, 1);
+
       if (asteroid.ownerId) {
         const player = world.players.get(asteroid.ownerId);
         if (player) {
-          const def = getBuildingDefOrNull(item.buildingKind);
-          if (def) player.credits += Math.floor(def.costCredits * 0.5);
+          // Flat 50% refund regardless of progress — intentional game design
+          player.credits += def.costCredits * 0.5;
         }
       }
-
-      asteroid.buildQueue.splice(command.index, 1);
       break;
     }
   }

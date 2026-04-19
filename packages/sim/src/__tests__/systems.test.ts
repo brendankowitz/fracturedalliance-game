@@ -24,8 +24,7 @@ describe("miningSystem", () => {
       active: true,
       damage: 0,
     });
-    // Manually push to the buildings array (ReadonlyArray — cast needed)
-    (asteroid.buildings as unknown as string[]).push(mineId);
+    asteroid.buildings.push(mineId);
 
     const beforeSelenium = asteroid.deposits.selenium ?? 0;
     tickMining(world);
@@ -51,7 +50,7 @@ describe("miningSystem", () => {
       active: false,
       damage: 0,
     });
-    (asteroid.buildings as unknown as string[]).push(mineId);
+    asteroid.buildings.push(mineId);
 
     const beforeSelenium = asteroid.deposits.selenium ?? 0;
     tickMining(world);
@@ -77,7 +76,7 @@ describe("miningSystem", () => {
       active: true,
       damage: 0,
     });
-    (asteroid.buildings as unknown as string[]).push(mineId);
+    asteroid.buildings.push(mineId);
 
     const beforeSelenium = asteroid.deposits.selenium ?? 0;
     tickMining(world);
@@ -106,7 +105,7 @@ describe("miningSystem", () => {
       active: true,
       damage: 0,
     });
-    (asteroid.buildings as unknown as string[]).push(mineId);
+    asteroid.buildings.push(mineId);
 
     tickMining(world);
 
@@ -135,8 +134,18 @@ describe("constructionSystem", () => {
     for (let i = 0; i < totalTicks; i++) tickConstruction(world);
 
     expect(asteroid.buildQueue.length).toBe(0);
+
     const powerPlant = [...world.buildings.values()].find((b) => b.defKind === "powerPlant");
     expect(powerPlant?.constructionProgress).toBe(1);
+    expect(powerPlant?.id).toBeDefined();
+    expect(asteroid.buildings).toContain(powerPlant?.id);
+
+    const doneEvent = world.eventQueue.find((e) => e.kind === "construction.done");
+    expect(doneEvent).toBeDefined();
+    if (doneEvent?.kind === "construction.done") {
+      expect(doneEvent.buildingKind).toBe("powerPlant");
+      expect(doneEvent.asteroidId).toBe(asteroid.id);
+    }
   });
 });
 
@@ -167,7 +176,7 @@ describe("resourceSystem", () => {
       active: true,
       damage: 0,
     });
-    (asteroid.buildings as unknown as string[]).push(plantId);
+    asteroid.buildings.push(plantId);
 
     const balance = computePowerBalance(world, asteroid.id);
     // CPU: -5, Power Plant: +10 → +5
@@ -191,7 +200,7 @@ describe("resourceSystem", () => {
       active: false,
       damage: 0,
     });
-    (asteroid.buildings as unknown as string[]).push(plantId);
+    asteroid.buildings.push(plantId);
 
     const balance = computePowerBalance(world, asteroid.id);
     // Inactive plant not counted, only CPU: -5
@@ -215,7 +224,7 @@ describe("resourceSystem", () => {
       active: true,
       damage: 0,
     });
-    (asteroid.buildings as unknown as string[]).push(plantId);
+    asteroid.buildings.push(plantId);
 
     const balance = computePowerBalance(world, asteroid.id);
     // Under-construction plant not counted, only CPU: -5

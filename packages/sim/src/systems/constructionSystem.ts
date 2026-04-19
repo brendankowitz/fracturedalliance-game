@@ -1,8 +1,6 @@
 import type { Building, BuildingId, World } from "@fa/domain";
 import { buildingId } from "@fa/domain";
 
-let _counter = 0;
-
 export function tickConstruction(world: World): void {
   for (const asteroid of world.asteroids.values()) {
     const item = asteroid.buildQueue[0];
@@ -13,7 +11,7 @@ export function tickConstruction(world: World): void {
     if (item.progressTicks >= item.totalTicks) {
       asteroid.buildQueue.shift();
 
-      const id: BuildingId = buildingId(`building-${world.tick}-${_counter++}`);
+      const id: BuildingId = buildingId(`building-${world.tick}-${world.nextBuildingSeq++}`);
       const building: Building = {
         id,
         defKind: item.buildingKind,
@@ -27,7 +25,7 @@ export function tickConstruction(world: World): void {
       };
 
       world.buildings.set(id, building);
-      (asteroid.buildings as unknown as BuildingId[]).push(id);
+      asteroid.buildings.push(id);
 
       world.eventQueue.push({
         kind: "construction.done",

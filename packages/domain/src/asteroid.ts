@@ -25,7 +25,7 @@ export interface Asteroid {
   radiation: number;
   stability: number;
   happiness: number;
-  buildings: ReadonlyArray<BuildingId>;
+  buildings: BuildingId[];
   buildQueue: BuildQueueItem[];
   inOrbit: ReadonlyArray<ShipId>;
   engines: AsteroidEngineState;

@@ -45,7 +45,7 @@ export function getBuildingDef(kind: string): BuildingDef {
   return def;
 }
 
-export function getBuildingDefOrNull(kind: string): BuildingDef | undefined {
+export function findBuildingDef(kind: string): BuildingDef | undefined {
   return index.get(kind);
 }
 

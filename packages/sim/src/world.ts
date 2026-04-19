@@ -105,5 +105,6 @@ export function createWorld(config: WorldConfig): World {
     eventQueue: [],
     prng,
     schemaVersion: 1,
+    nextBuildingSeq: 0,
   };
 }
