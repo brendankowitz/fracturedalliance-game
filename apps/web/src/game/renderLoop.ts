@@ -62,9 +62,15 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
           sectorView?.update(snap);
           // Autosave to slot -1 every 60 ticks (skip tick 0)
           if (snap.tick > 0 && snap.tick % 60 === 0) {
-            const blob = await instance.getSaveBlob();
-            const { saveToSlot: idbSave } = await import("@fa/persistence");
-            await idbSave(-1, JSON.parse(blob) as import("@fa/persistence").SaveV1, "Autosave");
+            void (async () => {
+              try {
+                const blob = await instance.getSaveBlob();
+                const { saveToSlot: idbSave } = await import("@fa/persistence");
+                await idbSave(-1, JSON.parse(blob) as import("@fa/persistence").SaveV1, "Autosave");
+              } catch (err) {
+                console.warn("[autosave] failed:", err);
+              }
+            })();
           }
         }
       }
