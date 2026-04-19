@@ -3,14 +3,14 @@ import { applyCommand } from "./commandProcessor.ts";
 import type { Command } from "./commands.ts";
 import { tick } from "./loop.ts";
 import { deserializeWorld, serializeWorld } from "./serialization.ts";
-import type { AsteroidSnapshot, DiplomacyEntry, HudSnapshot } from "./snapshot.ts";
+import type { AgentSnapshot, AsteroidSnapshot, DiplomacyEntry, HudSnapshot } from "./snapshot.ts";
 import { takeSnapshot } from "./snapshot.ts";
 import type { WorldConfig } from "./world.ts";
 import { createWorld } from "./world.ts";
 
 export type { Command } from "./commands.ts";
-export type { AsteroidSnapshot, DiplomacyEntry, HudSnapshot };
 export { ARRIVAL_RADIUS } from "./systems/shipSystem.ts";
+export type { AgentSnapshot, AsteroidSnapshot, DiplomacyEntry, HudSnapshot };
 
 export class SimApi {
   private world: World;
@@ -61,7 +61,9 @@ export class SimApi {
   restore(blob: string): void {
     const save = JSON.parse(blob) as Record<string, unknown>;
     if (save["schemaVersion"] !== 1) {
-      throw new Error(`Unsupported save schema version: ${String(save["schemaVersion"] ?? "unknown")}`);
+      throw new Error(
+        `Unsupported save schema version: ${String(save["schemaVersion"] ?? "unknown")}`,
+      );
     }
     const rngState = save["rngState"] as number;
     const worldSnapshot = save["worldSnapshot"] as Record<string, unknown>;

@@ -1,4 +1,13 @@
-import type { AsteroidId, OreKind, PlayerId, ShipId, ShipOrder, TreatyKind } from "@fa/domain";
+import type {
+  AgentId,
+  AgentMissionKind,
+  AsteroidId,
+  OreKind,
+  PlayerId,
+  ShipId,
+  ShipOrder,
+  TreatyKind,
+} from "@fa/domain";
 
 export type Command =
   | {
@@ -12,4 +21,6 @@ export type Command =
   | { kind: "orderShip"; shipId: ShipId; order: ShipOrder }
   | { kind: "sellOre"; playerId: PlayerId; oreKind: OreKind }
   | { kind: "proposeTreaty"; targetPlayerId: PlayerId; treatyKind: TreatyKind }
-  | { kind: "buyBlueprint"; blueprintId: string };
+  | { kind: "buyBlueprint"; blueprintId: string }
+  | { kind: "hireAgent"; agentId: AgentId }
+  | { kind: "assignMission"; agentId: AgentId; missionKind: AgentMissionKind; targetAsteroidId: AsteroidId };

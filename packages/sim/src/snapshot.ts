@@ -1,8 +1,28 @@
-import type { AsteroidId, EventPriority, GameEndState, PlayerId, ShipId, TreatyKind, World } from "@fa/domain";
+import type {
+  AgentMissionKind,
+  AsteroidId,
+  EventPriority,
+  GameEndState,
+  PlayerId,
+  ShipId,
+  TreatyKind,
+  World,
+} from "@fa/domain";
 import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 import { computeGrudgeScore } from "./systems/diplomacySystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
+
+export interface AgentSnapshot {
+  id: string;
+  name: string;
+  owned: boolean;
+  stealth: number;
+  hireCost: number;
+  missionKind: AgentMissionKind | null;
+  missionTarget: string | null;
+  missionCompleteTick: number | null;
+}
 
 export interface AsteroidSnapshot {
   id: AsteroidId;
@@ -63,6 +83,7 @@ export interface HudSnapshot {
   diplomacy: DiplomacyEntry[];
   gameEndState: GameEndState | null;
   blueprintsOwned: string[];
+  agents: AgentSnapshot[];
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
@@ -135,6 +156,16 @@ export function takeSnapshot(world: World): HudSnapshot {
       })),
     gameEndState: world.gameEndState,
     blueprintsOwned: [...human.blueprintsOwned],
+    agents: [...world.agents.values()].map((a) => ({
+      id: a.id,
+      name: a.name,
+      owned: a.ownerId === human.id,
+      stealth: a.stealth,
+      hireCost: a.hireCost,
+      missionKind: a.missionKind,
+      missionTarget: a.missionTarget,
+      missionCompleteTick: a.missionCompleteTick,
+    })),
     combatFlashes: [...world.ships.values()].flatMap((ship) => {
       if (ship.order.kind !== "attackAsteroid") return [];
       const target = world.asteroids.get(ship.order.target);

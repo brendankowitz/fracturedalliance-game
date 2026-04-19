@@ -1,5 +1,8 @@
-import { PHASE1_ORES } from "@fa/content";
+import { getAllAgentDefs, PHASE1_ORES } from "@fa/content";
 import {
+  type Agent,
+  type AgentId,
+  agentId,
   type Asteroid,
   type AsteroidId,
   asteroidId,
@@ -240,6 +243,21 @@ export function createWorld(config: WorldConfig): World {
   asteroids.set(kryllAsteroidId, kryllAsteroid);
   buildings.set(kryllCpuId, makeCpuBuilding(kryllCpuId, kryllAsteroidId));
 
+  const agents: Map<AgentId, Agent> = new Map();
+  for (const def of getAllAgentDefs()) {
+    const id = agentId(def.id);
+    agents.set(id, {
+      id,
+      name: def.name,
+      ownerId: null,
+      stealth: def.stealth,
+      hireCost: def.hireCost,
+      missionKind: null,
+      missionTarget: null,
+      missionCompleteTick: null,
+    });
+  }
+
   return {
     tick: 0,
     seed: config.seed,
@@ -259,5 +277,6 @@ export function createWorld(config: WorldConfig): World {
     nextShipSeq: 0,
     nextTreatySeq: 0,
     gameEndState: null,
+    agents,
   };
 }

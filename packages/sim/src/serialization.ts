@@ -1,11 +1,14 @@
 import type {
+  Agent,
+  AgentId,
+  AgentMissionKind,
   AiEventRecord,
   Asteroid,
   AsteroidEngineState,
   AsteroidId,
+  BlueprintId,
   Building,
   BuildingId,
-  BlueprintId,
   BuildQueueItem,
   GameEndState,
   OreRecord,
@@ -19,14 +22,7 @@ import type {
   TreatyKind,
   World,
 } from "@fa/domain";
-import {
-  asteroidId,
-  blueprintId,
-  buildingId,
-  playerId,
-  shipId,
-  treatyId,
-} from "@fa/domain";
+import { agentId, asteroidId, blueprintId, buildingId, playerId, shipId, treatyId } from "@fa/domain";
 import { makePrng } from "./prng.ts";
 
 // ---------------------------------------------------------------------------
@@ -48,6 +44,16 @@ export function serializeWorld(world: World): Record<string, unknown> {
     buildings: [...world.buildings.values()].map(serializeBuilding),
     ships: [...world.ships.values()].map(serializeShip),
     players: [...world.players.values()].map(serializePlayer),
+    agents: [...world.agents.values()].map((a) => ({
+      id: a.id,
+      name: a.name,
+      ownerId: a.ownerId ?? null,
+      stealth: a.stealth,
+      hireCost: a.hireCost,
+      missionKind: a.missionKind ?? null,
+      missionTarget: a.missionTarget ?? null,
+      missionCompleteTick: a.missionCompleteTick ?? null,
+    })),
   };
 }
 
@@ -180,6 +186,23 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
 
   const rawTreaties = snapshot["treaties"] as Array<Record<string, unknown>>;
 
+  const agents = new Map<AgentId, Agent>(
+    ((snapshot["agents"] ?? []) as Array<Record<string, unknown>>).map((a) => {
+      const id = agentId(a["id"] as string);
+      const agent: Agent = {
+        id,
+        name: a["name"] as string,
+        ownerId: a["ownerId"] != null ? playerId(a["ownerId"] as string) : null,
+        stealth: a["stealth"] as number,
+        hireCost: a["hireCost"] as number,
+        missionKind: (a["missionKind"] as AgentMissionKind | null) ?? null,
+        missionTarget: a["missionTarget"] != null ? asteroidId(a["missionTarget"] as string) : null,
+        missionCompleteTick: (a["missionCompleteTick"] as number | null) ?? null,
+      };
+      return [id, agent];
+    }),
+  );
+
   return {
     tick: snapshot["tick"] as number,
     seed,
@@ -196,6 +219,7 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     ships,
     players,
     eventQueue: [],
+    agents,
   };
 }
 
@@ -302,9 +326,7 @@ function deserializePlayer(raw: Record<string, unknown>): Player {
     federationStanding: raw["federationStanding"] as number,
     suspicion: raw["suspicion"] as number,
     oreInventory: raw["oreInventory"] as Player["oreInventory"],
-    reputation: new Map<PlayerId, number>(
-      rawReputation.map(([id, val]) => [playerId(id), val]),
-    ),
+    reputation: new Map<PlayerId, number>(rawReputation.map(([id, val]) => [playerId(id), val])),
     blueprintsOwned: new Set<BlueprintId>(rawBlueprints.map((id) => blueprintId(id))),
     eventLog: rawEventLog.map(deserializeAiEventRecord),
   };

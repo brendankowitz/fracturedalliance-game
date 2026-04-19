@@ -1,5 +1,5 @@
 import { findBlueprintDef, findBuildingDef, getShipDef } from "@fa/content";
-import type { Treaty, TreatyKind, World } from "@fa/domain";
+import type { AgentMissionKind, Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
@@ -157,6 +157,57 @@ export function applyCommand(world: World, command: Command): void {
 
       human.credits -= def.costCredits;
       human.blueprintsOwned.add(bpId);
+      break;
+    }
+    case "hireAgent": {
+      const agent = world.agents.get(command.agentId);
+      if (!agent || agent.ownerId !== null) return;
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human || human.credits < agent.hireCost) return;
+      human.credits -= agent.hireCost;
+      agent.ownerId = human.id;
+      break;
+    }
+    case "assignMission": {
+      const agent = world.agents.get(command.agentId);
+      if (!agent) return;
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human || agent.ownerId !== human.id || agent.missionKind !== null) return;
+      const target = world.asteroids.get(command.targetAsteroidId);
+      if (!target) return;
+
+      if (target.ownerId) {
+        const noCovertIdx = world.treaties.findIndex(
+          (t) =>
+            t.kind === "noCovert" &&
+            t.parties.includes(human.id) &&
+            t.parties.includes(target.ownerId!),
+        );
+        if (noCovertIdx !== -1) {
+          world.treaties.splice(noCovertIdx, 1);
+          world.eventQueue.push({
+            kind: "treaty.broken",
+            priority: "amber",
+            by: human.id,
+            against: target.ownerId,
+            treaty: "noCovert",
+          });
+          const rep = human.reputation.get(target.ownerId) ?? 0;
+          human.reputation.set(target.ownerId, rep - 20);
+        }
+      }
+
+      const MISSION_DURATIONS: Record<AgentMissionKind, number> = {
+        recon: 200,
+        techSteal: 400,
+        sabotage: 300,
+        blackmail: 350,
+        liberate: 500,
+      };
+
+      agent.missionKind = command.missionKind;
+      agent.missionTarget = command.targetAsteroidId;
+      agent.missionCompleteTick = world.tick + MISSION_DURATIONS[command.missionKind];
       break;
     }
   }
