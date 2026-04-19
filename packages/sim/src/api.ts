@@ -2,6 +2,7 @@ import type { World } from "@fa/domain";
 import { applyCommand } from "./commandProcessor.ts";
 import type { Command } from "./commands.ts";
 import { tick } from "./loop.ts";
+import { deserializeWorld, serializeWorld } from "./serialization.ts";
 import type { AsteroidSnapshot, DiplomacyEntry, HudSnapshot } from "./snapshot.ts";
 import { takeSnapshot } from "./snapshot.ts";
 import type { WorldConfig } from "./world.ts";
@@ -36,10 +37,34 @@ export class SimApi {
   }
 
   getSaveBlob(): string {
+    const worldSnapshot = serializeWorld(this.world);
+    const verdict =
+      this.world.gameEndState == null
+        ? "inProgress"
+        : this.world.gameEndState.startsWith("victory")
+          ? "won"
+          : "lost";
     return JSON.stringify({
-      schemaVersion: this.world.schemaVersion,
-      tick: this.world.tick,
-      seed: this.world.seed,
+      schemaVersion: 1,
+      gameVersion: "0.1.0",
+      createdAtIso: new Date().toISOString(),
+      playerName: "Commander",
+      verdict,
+      difficulty: "manager",
+      rngSeed: this.world.seed,
+      rngState: this.world.prng.state(),
+      worldSnapshot,
+      uiPrefs: {},
     });
+  }
+
+  restore(blob: string): void {
+    const save = JSON.parse(blob) as {
+      rngSeed: number;
+      rngState: number;
+      worldSnapshot: Record<string, unknown>;
+    };
+    this.world = deserializeWorld(save.worldSnapshot, save.rngState);
+    this.pendingCommands = [];
   }
 }

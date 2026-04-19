@@ -60,6 +60,12 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
           const snap = await instance.getSnapshot();
           useGameStore.getState().setSnapshot(snap);
           sectorView?.update(snap);
+          // Autosave to slot -1 every 60 ticks (skip tick 0)
+          if (snap.tick > 0 && snap.tick % 60 === 0) {
+            const blob = await instance.getSaveBlob();
+            const { saveToSlot: idbSave } = await import("@fa/persistence");
+            await idbSave(-1, JSON.parse(blob) as import("@fa/persistence").SaveV1, "Autosave");
+          }
         }
       }
 
@@ -90,10 +96,14 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
       await idbSave(slot, JSON.parse(json) as SaveV1, label);
     },
     async loadFromSlot(slot) {
+      if (!instance) return;
       const { loadFromSlot: idbLoad } = await import("@fa/persistence");
       const save = await idbLoad(slot);
       if (!save) return;
-      // Full restore wired in Phase 1 when SimApi.restore(save) is implemented
+      await instance.restore(JSON.stringify(save));
+      const snap = await instance.getSnapshot();
+      useGameStore.getState().setSnapshot(snap);
+      sectorView?.update(snap);
     },
   };
 }

@@ -63,8 +63,23 @@ describe("SimApi", () => {
     api.tick(50);
     const blob = api.getSaveBlob();
     const parsed = JSON.parse(blob) as Record<string, unknown>;
-    expect(parsed.schemaVersion).toBeDefined();
-    expect(parsed.tick).toBe(1);
-    expect(parsed.seed).toBe(42);
+    expect(parsed.schemaVersion).toBe(1);
+    expect(parsed.rngSeed).toBe(42);
+    const worldSnapshot = parsed.worldSnapshot as Record<string, unknown>;
+    expect(worldSnapshot.tick).toBe(1);
+    expect(worldSnapshot.seed).toBe(42);
+  });
+
+  it("restore round-trips world state", () => {
+    const api = new SimApi({ seed: 77, humanPlayerRaceId: "helionCorp" });
+    for (let i = 0; i < 5; i++) api.tick(50);
+    const blob = api.getSaveBlob();
+    const snap1 = api.getSnapshot();
+
+    api.restore(blob);
+    const snap2 = api.getSnapshot();
+    expect(snap2.tick).toBe(snap1.tick);
+    expect(snap2.credits).toBe(snap1.credits);
+    expect(snap2.asteroids.length).toBe(snap1.asteroids.length);
   });
 });
