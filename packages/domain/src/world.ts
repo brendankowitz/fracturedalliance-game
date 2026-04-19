@@ -24,5 +24,5 @@ export interface World {
   marketPrices: OreRecord<number>;
   eventQueue: GameEvent[];
   prng: Prng;
-  schemaVersion: number;
+  readonly schemaVersion: number;
 }

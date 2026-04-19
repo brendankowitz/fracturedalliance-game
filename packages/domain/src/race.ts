@@ -1,13 +1,13 @@
 import type { OreKind } from "./types.ts";
 
 export interface RacePersonality {
-  aggression: number;
-  grudgeDecayPerDay: number;
-  tradeBias: number;
-  techBias: number;
-  expansionBias: number;
-  treatyRespect: number;
-  ramWillingness: number;
+  readonly aggression: number;
+  readonly grudgeDecayPerDay: number;
+  readonly tradeBias: number;
+  readonly techBias: number;
+  readonly expansionBias: number;
+  readonly treatyRespect: number;
+  readonly ramWillingness: number;
 }
 
 export interface RaceDef {

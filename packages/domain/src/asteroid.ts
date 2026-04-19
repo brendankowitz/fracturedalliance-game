@@ -20,7 +20,7 @@ export interface Asteroid {
   ownerId: PlayerId | null;
   sector: { readonly x: number; readonly y: number };
   sizeClass: SizeClass;
-  deposits: Partial<OreRecord<number>>;
+  readonly deposits: Partial<OreRecord<number>>;
   radiation: number;
   stability: number;
   happiness: number;
