@@ -1,5 +1,7 @@
 import { buildingId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
+import { applyCommand } from "../commandProcessor.ts";
+import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
 import { computePowerBalance } from "../systems/resourceSystem.ts";
 import { createWorld } from "../world.ts";
@@ -109,6 +111,32 @@ describe("miningSystem", () => {
     tickMining(world);
 
     expect(asteroid.deposits.selenium).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("constructionSystem", () => {
+  it("completes a building after its build time ticks", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    applyCommand(world, {
+      kind: "placeBuilding",
+      asteroidId: asteroid.id,
+      buildingKind: "powerPlant",
+      cell: { x: 2, y: 2 },
+    });
+
+    expect(asteroid.buildQueue.length).toBe(1);
+
+    const firstItem = asteroid.buildQueue[0];
+    if (!firstItem) throw new Error("expected build queue item");
+    const totalTicks = firstItem.totalTicks;
+    for (let i = 0; i < totalTicks; i++) tickConstruction(world);
+
+    expect(asteroid.buildQueue.length).toBe(0);
+    const powerPlant = [...world.buildings.values()].find((b) => b.defKind === "powerPlant");
+    expect(powerPlant?.constructionProgress).toBe(1);
   });
 });
 

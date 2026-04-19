@@ -5,6 +5,7 @@ export interface BuildQueueItem {
   buildingKind: string;
   progressTicks: number;
   totalTicks: number;
+  cell: { x: number; y: number };
 }
 
 export interface AsteroidEngineState {
