@@ -5,6 +5,7 @@ import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
 import { computePowerBalance, tickResources } from "../systems/resourceSystem.ts";
 import { tickShips } from "../systems/shipSystem.ts";
+import { isTraderActive, TICKS_PER_MONTH, TRADER_WINDOW_TICKS } from "../systems/traderSystem.ts";
 import { createWorld } from "../world.ts";
 
 describe("miningSystem", () => {
@@ -430,5 +431,60 @@ describe("shipSystem", () => {
     const ship = world.ships.get(id)!;
     expect(ship.position.x).toBe(2);
     expect(ship.position.y).toBe(3);
+  });
+});
+
+describe("traderSystem", () => {
+  it("isTraderActive returns false at tick 0", () => {
+    expect(isTraderActive(0)).toBe(false);
+  });
+
+  it("isTraderActive returns true at tick TICKS_PER_MONTH", () => {
+    expect(isTraderActive(TICKS_PER_MONTH)).toBe(true);
+  });
+
+  it("isTraderActive returns false after TRADER_WINDOW_TICKS", () => {
+    expect(isTraderActive(TICKS_PER_MONTH + TRADER_WINDOW_TICKS)).toBe(false);
+  });
+
+  it("mining fills player oreInventory, not credits", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    const mineId = buildingId("test-mine-inv");
+    world.buildings.set(mineId, {
+      id: mineId,
+      defKind: "mineMk1",
+      asteroidId: asteroid.id,
+      cell: { x: 1, y: 1 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
+    });
+    asteroid.buildings.push(mineId);
+
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    const creditsBefore = human.credits;
+    tickMining(world);
+    expect(human.credits).toBe(creditsBefore); // credits unchanged
+    const totalInventory = Object.values(human.oreInventory).reduce((s, v) => s + (v ?? 0), 0);
+    expect(totalInventory).toBeGreaterThan(0); // ore accumulated
+  });
+
+  it("sellOre command sells all of a given ore type when trader is active", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    world.tick = TICKS_PER_MONTH; // trader active
+
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    human.oreInventory.selenium = 100;
+    const creditsBefore = human.credits;
+
+    applyCommand(world, { kind: "sellOre", oreKind: "selenium" });
+
+    expect(human.oreInventory.selenium ?? 0).toBe(0);
+    expect(human.credits).toBeGreaterThan(creditsBefore);
   });
 });

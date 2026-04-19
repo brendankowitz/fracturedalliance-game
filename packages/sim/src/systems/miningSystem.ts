@@ -23,8 +23,8 @@ export function tickMining(world: World): void {
         (asteroid.deposits as Partial<Record<OreKind, number>>)[ore as OreKind] =
           available - extracted;
 
-        const price = world.marketPrices[ore as OreKind] ?? 0;
-        player.credits += extracted * price * 0.7;
+        const current = player.oreInventory[ore as OreKind] ?? 0;
+        player.oreInventory[ore as OreKind] = current + extracted;
       }
     }
   }

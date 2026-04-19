@@ -1,4 +1,5 @@
 import type { BlueprintId, PlayerId } from "./ids.ts";
+import type { PartialOreRecord } from "./types.ts";
 
 export interface AiEventRecord {
   readonly tick: number;
@@ -11,6 +12,7 @@ export interface Player {
   readonly raceId: string;
   readonly isHuman: boolean;
   credits: number;
+  oreInventory: PartialOreRecord<number>;
   reputation: Map<PlayerId, number>;
   federationStanding: number;
   blueprintsOwned: Set<BlueprintId>;

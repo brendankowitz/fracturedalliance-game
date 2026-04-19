@@ -1,5 +1,6 @@
 import type { AsteroidId, EventPriority, PlayerId, ShipId, World } from "@fa/domain";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
+import { isTraderActive } from "./systems/traderSystem.ts";
 
 export interface AsteroidSnapshot {
   id: AsteroidId;
@@ -29,6 +30,8 @@ export interface HudSnapshot {
   credits: number;
   federationStanding: number;
   humanPlayerId: string;
+  traderActive: boolean;
+  oreInventory: Partial<Record<string, number>>;
   players: Array<{ id: string; raceId: string; isHuman: boolean; alive: boolean; credits: number }>;
   asteroids: AsteroidSnapshot[];
   ships: ShipSnapshot[];
@@ -68,6 +71,10 @@ export function takeSnapshot(world: World): HudSnapshot {
     credits: human.credits,
     federationStanding: human.federationStanding,
     humanPlayerId: human.id,
+    traderActive: isTraderActive(world.tick),
+    oreInventory: Object.fromEntries(
+      Object.entries(human.oreInventory).filter((entry): entry is [string, number] => (entry[1] ?? 0) > 0),
+    ),
     players: [...world.players.values()].map((p) => ({
       id: p.id,
       raceId: p.raceId,

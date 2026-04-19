@@ -2,6 +2,7 @@ import { findBuildingDef, getShipDef } from "@fa/content";
 import type { World } from "@fa/domain";
 import { shipId } from "@fa/domain";
 import type { Command } from "./commands.ts";
+import { isTraderActive } from "./systems/traderSystem.ts";
 
 export function applyCommand(world: World, command: Command): void {
   switch (command.kind) {
@@ -85,6 +86,20 @@ export function applyCommand(world: World, command: Command): void {
       const ship = world.ships.get(command.shipId);
       if (!ship) return;
       ship.order = command.order;
+      break;
+    }
+    case "sellOre": {
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+      if (!isTraderActive(world.tick)) return;
+
+      const oreKind = command.oreKind;
+      const amount = human.oreInventory[oreKind] ?? 0;
+      if (amount <= 0) return;
+
+      human.oreInventory[oreKind] = 0;
+      const price = world.marketPrices[oreKind] ?? 0;
+      human.credits += amount * price * 0.7;
       break;
     }
   }

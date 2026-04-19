@@ -14,6 +14,8 @@ describe("gameStore", () => {
       credits: 9000,
       federationStanding: 50,
       humanPlayerId: "player-human",
+      traderActive: false,
+      oreInventory: {},
       players: [],
       asteroids: [],
       ships: [],
