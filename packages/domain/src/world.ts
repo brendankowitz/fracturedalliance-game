@@ -1,7 +1,8 @@
+import type { Agent } from "./agent.ts";
 import type { Asteroid } from "./asteroid.ts";
 import type { Building } from "./building.ts";
 import type { GameEvent } from "./events.ts";
-import type { AsteroidId, BuildingId, PlayerId, ShipId } from "./ids.ts";
+import type { AgentId, AsteroidId, BuildingId, PlayerId, ShipId } from "./ids.ts";
 import type { Player } from "./player.ts";
 import type { Ship } from "./ship.ts";
 import type { Treaty } from "./treaty.ts";
@@ -31,4 +32,5 @@ export interface World {
   nextShipSeq: number;
   nextTreatySeq: number;
   gameEndState: GameEndState | null;
+  agents: Map<AgentId, Agent>;
 }

@@ -1,3 +1,4 @@
+export * from "./agents.ts";
 export * from "./blueprints.ts";
 export * from "./buildings.ts";
 export * from "./ores.ts";

@@ -1,3 +1,4 @@
+import type { AgentMissionKind } from "./agent.ts";
 import type { AsteroidId, BlueprintId, PlayerId } from "./ids.ts";
 import type { TreatyKind } from "./treaty.ts";
 
@@ -17,4 +18,13 @@ export type GameEvent =
       against: PlayerId;
       treaty: TreatyKind;
     }
-  | { kind: "blueprint.purchased"; priority: "grey"; playerId: PlayerId; blueprintId: BlueprintId };
+  | { kind: "blueprint.purchased"; priority: "grey"; playerId: PlayerId; blueprintId: BlueprintId }
+  | {
+      kind: "agent.mission_complete";
+      priority: "grey";
+      agentName: string;
+      missionKind: AgentMissionKind;
+      targetAsteroidName: string;
+    }
+  | { kind: "agent.captured"; priority: "amber"; agentName: string }
+  | { kind: "agent.mission_failed"; priority: "grey"; agentName: string };

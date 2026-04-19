@@ -1,0 +1,22 @@
+[
+  { "id": "agent-cipher", "name": "Cipher", "stealth": 35, "hireCost": 500 },
+  { "id": "agent-shade", "name": "Shade", "stealth": 40, "hireCost": 600 },
+  { "id": "agent-vex", "name": "Vex", "stealth": 38, "hireCost": 550 },
+  { "id": "agent-nova", "name": "Nova", "stealth": 45, "hireCost": 700 },
+  { "id": "agent-ghost", "name": "Ghost", "stealth": 42, "hireCost": 650 },
+  { "id": "agent-flux", "name": "Flux", "stealth": 50, "hireCost": 800 },
+  { "id": "agent-onyx", "name": "Onyx", "stealth": 48, "hireCost": 750 },
+  { "id": "agent-prism", "name": "Prism", "stealth": 55, "hireCost": 900 },
+  { "id": "agent-nox", "name": "Nox", "stealth": 52, "hireCost": 850 },
+  { "id": "agent-hex", "name": "Hex", "stealth": 58, "hireCost": 1000 },
+  { "id": "agent-arrow", "name": "Arrow", "stealth": 60, "hireCost": 1100 },
+  { "id": "agent-spark", "name": "Spark", "stealth": 62, "hireCost": 1150 },
+  { "id": "agent-void", "name": "Void", "stealth": 65, "hireCost": 1300 },
+  { "id": "agent-echo", "name": "Echo", "stealth": 68, "hireCost": 1400 },
+  { "id": "agent-mist", "name": "Mist", "stealth": 70, "hireCost": 1500 },
+  { "id": "agent-wire", "name": "Wire", "stealth": 72, "hireCost": 1600 },
+  { "id": "agent-rune", "name": "Rune", "stealth": 75, "hireCost": 1800 },
+  { "id": "agent-axis", "name": "Axis", "stealth": 78, "hireCost": 2000 },
+  { "id": "agent-storm", "name": "Storm", "stealth": 82, "hireCost": 2400 },
+  { "id": "agent-crux", "name": "Crux", "stealth": 90, "hireCost": 3000 }
+]
