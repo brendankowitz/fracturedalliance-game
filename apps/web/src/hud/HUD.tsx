@@ -23,6 +23,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const toggleSaveLoad = useUiStore((s) => s.toggleSaveLoadPanel);
   const toggleDiplomacy = useUiStore((s) => s.toggleDiplomacyPanel);
   const toggleAlerts = useUiStore((s) => s.toggleNotificationFeed);
+  const alertsOpen = useUiStore((s) => s.notificationFeedOpen);
 
   if (!snapshot) {
     return (
@@ -69,7 +70,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
           right: 230,
           zIndex: 11,
           background: "#0a1830",
-          border: "1px solid #224",
+          border: `1px solid ${alertsOpen ? "#c8d8ff" : "#224"}`,
           color: "#c8d8ff",
           fontFamily: "monospace",
           padding: "4px 10px",

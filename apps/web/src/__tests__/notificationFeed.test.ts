@@ -1,15 +1,5 @@
 import { describe, expect, it } from "vitest";
-
-const EVENT_LABELS: Partial<Record<string, string>> = {
-  "colony.under_attack": "Colony under attack",
-  "colony.starved": "Colony starving",
-  "colony.captured": "Colony captured",
-  "asteroid.incoming": "Asteroid incoming",
-  "trader.arrived": "Transporter arrived",
-  "construction.done": "Construction complete",
-  "treaty.broken": "Treaty broken",
-  "blueprint.purchased": "Blueprint acquired",
-};
+import { EVENT_LABELS } from "../hud/NotificationFeed.tsx";
 
 const KNOWN_EVENT_KINDS = [
   "colony.under_attack",

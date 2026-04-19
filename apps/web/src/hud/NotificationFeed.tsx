@@ -11,7 +11,7 @@ interface NotificationEntry {
   label: string;
 }
 
-const EVENT_LABELS: Partial<Record<string, string>> = {
+export const EVENT_LABELS: Partial<Record<string, string>> = {
   "colony.under_attack": "Colony under attack",
   "colony.starved": "Colony starving",
   "colony.captured": "Colony captured",
