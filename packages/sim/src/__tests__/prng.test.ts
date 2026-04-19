@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
 
 describe("makePrng (mulberry32)", () => {
+  it("produces known first output for seed 0 (golden value)", () => {
+    // Raw u32 for seed 0: 0x4434b462 = 1144304738; divided by 2^32 ≈ 0.26643
+    expect(makePrng(0).next()).toBeCloseTo(0.26643, 4);
+  });
+
   it("is deterministic — same seed produces same sequence", () => {
     const a = makePrng(42);
     const b = makePrng(42);
