@@ -10,12 +10,15 @@ export function App() {
   useEffect(() => {
     if (!canvasRef.current) return;
     let loopHandle: ReturnType<typeof startRenderLoop> | null = null;
+    let cancelled = false;
 
     void initPixi(canvasRef.current).then(() => {
+      if (cancelled) return;
       loopHandle = startRenderLoop(SimWorker);
     });
 
     return () => {
+      cancelled = true;
       loopHandle?.stop();
     };
   }, []);
