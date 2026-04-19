@@ -8,24 +8,32 @@ function hashSnapshot(snap: HudSnapshot): string {
     String(snap.credits),
     snap.asteroids.map((a) => `${a.id}:${a.ownerId}:${a.sector.x},${a.sector.y}`).join("|"),
     Object.entries(snap.marketPrices)
-      .sort()
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([k, v]) => `${k}=${v}`)
       .join(","),
     snap.players.map((p) => `${p.id}:${p.alive}:${p.credits}`).join("|"),
+    snap.ships.map((s) => `${s.id}:${s.ownerId}:${s.position.x},${s.position.y}`).join("|"),
+    Object.entries(snap.oreInventory)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([k, v]) => `${k}=${v}`)
+      .join(","),
+    String(snap.federationStanding),
+    String(snap.suspicion),
+    String(snap.gameEndState),
+    [...snap.blueprintsOwned].sort().join(","),
+    snap.agents.map((a) => `${a.id}:${a.owned}:${a.missionKind}`).join("|"),
   ];
   return parts.join(";");
 }
 
 describe("deterministic replay", () => {
   it("save/restore preserves PRNG state across 300 ticks", () => {
-    // Path A: advance 200 ticks, save/restore, then advance 100 more
     const apiA = new SimApi({ seed: 42, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
     for (let i = 0; i < 200; i++) apiA.tick(50);
     apiA.restore(apiA.getSaveBlob());
     for (let i = 0; i < 100; i++) apiA.tick(50);
     const snapA = apiA.getSnapshot();
 
-    // Path B: advance 300 ticks uninterrupted
     const apiB = new SimApi({ seed: 42, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
     for (let i = 0; i < 300; i++) apiB.tick(50);
     const snapB = apiB.getSnapshot();
@@ -39,7 +47,6 @@ describe("deterministic replay", () => {
   });
 
   it("command replay across save/restore boundary is deterministic", () => {
-    // Path A: advance 50 ticks, issue command, advance to 100, save/restore, advance to 200
     const apiA = new SimApi({ seed: 123, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
     for (let i = 0; i < 50; i++) apiA.tick(50);
 
@@ -61,7 +68,6 @@ describe("deterministic replay", () => {
     for (let i = 0; i < 100; i++) apiA.tick(50);
     const snapA = apiA.getSnapshot();
 
-    // Path B: same sequence from scratch — no interruption at tick 100
     const apiB = new SimApi({ seed: 123, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
     for (let i = 0; i < 50; i++) apiB.tick(50);
 
