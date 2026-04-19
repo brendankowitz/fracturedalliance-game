@@ -9,7 +9,10 @@
       "techBias": 0.6,
       "expansionBias": 0.7,
       "treatyRespect": 0.7,
-      "ramWillingness": 0.2
+      "ramWillingness": 0.2,
+      "blackMarketAffinity": 0.1,
+      "bribeReceptiveness": 0.3,
+      "grudgeThreshold": 0.4
     },
     "tradeLove": ["selenium", "asteros"],
     "tradeHate": [],
@@ -26,7 +29,10 @@
       "techBias": 0.5,
       "expansionBias": 0.8,
       "treatyRespect": 0.4,
-      "ramWillingness": 0.6
+      "ramWillingness": 0.6,
+      "blackMarketAffinity": 0.5,
+      "bribeReceptiveness": 0.2,
+      "grudgeThreshold": 0.7
     },
     "tradeLove": ["barium", "crystalite"],
     "tradeHate": ["selenium"],
@@ -43,7 +49,10 @@
       "techBias": 0.4,
       "expansionBias": 0.6,
       "treatyRespect": 0.3,
-      "ramWillingness": 0.8
+      "ramWillingness": 0.8,
+      "blackMarketAffinity": 0.4,
+      "bribeReceptiveness": 0.1,
+      "grudgeThreshold": 0.9
     },
     "tradeLove": ["crystalite"],
     "tradeHate": ["asteros"],
@@ -60,7 +69,10 @@
       "techBias": 0.9,
       "expansionBias": 0.5,
       "treatyRespect": 0.8,
-      "ramWillingness": 0.1
+      "ramWillingness": 0.1,
+      "blackMarketAffinity": 0.2,
+      "bribeReceptiveness": 0.5,
+      "grudgeThreshold": 0.3
     },
     "tradeLove": ["asteros", "crystalite"],
     "tradeHate": [],
@@ -77,7 +89,10 @@
       "techBias": 0.3,
       "expansionBias": 0.7,
       "treatyRespect": 0.3,
-      "ramWillingness": 0.7
+      "ramWillingness": 0.7,
+      "blackMarketAffinity": 0.3,
+      "bribeReceptiveness": 0.2,
+      "grudgeThreshold": 0.8
     },
     "tradeLove": ["barium"],
     "tradeHate": ["selenium"],
@@ -94,7 +109,10 @@
       "techBias": 0.7,
       "expansionBias": 0.4,
       "treatyRespect": 0.9,
-      "ramWillingness": 0.1
+      "ramWillingness": 0.1,
+      "blackMarketAffinity": 0.15,
+      "bribeReceptiveness": 0.6,
+      "grudgeThreshold": 0.2
     },
     "tradeLove": ["selenium", "asteros", "barium"],
     "tradeHate": [],
@@ -105,17 +123,20 @@
     "id": "mauna",
     "name": "Mauna",
     "personality": {
-      "aggression": 0.2,
+      "aggression": 0.15,
       "grudgeDecayPerDay": 0.25,
-      "tradeBias": 0.6,
+      "tradeBias": 0.75,
       "techBias": 0.8,
       "expansionBias": 0.3,
       "treatyRespect": 0.95,
-      "ramWillingness": 0.05
+      "ramWillingness": 0.05,
+      "blackMarketAffinity": 0.9,
+      "bribeReceptiveness": 0.7,
+      "grudgeThreshold": 0.5
     },
     "tradeLove": ["asteros"],
     "tradeHate": [],
-    "federationMember": true,
+    "federationMember": false,
     "playable": false
   }
 ]

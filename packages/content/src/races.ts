@@ -11,6 +11,9 @@ const PERSONALITY_FIELDS = [
   "expansionBias",
   "treatyRespect",
   "ramWillingness",
+  "blackMarketAffinity",
+  "bribeReceptiveness",
+  "grudgeThreshold",
 ] as const;
 
 function validateRace(raw: JsonRace): RaceDef {
