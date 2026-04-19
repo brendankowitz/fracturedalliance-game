@@ -13,6 +13,8 @@ describe("gameStore", () => {
       tick: 5,
       credits: 9000,
       federationStanding: 50,
+      humanPlayerId: "player-human",
+      players: [],
       asteroids: [],
       events: [],
     };

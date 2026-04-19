@@ -9,6 +9,7 @@ import {
   type Player,
   type PlayerId,
   playerId,
+  type SizeClass,
   type World,
 } from "@fa/domain";
 import { makePrng } from "./prng.ts";
@@ -30,6 +31,74 @@ const BASE_MARKET_PRICES: OreRecord<number> = {
   traxium: 1100,
   nexos: 1500,
 };
+
+const NEUTRAL_NAMES: readonly string[] = [
+  "Cygni Station",
+  "Rigel Outpost",
+  "Capella Base",
+  "Aldebaran Point",
+  "Arcturus Drift",
+  "Procyon Field",
+  "Sirius Reach",
+  "Deneb Crossing",
+  "Altair Depths",
+  "Fomalhaut Ridge",
+];
+
+const PHASE1_ORES: readonly ["selenium", "asteros", "barium", "crystalite"] = [
+  "selenium",
+  "asteros",
+  "barium",
+  "crystalite",
+];
+
+type Phase1Ore = (typeof PHASE1_ORES)[number];
+
+function rollSizeClass(rand: number): SizeClass {
+  if (rand < 0.5) return "M";
+  if (rand < 0.8) return "S";
+  return "L";
+}
+
+function rollDeposits(size: SizeClass, prng: { next(): number }): Partial<OreRecord<number>> {
+  const oreCount =
+    size === "S"
+      ? 1 + Math.round(prng.next())
+      : size === "M"
+        ? 2 + Math.round(prng.next())
+        : 3 + Math.round(prng.next());
+
+  const shuffled: Phase1Ore[] = [...PHASE1_ORES].sort(() => prng.next() - 0.5);
+  const chosen = shuffled.slice(0, oreCount);
+
+  const result: Partial<OreRecord<number>> = {};
+  for (const ore of chosen) {
+    let amount: number;
+    if (size === "S") {
+      amount = 500 + Math.round(prng.next() * 1500);
+    } else if (size === "M") {
+      amount = 1000 + Math.round(prng.next() * 4000);
+    } else {
+      amount = 2000 + Math.round(prng.next() * 8000);
+    }
+    result[ore] = amount;
+  }
+  return result;
+}
+
+function makeCpuBuilding(bid: BuildingId, aid: AsteroidId): Building {
+  return {
+    id: bid,
+    defKind: "cpu",
+    asteroidId: aid,
+    cell: { x: 3, y: 3 },
+    hp: 100,
+    maxHp: 100,
+    constructionProgress: 1,
+    active: true,
+    damage: 0,
+  };
+}
 
 export function createWorld(config: WorldConfig): World {
   const prng = makePrng(config.seed);
@@ -63,18 +132,6 @@ export function createWorld(config: WorldConfig): World {
     },
   };
 
-  const cpuBuilding: Building = {
-    id: cpuBuildingId,
-    defKind: "cpu",
-    asteroidId: starterAsteroidId,
-    cell: { x: 3, y: 3 },
-    hp: 100,
-    maxHp: 100,
-    constructionProgress: 1,
-    active: true,
-    damage: 0,
-  };
-
   const humanPlayer: Player = {
     id: humanId,
     raceId: config.humanPlayerRaceId,
@@ -88,18 +145,110 @@ export function createWorld(config: WorldConfig): World {
     suspicion: 0,
   };
 
-  // TODO(phase-1): Replace this advance with procedural belt generation calls.
-  // Remove this line and use PRNG results directly — do not add new calls after
-  // this one, as that would shift the sequence for existing saves.
-  void prng.next();
+  // Procedural neutral asteroid belt
+  const neutralCount = 5 + Math.floor(prng.next() * 4); // 5-8
+  const asteroids: Map<AsteroidId, Asteroid> = new Map([[starterAsteroidId, starterAsteroid]]);
+  const buildings: Map<BuildingId, Building> = new Map([
+    [cpuBuildingId, makeCpuBuilding(cpuBuildingId, starterAsteroidId)],
+  ]);
+
+  const namePool = [...NEUTRAL_NAMES];
+
+  for (let i = 0; i < neutralCount; i++) {
+    const angle = (i * (2 * Math.PI)) / neutralCount + (prng.next() - 0.5) * 0.4;
+    const radius = 8 + (prng.next() - 0.5) * 2;
+    const sector = {
+      x: Math.round(Math.cos(angle) * radius),
+      y: Math.round(Math.sin(angle) * radius),
+    };
+
+    const sizeClass = rollSizeClass(prng.next());
+    const deposits = rollDeposits(sizeClass, prng);
+
+    const nameIndex = Math.floor(prng.next() * namePool.length);
+    const name = namePool.splice(nameIndex, 1)[0] ?? `Belt ${i + 1}`;
+
+    const aid = asteroidId(`asteroid-n${i}`);
+    const neutralAsteroid: Asteroid = {
+      id: aid,
+      name,
+      ownerId: null,
+      sector,
+      sizeClass,
+      deposits,
+      radiation: 0,
+      stability: 100,
+      happiness: 50,
+      buildings: [],
+      buildQueue: [],
+      inOrbit: [],
+      engines: {
+        count: 0,
+        destinationId: null,
+        etaTick: null,
+        chargeTick: null,
+      },
+    };
+    asteroids.set(aid, neutralAsteroid);
+  }
+
+  // Kryll AI player — placed at sector opposite the human (antipodal)
+  const kryllId: PlayerId = playerId("player-kryll");
+  const kryllAsteroidId: AsteroidId = asteroidId("asteroid-kryll");
+  const kryllCpuId: BuildingId = buildingId("building-cpu-kryll");
+
+  const kryllSector = { x: 0, y: -10 };
+
+  const kryllSizeClass = rollSizeClass(prng.next());
+  const kryllDeposits = rollDeposits(kryllSizeClass, prng);
+
+  const kryllAsteroid: Asteroid = {
+    id: kryllAsteroidId,
+    name: "Kryll Nexus",
+    ownerId: kryllId,
+    sector: kryllSector,
+    sizeClass: kryllSizeClass,
+    deposits: kryllDeposits,
+    radiation: 0,
+    stability: 100,
+    happiness: 60,
+    buildings: [kryllCpuId],
+    buildQueue: [],
+    inOrbit: [],
+    engines: {
+      count: 0,
+      destinationId: null,
+      etaTick: null,
+      chargeTick: null,
+    },
+  };
+
+  const kryllPlayer: Player = {
+    id: kryllId,
+    raceId: "kryllCollective",
+    isHuman: false,
+    credits: 8_000,
+    reputation: new Map(),
+    federationStanding: 30,
+    blueprintsOwned: new Set(),
+    eventLog: [],
+    alive: true,
+    suspicion: 0,
+  };
+
+  asteroids.set(kryllAsteroidId, kryllAsteroid);
+  buildings.set(kryllCpuId, makeCpuBuilding(kryllCpuId, kryllAsteroidId));
 
   return {
     tick: 0,
     seed: config.seed,
-    asteroids: new Map([[starterAsteroidId, starterAsteroid]]),
-    buildings: new Map([[cpuBuildingId, cpuBuilding]]),
+    asteroids,
+    buildings,
     ships: new Map(),
-    players: new Map([[humanId, humanPlayer]]),
+    players: new Map([
+      [humanId, humanPlayer],
+      [kryllId, kryllPlayer],
+    ]),
     treaties: [],
     marketPrices: { ...BASE_MARKET_PRICES },
     eventQueue: [],

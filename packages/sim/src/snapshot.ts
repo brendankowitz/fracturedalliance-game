@@ -20,6 +20,8 @@ export interface HudSnapshot {
   tick: number;
   credits: number;
   federationStanding: number;
+  humanPlayerId: string;
+  players: Array<{ id: string; raceId: string; isHuman: boolean; alive: boolean; credits: number }>;
   asteroids: AsteroidSnapshot[];
   events: Array<{ kind: string; priority: EventPriority }>;
 }
@@ -56,6 +58,14 @@ export function takeSnapshot(world: World): HudSnapshot {
     tick: world.tick,
     credits: human.credits,
     federationStanding: human.federationStanding,
+    humanPlayerId: human.id,
+    players: [...world.players.values()].map((p) => ({
+      id: p.id,
+      raceId: p.raceId,
+      isHuman: p.isHuman,
+      alive: p.alive,
+      credits: p.credits,
+    })),
     asteroids,
     events: world.eventQueue.map((e) => ({ kind: e.kind, priority: e.priority })),
   };
