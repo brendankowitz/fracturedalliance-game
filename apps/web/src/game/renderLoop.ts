@@ -1,3 +1,4 @@
+import type { SaveV1 } from "@fa/persistence";
 import type { Command, SimApi } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
@@ -9,6 +10,8 @@ export interface RenderLoopHandle {
   stop: () => void;
   setTimeScale: (scale: number) => void;
   sendCommand: (cmd: Command) => void;
+  saveToSlot: (slot: number, label: string) => Promise<void>;
+  loadFromSlot: (slot: number) => Promise<void>;
 }
 
 export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle {
@@ -62,6 +65,19 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
     },
     sendCommand(cmd) {
       pendingCommands.push(cmd);
+    },
+    async saveToSlot(slot, label) {
+      if (!instance) return;
+      const blob = await instance.getSaveBlob();
+      const { saveToSlot: idbSave } = await import("@fa/persistence");
+      await idbSave(slot, JSON.parse(blob) as SaveV1, label);
+    },
+    async loadFromSlot(slot) {
+      const { loadFromSlot: idbLoad } = await import("@fa/persistence");
+      const save = await idbLoad(slot);
+      if (!save) return;
+      // Full restore wired in Phase 1 when SimApi.restore(save) is implemented
+      console.log("loaded save", save);
     },
   };
 }
