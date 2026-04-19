@@ -1,5 +1,5 @@
 import { findBlueprintDef, findBuildingDef, getRaceDef, getShipDef } from "@fa/content";
-import type { AgentMissionKind, BlackMarketItemKind, Treaty, TreatyKind, World } from "@fa/domain";
+import type { AgentMissionKind, BlackMarketItemKind, OreKind, Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { clampOrePrice } from "./systems/economySystem.ts";
@@ -349,15 +349,14 @@ export function applyCommand(world: World, command: Command): void {
       const currentStock = human.oreInventory[oreKind] ?? 0;
       if (currentStock < quantity) return;
 
-      const marketPrice = world.marketPrices[oreKind as keyof typeof world.marketPrices];
+      const marketPrice = world.marketPrices[oreKind as OreKind];
       if (marketPrice === undefined) return;
 
       human.oreInventory[oreKind] = currentStock - quantity;
       human.credits += quantity * marketPrice;
 
-      // Selling depresses price — increased supply
       const depressed = marketPrice * 0.99;
-      world.marketPrices[oreKind as keyof typeof world.marketPrices] = Math.round(
+      world.marketPrices[oreKind as OreKind] = Math.round(
         clampOrePrice(oreKind, depressed) * 100,
       ) / 100;
       break;
@@ -369,7 +368,7 @@ export function applyCommand(world: World, command: Command): void {
       if (!human) return;
 
       const { oreKind, quantity } = command;
-      const marketPrice = world.marketPrices[oreKind as keyof typeof world.marketPrices];
+      const marketPrice = world.marketPrices[oreKind as OreKind];
       if (marketPrice === undefined) return;
 
       const cost = quantity * marketPrice;
@@ -378,9 +377,8 @@ export function applyCommand(world: World, command: Command): void {
       human.credits -= cost;
       human.oreInventory[oreKind] = (human.oreInventory[oreKind] ?? 0) + quantity;
 
-      // Buying raises price — reduced supply
       const raised = marketPrice * 1.01;
-      world.marketPrices[oreKind as keyof typeof world.marketPrices] = Math.round(
+      world.marketPrices[oreKind as OreKind] = Math.round(
         clampOrePrice(oreKind, raised) * 100,
       ) / 100;
       break;

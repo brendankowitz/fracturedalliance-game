@@ -1,6 +1,5 @@
-import type { World } from "@fa/domain";
+import type { World, AsteroidId, BuildingId, PlayerId } from "@fa/domain";
 import { asteroidId, buildingId, playerId } from "@fa/domain";
-import type { AsteroidId, BuildingId, PlayerId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { applyCommand } from "../commandProcessor.ts";
 import { makePrng } from "../prng.ts";
