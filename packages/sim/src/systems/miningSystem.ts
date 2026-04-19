@@ -1,5 +1,5 @@
 import { getBuildingDef } from "@fa/content";
-import type { World } from "@fa/domain";
+import type { OreKind, World } from "@fa/domain";
 
 export function tickMining(world: World): void {
   for (const asteroid of world.asteroids.values()) {
@@ -20,9 +20,10 @@ export function tickMining(world: World): void {
         if (available <= 0) continue;
 
         const extracted = Math.min(ratePerTick, available);
-        (asteroid.deposits as Record<string, number>)[ore] = available - extracted;
+        (asteroid.deposits as Partial<Record<OreKind, number>>)[ore as OreKind] =
+          available - extracted;
 
-        const price = world.marketPrices[ore as keyof typeof world.marketPrices] ?? 0;
+        const price = world.marketPrices[ore as OreKind] ?? 0;
         player.credits += extracted * price * 0.7;
       }
     }

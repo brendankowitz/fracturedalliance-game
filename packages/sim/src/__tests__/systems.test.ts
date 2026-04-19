@@ -169,4 +169,28 @@ describe("resourceSystem", () => {
     // Inactive plant not counted, only CPU: -5
     expect(balance).toBe(-5);
   });
+
+  it("computePowerBalance ignores under-construction buildings", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    const plantId = buildingId("wip-plant");
+    world.buildings.set(plantId, {
+      id: plantId,
+      defKind: "powerPlant",
+      asteroidId: asteroid.id,
+      cell: { x: 1, y: 1 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 0.5,
+      active: true,
+      damage: 0,
+    });
+    (asteroid.buildings as unknown as string[]).push(plantId);
+
+    const balance = computePowerBalance(world, asteroid.id);
+    // Under-construction plant not counted, only CPU: -5
+    expect(balance).toBe(-5);
+  });
 });

@@ -8,7 +8,7 @@ export function computePowerBalance(world: World, asteroidId: AsteroidId): numbe
   let balance = 0;
   for (const buildingId of asteroid.buildings) {
     const building = world.buildings.get(buildingId);
-    if (!building?.active) continue;
+    if (!building?.active || building.constructionProgress < 1) continue;
     const def = getBuildingDef(building.defKind);
     balance += def.powerDelta;
   }
