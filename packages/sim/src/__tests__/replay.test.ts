@@ -39,8 +39,8 @@ describe("deterministic replay", () => {
     const snapB = apiB.getSnapshot();
 
     if (hashSnapshot(snapA) !== hashSnapshot(snapB)) {
-      console.error("Path A snapshot:", JSON.stringify(snapA, null, 2));
-      console.error("Path B snapshot:", JSON.stringify(snapB, null, 2));
+      console.error("snapA (save/restore):", JSON.stringify(snapA, null, 2));
+      console.error("snapB (uninterrupted):", JSON.stringify(snapB, null, 2));
     }
 
     expect(hashSnapshot(snapA)).toBe(hashSnapshot(snapB));
@@ -87,8 +87,8 @@ describe("deterministic replay", () => {
     const snapB = apiB.getSnapshot();
 
     if (hashSnapshot(snapA) !== hashSnapshot(snapB)) {
-      console.error("Path A snapshot:", JSON.stringify(snapA, null, 2));
-      console.error("Path B snapshot:", JSON.stringify(snapB, null, 2));
+      console.error("snapA (save/restore + command):", JSON.stringify(snapA, null, 2));
+      console.error("snapB (uninterrupted + command):", JSON.stringify(snapB, null, 2));
     }
 
     expect(hashSnapshot(snapA)).toBe(hashSnapshot(snapB));
