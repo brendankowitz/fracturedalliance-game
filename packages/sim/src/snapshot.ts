@@ -75,6 +75,7 @@ export interface DiplomacyEntry {
 
 export interface HudSnapshot {
   tick: number;
+  seed: number;
   credits: number;
   federationStanding: number;
   suspicion: number;
@@ -130,6 +131,7 @@ export function takeSnapshot(world: World): HudSnapshot {
 
   return {
     tick: world.tick,
+    seed: world.seed,
     credits: human.credits,
     federationStanding: human.federationStanding,
     suspicion: human.suspicion,

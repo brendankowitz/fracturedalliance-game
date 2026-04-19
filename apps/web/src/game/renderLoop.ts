@@ -18,7 +18,7 @@ export interface RenderLoopHandle {
   loadFromSlot: (slot: number) => Promise<void>;
 }
 
-export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle {
+export function startRenderLoop(WorkerClass: new () => Worker, seed: number): RenderLoopHandle {
   const rawWorker = new WorkerClass();
   const RemoteSimApi = Comlink.wrap<typeof SimApi>(rawWorker);
 
@@ -32,7 +32,7 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
   let sectorView: SectorView | null = null;
 
   void (async () => {
-    instance = await new RemoteSimApi({ seed: Date.now(), humanPlayerRaceId: "helionCorp" });
+    instance = await new RemoteSimApi({ seed, humanPlayerRaceId: "helionCorp" });
 
     const pixiApp = getPixiApp();
     sectorView = new SectorView(pixiApp, (id: AsteroidId) => {

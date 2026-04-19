@@ -21,8 +21,9 @@ describe("SimApi", () => {
   it("placeBuilding command is applied before next tick", () => {
     const api = new SimApi({ seed: 1, humanPlayerRaceId: "helionCorp" });
     const snap = api.getSnapshot();
-    // biome-ignore lint/style/noNonNullAssertion: test — asteroid is guaranteed by world factory
-    const asteroid = snap.asteroids[0]!;
+    // Find an owned asteroid so the command is accepted
+    const asteroid = snap.asteroids.find((a) => a.ownerId === snap.humanPlayerId);
+    if (!asteroid) throw new Error("expected human-owned asteroid");
 
     api.enqueueCommand({
       kind: "placeBuilding",
@@ -41,8 +42,8 @@ describe("SimApi", () => {
   it("placeBuilding with insufficient credits is rejected", () => {
     const api = new SimApi({ seed: 1, humanPlayerRaceId: "helionCorp" });
     const snap = api.getSnapshot();
-    // biome-ignore lint/style/noNonNullAssertion: test — asteroid is guaranteed by world factory
-    const asteroid = snap.asteroids[0]!;
+    const asteroid = snap.asteroids.find((a) => a.ownerId === snap.humanPlayerId);
+    if (!asteroid) throw new Error("expected human-owned asteroid");
 
     api.enqueueCommand({
       kind: "placeBuilding",

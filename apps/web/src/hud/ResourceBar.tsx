@@ -2,9 +2,10 @@ interface ResourceBarProps {
   credits: number;
   federationStanding: number;
   tick: number;
+  seed: number;
 }
 
-export function ResourceBar({ credits, federationStanding, tick }: ResourceBarProps) {
+export function ResourceBar({ credits, federationStanding, tick, seed }: ResourceBarProps) {
   return (
     <div
       style={{
@@ -28,7 +29,8 @@ export function ResourceBar({ credits, federationStanding, tick }: ResourceBarPr
       <span>
         Standing: <strong>{federationStanding}</strong>
       </span>
-      <span style={{ marginLeft: "auto" }}>Tick {tick}</span>
+      <span style={{ marginLeft: "auto", opacity: 0.6, fontSize: 12 }}>Seed: {seed}</span>
+      <span>Tick {tick}</span>
     </div>
   );
 }

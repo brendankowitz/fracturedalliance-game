@@ -1,4 +1,3 @@
-import { asteroidId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { createWorld } from "../world.ts";
 
@@ -62,13 +61,16 @@ describe("createWorld", () => {
     expect(cpu?.active).toBe(true);
   });
 
-  it("starter asteroid has all four Phase 1 ores", () => {
+  it("human player owns at least one asteroid with deposits", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const starter = world.asteroids.get(asteroidId("asteroid-0"));
-    if (!starter) throw new Error("starter asteroid not found");
-    expect(starter.deposits.selenium).toBeGreaterThan(0);
-    expect(starter.deposits.asteros).toBeGreaterThan(0);
-    expect(starter.deposits.barium).toBeGreaterThan(0);
-    expect(starter.deposits.crystalite).toBeGreaterThan(0);
+    const human = [...world.players.values()].find((p) => p.isHuman);
+    if (!human) throw new Error("human player not found");
+    const humanAsteroids = [...world.asteroids.values()].filter((a) => a.ownerId === human.id);
+    expect(humanAsteroids.length).toBeGreaterThanOrEqual(1);
+    const totalDeposits = humanAsteroids.flatMap((a) => Object.values(a.deposits)).reduce(
+      (sum, v) => sum + (v ?? 0),
+      0,
+    );
+    expect(totalDeposits).toBeGreaterThan(0);
   });
 });

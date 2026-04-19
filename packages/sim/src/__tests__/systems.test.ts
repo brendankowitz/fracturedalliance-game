@@ -13,8 +13,13 @@ import { createWorld } from "../world.ts";
 describe("miningSystem", () => {
   it("active Mine Mk1 extracts selenium each tick", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
     const [asteroid] = world.asteroids.values();
     if (!asteroid) throw new Error("expected asteroid");
+
+    // Ensure the asteroid is owned and has selenium to extract
+    asteroid.ownerId = human.id;
+    (asteroid.deposits as Record<string, number>).selenium = 5000;
 
     const mineId = buildingId("test-mine");
     world.buildings.set(mineId, {
@@ -120,8 +125,8 @@ describe("miningSystem", () => {
 describe("constructionSystem", () => {
   it("completes a building after its build time ticks", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const [asteroid] = world.asteroids.values();
-    if (!asteroid) throw new Error("expected asteroid");
+    const asteroid = [...world.asteroids.values()].find((a) => a.ownerId !== null);
+    if (!asteroid) throw new Error("expected owned asteroid");
 
     applyCommand(world, {
       kind: "placeBuilding",
@@ -154,10 +159,16 @@ describe("constructionSystem", () => {
 });
 
 describe("resourceSystem", () => {
+  function findAsteroidWithCpu(world: ReturnType<typeof createWorld>) {
+    return [...world.asteroids.values()].find((a) =>
+      a.buildings.some((bid) => world.buildings.get(bid)?.defKind === "cpu"),
+    );
+  }
+
   it("computePowerBalance returns negative for CPU alone (no generators)", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const [asteroid] = world.asteroids.values();
-    if (!asteroid) throw new Error("expected asteroid");
+    const asteroid = findAsteroidWithCpu(world);
+    if (!asteroid) throw new Error("expected asteroid with CPU");
     const balance = computePowerBalance(world, asteroid.id);
     // CPU costs -5 power
     expect(balance).toBe(-5);
@@ -165,8 +176,8 @@ describe("resourceSystem", () => {
 
   it("power balance includes all active buildings", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const [asteroid] = world.asteroids.values();
-    if (!asteroid) throw new Error("expected asteroid");
+    const asteroid = findAsteroidWithCpu(world);
+    if (!asteroid) throw new Error("expected asteroid with CPU");
 
     const plantId = buildingId("test-plant");
     world.buildings.set(plantId, {
@@ -189,8 +200,8 @@ describe("resourceSystem", () => {
 
   it("inactive buildings are not counted in power balance", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const [asteroid] = world.asteroids.values();
-    if (!asteroid) throw new Error("expected asteroid");
+    const asteroid = findAsteroidWithCpu(world);
+    if (!asteroid) throw new Error("expected asteroid with CPU");
 
     const plantId = buildingId("inactive-plant");
     world.buildings.set(plantId, {
@@ -213,8 +224,8 @@ describe("resourceSystem", () => {
 
   it("computePowerBalance ignores under-construction buildings", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const [asteroid] = world.asteroids.values();
-    if (!asteroid) throw new Error("expected asteroid");
+    const asteroid = findAsteroidWithCpu(world);
+    if (!asteroid) throw new Error("expected asteroid with CPU");
 
     const plantId = buildingId("wip-plant");
     world.buildings.set(plantId, {
@@ -331,8 +342,8 @@ describe("resourceSystem — life support & happiness", () => {
 describe("commandProcessor — launchShip", () => {
   it("launchShip creates a ship at an asteroid with a ship yard", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
-    const [asteroid] = world.asteroids.values();
-    if (!asteroid) throw new Error("expected asteroid");
+    const asteroid = [...world.asteroids.values()].find((a) => a.ownerId !== null);
+    if (!asteroid) throw new Error("expected owned asteroid");
 
     // Add a complete ship yard
     const yardId = buildingId("test-yard");
@@ -447,8 +458,13 @@ describe("traderSystem", () => {
 
   it("mining fills player oreInventory, not credits", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
     const [asteroid] = world.asteroids.values();
     if (!asteroid) throw new Error("expected asteroid");
+
+    // Ensure the asteroid is owned and has selenium to extract
+    asteroid.ownerId = human.id;
+    (asteroid.deposits as Record<string, number>).selenium = 5000;
 
     const mineId = buildingId("test-mine-inv");
     world.buildings.set(mineId, {
@@ -464,7 +480,6 @@ describe("traderSystem", () => {
     });
     asteroid.buildings.push(mineId);
 
-    const human = [...world.players.values()].find((p) => p.isHuman)!;
     const creditsBefore = human.credits;
     tickMining(world);
     expect(human.credits).toBe(creditsBefore); // credits unchanged
