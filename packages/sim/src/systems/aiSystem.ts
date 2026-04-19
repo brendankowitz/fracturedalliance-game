@@ -211,13 +211,13 @@ export function tickAI(world: World): void {
     const targetAsteroid = world.asteroids.get(closest.id);
     const targetOwnerId = targetAsteroid?.ownerId;
     if (targetOwnerId) {
-      const hasNap = world.treaties.some(
+      const hasPeaceTreaty = world.treaties.some(
         (t) =>
-          t.kind === "nonAggression" &&
+          (t.kind === "nonAggression" || t.kind === "peace" || t.kind === "openBorders") &&
           t.parties.includes(owner.id) &&
           t.parties.includes(targetOwnerId),
       );
-      if (hasNap) continue;
+      if (hasPeaceTreaty) continue;
     }
 
     // Grudge influences attack willingness — low-aggression AI needs accumulated grudge

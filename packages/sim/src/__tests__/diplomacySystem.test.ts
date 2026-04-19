@@ -385,6 +385,32 @@ describe("diplomacySystem — grudge memory", () => {
     expect(aiPlayer.eventLog[0]?.tick).toBe(2999);
   });
 
+  it("does not record grudge event when tick is not a multiple of 20", () => {
+    const world = makeMinimalWorld();
+    world.tick = 21; // not a multiple of 20
+    const humanId = playerId("player-human");
+    const aiId = playerId("player-ai");
+    const aiAsteroidId = asteroidId("asteroid-ai");
+
+    const id = shipId("ship-human-attacker-2");
+    world.ships.set(id, {
+      id,
+      defKind: "assaultCraft",
+      ownerId: humanId,
+      hullHp: 80,
+      shieldHp: 0,
+      position: { x: 0, y: 0 },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "attackAsteroid", target: aiAsteroidId },
+      cargo: {},
+    });
+
+    tickDiplomacy(world);
+
+    const aiPlayer = world.players.get(aiId)!;
+    expect(aiPlayer.eventLog.some((e) => e.kind === "human_attacked_asteroid")).toBe(false);
+  });
+
   it("records grudge event when human ship attacks AI asteroid (on multiples of 20)", () => {
     const world = makeMinimalWorld();
     world.tick = 20;

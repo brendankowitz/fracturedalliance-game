@@ -44,7 +44,7 @@ export function applyCommand(world: World, command: Command): void {
       if (asteroid.ownerId) {
         const player = world.players.get(asteroid.ownerId);
         if (player) {
-          // Flat 50% refund regardless of progress — intentional game design
+          // Flat 50% refund regardless of construction progress
           player.credits += def.costCredits * 0.5;
         }
       }
@@ -117,12 +117,13 @@ export function applyCommand(world: World, command: Command): void {
       );
       if (alreadyExists) return;
 
-      const TREATY_DURATIONS: Partial<Record<TreatyKind, number>> = {
+      const TREATY_DURATIONS: Record<TreatyKind, number | null> = {
         nonAggression: 6000,
         peace: 1200,
         noCovert: 4000,
         trade: 4000,
         openBorders: 4000,
+        defensivePact: null,
         jointWar: 3000,
       };
 
@@ -133,7 +134,7 @@ export function applyCommand(world: World, command: Command): void {
         parties: [human.id, command.targetPlayerId],
         kind: command.treatyKind,
         signedTick: world.tick,
-        ...(duration !== undefined ? { expiresTick: world.tick + duration } : {}),
+        ...(duration !== null ? { expiresTick: world.tick + duration } : {}),
       };
       world.treaties.push(treaty);
 
