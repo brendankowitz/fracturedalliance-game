@@ -25,6 +25,7 @@ describe("gameStore", () => {
       diplomacy: [],
       gameEndState: null,
       blueprintsOwned: [],
+      agents: [],
     };
     useGameStore.getState().setSnapshot(mockSnap);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);

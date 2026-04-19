@@ -8,6 +8,7 @@ interface UiState {
   saveLoadPanelOpen: boolean;
   diplomacyPanelOpen: boolean;
   blueprintShopOpen: boolean;
+  espionagePanelOpen: boolean;
   paused: boolean;
   notificationFeedOpen: boolean;
   selectAsteroid: (id: AsteroidId | null) => void;
@@ -16,6 +17,7 @@ interface UiState {
   toggleSaveLoadPanel: () => void;
   toggleDiplomacyPanel: () => void;
   toggleBlueprintShop: () => void;
+  toggleEspionagePanel: () => void;
   setPaused: (v: boolean) => void;
   toggleNotificationFeed: () => void;
 }
@@ -27,6 +29,7 @@ export const useUiStore = create<UiState>((set) => ({
   saveLoadPanelOpen: false,
   diplomacyPanelOpen: false,
   blueprintShopOpen: false,
+  espionagePanelOpen: false,
   paused: false,
   notificationFeedOpen: false,
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
@@ -35,6 +38,7 @@ export const useUiStore = create<UiState>((set) => ({
   toggleSaveLoadPanel: () => set((s) => ({ saveLoadPanelOpen: !s.saveLoadPanelOpen })),
   toggleDiplomacyPanel: () => set((s) => ({ diplomacyPanelOpen: !s.diplomacyPanelOpen })),
   toggleBlueprintShop: () => set((s) => ({ blueprintShopOpen: !s.blueprintShopOpen })),
+  toggleEspionagePanel: () => set((s) => ({ espionagePanelOpen: !s.espionagePanelOpen })),
   setPaused: (v) => set({ paused: v }),
   toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
 }));

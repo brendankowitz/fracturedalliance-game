@@ -5,6 +5,7 @@ import { AsteroidInspector } from "./AsteroidInspector.tsx";
 import { BlueprintShop } from "./BlueprintShop.tsx";
 import { BuildingPanel } from "./BuildingPanel.tsx";
 import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
+import { EspionagePanel } from "./EspionagePanel.tsx";
 import { GameOverScreen } from "./GameOverScreen.tsx";
 import { NotificationFeed } from "./NotificationFeed.tsx";
 import { OrePanel } from "./OrePanel.tsx";
@@ -26,8 +27,10 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const toggleDiplomacy = useUiStore((s) => s.toggleDiplomacyPanel);
   const toggleAlerts = useUiStore((s) => s.toggleNotificationFeed);
   const toggleBlueprintShop = useUiStore((s) => s.toggleBlueprintShop);
+  const toggleEspionage = useUiStore((s) => s.toggleEspionagePanel);
   const alertsOpen = useUiStore((s) => s.notificationFeedOpen);
   const blueprintShopOpen = useUiStore((s) => s.blueprintShopOpen);
+  const espionageOpen = useUiStore((s) => s.espionagePanelOpen);
 
   if (!snapshot) {
     return (
@@ -65,6 +68,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         federationStanding={snapshot.federationStanding}
         tick={snapshot.tick}
       />
+      <button
+        type="button"
+        onClick={toggleEspionage}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 458,
+          zIndex: 11,
+          background: "#0a1830",
+          border: `1px solid ${espionageOpen ? "#c8d8ff" : "#224"}`,
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          padding: "4px 10px",
+          cursor: "pointer",
+        }}
+      >
+        ☰ Espionage
+      </button>
       <button
         type="button"
         onClick={toggleBlueprintShop}
@@ -143,6 +164,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
       <DiplomacyPanel snapshot={snapshot} onCommand={onCommand} />
       <BlueprintShop onCommand={onCommand} />
+      <EspionagePanel onCommand={onCommand} />
       <NotificationFeed />
       <AsteroidInspector />
       <TutorialTooltip />

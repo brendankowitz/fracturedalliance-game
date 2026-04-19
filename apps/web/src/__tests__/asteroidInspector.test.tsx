@@ -27,6 +27,7 @@ function makeSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
     diplomacy: [],
     gameEndState: null,
     blueprintsOwned: [],
+    agents: [],
     ...overrides,
   };
 }
