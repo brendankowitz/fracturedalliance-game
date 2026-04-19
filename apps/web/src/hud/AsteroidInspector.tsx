@@ -1,5 +1,4 @@
 import { findBuildingDef, getOreDef, getRaceDef } from "@fa/content";
-import type { AsteroidId } from "@fa/domain";
 import { asteroidId as mkAsteroidId } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
@@ -189,7 +188,7 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
               <button
                 type="button"
                 onClick={() =>
-                  onCommand({ kind: "cancelAsteroidEngine", asteroidId: asteroid.id as AsteroidId })
+                  onCommand({ kind: "cancelAsteroidEngine", asteroidId: asteroid.id })
                 }
                 style={{
                   background: "#1a1830",
@@ -212,8 +211,8 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
           )}
           {engines.chargeTick === null && engines.etaTick === null && (
             <EngineTargetSelector
-              asteroidId={asteroid.id as AsteroidId}
-              otherAsteroids={otherAsteroids.map((a) => ({ id: a.id as AsteroidId, name: a.name }))}
+              asteroidId={asteroid.id}
+              otherAsteroids={otherAsteroids.map((a) => ({ id: a.id, name: a.name }))}
               onCommand={onCommand}
             />
           )}
@@ -236,8 +235,8 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
 }
 
 interface EngineTargetSelectorProps {
-  asteroidId: AsteroidId;
-  otherAsteroids: Array<{ id: AsteroidId; name: string }>;
+  asteroidId: string;
+  otherAsteroids: Array<{ id: string; name: string }>;
   onCommand: (cmd: Command) => void;
 }
 

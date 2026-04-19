@@ -234,6 +234,7 @@ export function applyCommand(world: World, command: Command): void {
     case "cancelAsteroidEngine": {
       const asteroid = world.asteroids.get(command.asteroidId);
       if (!asteroid) return;
+      if (asteroid.engines.etaTick !== null) return;
       const human = [...world.players.values()].find((p) => p.isHuman);
       if (!human || asteroid.ownerId !== human.id) return;
 

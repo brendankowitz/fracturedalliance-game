@@ -1,5 +1,4 @@
-import { findBuildingDef } from "@fa/content";
-import type { AsteroidId, World } from "@fa/domain";
+import type { AsteroidId, ShipId, World } from "@fa/domain";
 
 export function tickAsteroidEngines(world: World): void {
   for (const asteroid of world.asteroids.values()) {
@@ -7,7 +6,6 @@ export function tickAsteroidEngines(world: World): void {
 
     const { engines } = asteroid;
 
-    // Charge phase: charge time reached, not yet in transit
     if (engines.chargeTick !== null && engines.etaTick === null && world.tick === engines.chargeTick) {
       const destId = engines.destinationId;
       if (!destId) continue;
@@ -29,7 +27,6 @@ export function tickAsteroidEngines(world: World): void {
       continue;
     }
 
-    // Arrival phase
     if (engines.etaTick !== null && world.tick >= engines.etaTick) {
       const destId = engines.destinationId;
       if (!destId) {
@@ -63,15 +60,12 @@ export function tickAsteroidEngines(world: World): void {
         });
       }
 
-      // Move the asteroid
-      (asteroid as { sector: { x: number; y: number } }).sector = { x: landX, y: landY };
+      asteroid.sector = { x: landX, y: landY };
 
-      // Clear engine state
       engines.destinationId = null;
       engines.chargeTick = null;
       engines.etaTick = null;
 
-      // Resolve collisions at the landing sector
       resolveCollisions(world, asteroid.id, landX, landY);
     }
   }
@@ -86,7 +80,6 @@ function resolveCollisions(world: World, movedId: AsteroidId, landX: number, lan
   if (!moved) return;
 
   for (const other of colliders) {
-    // Destroy all buildings on both
     for (const bid of moved.buildings) {
       world.buildings.delete(bid);
     }
@@ -99,23 +92,20 @@ function resolveCollisions(world: World, movedId: AsteroidId, landX: number, lan
     other.buildings = [];
     other.buildQueue = [];
 
-    // Remove all ships in orbit on both
     for (const sid of moved.inOrbit) {
       world.ships.delete(sid);
     }
-    (moved as { inOrbit: readonly import("@fa/domain").ShipId[] }).inOrbit = [];
+    (moved as { inOrbit: ShipId[] }).inOrbit = [];
 
     for (const sid of other.inOrbit) {
       world.ships.delete(sid);
     }
-    (other as { inOrbit: readonly import("@fa/domain").ShipId[] }).inOrbit = [];
+    (other as { inOrbit: ShipId[] }).inOrbit = [];
 
-    // Determine survivor: more engines count wins; tie goes to moved asteroid
     const movedWins = moved.engines.count >= other.engines.count;
     const loser = movedWins ? other : moved;
     const survivor = movedWins ? moved : other;
 
-    // Handle ownership transfer via event
     const loserOwnerId = loser.ownerId;
     if (loserOwnerId) {
       const loserOwner = world.players.get(loserOwnerId);
@@ -136,8 +126,7 @@ function resolveCollisions(world: World, movedId: AsteroidId, landX: number, lan
       }
     }
 
-    // Park the loser off-map
     loser.name = `${loser.name} (destroyed)`;
-    (loser as { sector: { x: number; y: number } }).sector = { x: -9999, y: -9999 };
+    loser.sector = { x: -9999, y: -9999 };
   }
 }
