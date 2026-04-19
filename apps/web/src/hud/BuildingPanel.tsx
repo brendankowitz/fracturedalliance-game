@@ -1,4 +1,5 @@
 import { getAllBuildingDefs } from "@fa/content";
+import type { Command } from "@fa/sim";
 import { useUiStore } from "../store/uiStore.ts";
 
 const PHASE_1_BUILDINGS = [
@@ -20,9 +21,11 @@ const PHASE_1_BUILDINGS = [
   "repairFacility",
 ];
 
-const BLUEPRINT_GATED = new Set(["mineMk2", "deepBoreMine"]);
+interface BuildingPanelProps {
+  onCommand: (cmd: Command) => void;
+}
 
-export function BuildingPanel() {
+export function BuildingPanel({ onCommand }: BuildingPanelProps) {
   const buildingPanelOpen = useUiStore((s) => s.buildingPanelOpen);
   const selectedAsteroidId = useUiStore((s) => s.selectedAsteroidId);
   const selectedCell = useUiStore((s) => s.selectedCell);
@@ -52,7 +55,7 @@ export function BuildingPanel() {
     >
       <strong style={{ color: "#ffffff" }}>Place Building</strong>
       {defs.map((def) => {
-        const locked = BLUEPRINT_GATED.has(def.kind);
+        const locked = def.blueprintRequired !== undefined;
         return (
           <button
             key={def.kind}
@@ -68,8 +71,13 @@ export function BuildingPanel() {
               opacity: locked ? 0.5 : 1,
             }}
             onClick={() => {
-              if (locked) return;
-              console.log("place", def.kind, "at", selectedCell);
+              if (locked || !selectedAsteroidId || !selectedCell) return;
+              onCommand({
+                kind: "placeBuilding",
+                asteroidId: selectedAsteroidId,
+                buildingKind: def.kind,
+                cell: selectedCell,
+              });
             }}
           >
             {locked ? "🔒 " : ""}

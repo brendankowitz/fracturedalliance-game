@@ -1,6 +1,9 @@
 import { getBuildingDef } from "@fa/content";
 import type { AsteroidId, World } from "@fa/domain";
 
+// Each population capacity unit demands this many life-support units per tick
+const LIFE_SUPPORT_DEMAND_RATIO = 0.5;
+
 export function computePowerBalance(world: World, asteroidId: AsteroidId): number {
   const asteroid = world.asteroids.get(asteroidId);
   if (!asteroid) return 0;
@@ -47,9 +50,9 @@ export function tickResources(world: World): void {
       if (def.repairRate) repairRate += def.repairRate;
     }
 
-    // Life-support satisfaction
     if (popCap > 0) {
-      const demand = popCap * 0.5;
+      // Life-support satisfaction
+      const demand = popCap * LIFE_SUPPORT_DEMAND_RATIO;
       if (foodProd < demand) happinessDelta -= 0.05;
       if (waterProd < demand) happinessDelta -= 0.05;
       if (airProd < demand) happinessDelta -= 0.05;
@@ -57,10 +60,10 @@ export function tickResources(world: World): void {
       if (foodProd >= demand && waterProd >= demand && airProd >= demand) {
         happinessDelta += 0.01;
       }
-    }
 
-    // Radiation degrades happiness
-    happinessDelta -= asteroid.radiation * 0.001;
+      // Radiation degrades happiness (skip on uninhabited asteroids to avoid pre-drift)
+      happinessDelta -= asteroid.radiation * 0.001;
+    }
 
     // Apply happiness delta, clamp [0, 100]
     asteroid.happiness = Math.max(0, Math.min(100, asteroid.happiness + happinessDelta));
@@ -70,7 +73,7 @@ export function tickResources(world: World): void {
       asteroid.radiation = Math.max(0, asteroid.radiation - radiationReduction);
     }
 
-    // Repair damaged buildings
+    // Repair is distributed evenly across all damaged buildings per tick (not a shared budget)
     if (repairRate > 0) {
       for (const buildingId of asteroid.buildings) {
         const building = world.buildings.get(buildingId);

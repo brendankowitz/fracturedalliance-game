@@ -1,3 +1,4 @@
+import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildingPanel } from "./BuildingPanel.tsx";
@@ -7,9 +8,10 @@ import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
 interface HUDProps {
   onSave: (slot: number, label: string) => Promise<void>;
   onLoad: (slot: number) => void;
+  onCommand: (cmd: Command) => void;
 }
 
-export function HUD({ onSave, onLoad }: HUDProps) {
+export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const snapshot = useGameStore((s) => s.snapshot);
   const toggleSaveLoad = useUiStore((s) => s.toggleSaveLoadPanel);
 
@@ -56,7 +58,7 @@ export function HUD({ onSave, onLoad }: HUDProps) {
       >
         ☰ Save/Load
       </button>
-      <BuildingPanel />
+      <BuildingPanel onCommand={onCommand} />
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
     </>
   );
