@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck — domain
+        run: pnpm --filter @fa/domain typecheck
+
+      - name: Typecheck — sim
+        run: pnpm --filter @fa/sim typecheck
+
+      - name: Typecheck — content
+        run: pnpm --filter @fa/content typecheck
+
+      - name: Typecheck — persistence
+        run: pnpm --filter @fa/persistence typecheck
+
+      - name: Typecheck — shared-ui
+        run: pnpm --filter @fa/shared-ui typecheck
+
+      - name: Typecheck — web
+        run: pnpm --filter @fa/web typecheck
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Test — domain
+        run: pnpm --filter @fa/domain test
+
+      - name: Test — sim
+        run: pnpm --filter @fa/sim test
+
+      - name: Test — content
+        run: pnpm --filter @fa/content test
+
+      - name: Test — persistence
+        run: pnpm --filter @fa/persistence test
+
+      - name: Test — shared-ui
+        run: pnpm --filter @fa/shared-ui test
+
+      - name: Test — web
+        run: pnpm --filter @fa/web test
