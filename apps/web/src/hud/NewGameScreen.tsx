@@ -63,7 +63,6 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
             padding: "6px 12px",
             textAlign: "center",
             width: 160,
-            outline: "none",
           }}
         />
       </div>

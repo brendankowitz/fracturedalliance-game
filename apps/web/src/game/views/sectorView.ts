@@ -192,7 +192,7 @@ export class SectorView {
       const sx = ship.position.x * SECTOR_SCALE;
       const sy = ship.position.y * SECTOR_SCALE;
       const isHuman = ship.ownerId === snapshot.humanPlayerId;
-      const colour = isHuman ? 0x66ccff : 0xff8866;
+      const colour = isHuman ? PALETTES[this._palette].human : PALETTES[this._palette].ai;
       const r = 3;
 
       gfx.clear();
