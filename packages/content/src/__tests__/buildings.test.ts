@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { getAllBuildingDefs, getBuildingDef } from "../buildings.ts";
 
 describe("building definitions", () => {
-  it("loads exactly 8 Phase-0 buildings", () => {
+  it("loads all buildings including Phase 1 catalogue", () => {
     const defs = getAllBuildingDefs();
-    expect(defs.length).toBe(8);
+    expect(defs.length).toBeGreaterThanOrEqual(18);
   });
 
   it("getBuildingDef returns the correct definition for mineMk1", () => {
