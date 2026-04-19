@@ -7,6 +7,7 @@ import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
 import { TransporterPanel } from "./TransporterPanel.tsx";
+import { TutorialTooltip } from "./TutorialTooltip.tsx";
 
 interface HUDProps {
   onSave: (slot: number, label: string) => Promise<void>;
@@ -85,6 +86,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <TransporterPanel snapshot={snapshot} onCommand={onCommand} />
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
       <DiplomacyPanel snapshot={snapshot} onCommand={onCommand} />
+      <TutorialTooltip />
     </>
   );
 }
