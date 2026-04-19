@@ -25,6 +25,13 @@ export interface ShipSnapshot {
   orderKind: string;
 }
 
+export interface CombatFlash {
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+}
+
 export interface HudSnapshot {
   tick: number;
   credits: number;
@@ -37,6 +44,7 @@ export interface HudSnapshot {
   ships: ShipSnapshot[];
   events: Array<{ kind: string; priority: EventPriority }>;
   marketPrices: Record<string, number>;
+  combatFlashes: CombatFlash[];
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
@@ -93,5 +101,21 @@ export function takeSnapshot(world: World): HudSnapshot {
     })),
     events: world.eventQueue.map((e) => ({ kind: e.kind, priority: e.priority })),
     marketPrices: Object.fromEntries(Object.entries(world.marketPrices)),
+    combatFlashes: [...world.ships.values()].flatMap((ship) => {
+      if (ship.order.kind !== "attackAsteroid") return [];
+      const target = world.asteroids.get(ship.order.target);
+      if (!target) return [];
+      const dx = target.sector.x - ship.position.x;
+      const dy = target.sector.y - ship.position.y;
+      if (Math.sqrt(dx * dx + dy * dy) > 0.5) return [];
+      return [
+        {
+          fromX: ship.position.x,
+          fromY: ship.position.y,
+          toX: target.sector.x,
+          toY: target.sector.y,
+        },
+      ];
+    }),
   };
 }

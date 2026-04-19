@@ -90,6 +90,8 @@ function utilityBuildDefense(
   return personality.aggression * 0.5;
 }
 
+const MAX_AI_ASSAULT_CRAFT = 2;
+
 export function tickAI(world: World): void {
   const start = performance.now();
 
@@ -149,5 +151,57 @@ export function tickAI(world: World): void {
       });
       if (performance.now() - start > AI_BUDGET_MS) break;
     }
+  }
+
+  // AI launches assault craft if it can and needs to
+  for (const player of world.players.values()) {
+    if (player.isHuman || !player.alive) continue;
+    if (performance.now() - start > AI_BUDGET_MS) break;
+
+    const aiCraft = [...world.ships.values()].filter(
+      (s) => s.ownerId === player.id && s.defKind === "assaultCraft",
+    );
+    if (aiCraft.length >= MAX_AI_ASSAULT_CRAFT) continue;
+
+    const launchAsteroid = [...world.asteroids.values()].find(
+      (a) =>
+        a.ownerId === player.id &&
+        a.buildings.some((bid) => {
+          const b = world.buildings.get(bid);
+          return b?.defKind === "shipYard" && b.constructionProgress >= 1;
+        }),
+    );
+    if (!launchAsteroid) continue;
+
+    applyCommand(world, { kind: "launchShip", asteroidId: launchAsteroid.id, shipKind: "assaultCraft" });
+    if (performance.now() - start > AI_BUDGET_MS) break;
+  }
+
+  // Order idle AI assault craft to attack the nearest human asteroid
+  for (const ship of world.ships.values()) {
+    const owner = world.players.get(ship.ownerId);
+    if (!owner || owner.isHuman || !owner.alive) continue;
+    if (ship.defKind !== "assaultCraft") continue;
+    if (ship.order.kind !== "idle") continue;
+    if (performance.now() - start > AI_BUDGET_MS) break;
+
+    let closest: { id: import("@fa/domain").AsteroidId; dist: number } | undefined;
+    for (const asteroid of world.asteroids.values()) {
+      if (!asteroid.ownerId) continue;
+      const targetOwner = world.players.get(asteroid.ownerId);
+      if (!targetOwner?.isHuman) continue;
+      const dx = asteroid.sector.x - ship.position.x;
+      const dy = asteroid.sector.y - ship.position.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (!closest || d < closest.dist) closest = { id: asteroid.id, dist: d };
+    }
+    if (!closest) continue;
+
+    applyCommand(world, {
+      kind: "orderShip",
+      shipId: ship.id,
+      order: { kind: "attackAsteroid", target: closest.id },
+    });
+    if (performance.now() - start > AI_BUDGET_MS) break;
   }
 }

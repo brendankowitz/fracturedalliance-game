@@ -32,6 +32,7 @@ export class SectorView {
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
   private readonly _asteroidGraphics: Map<AsteroidId, { gfx: Graphics; label: Text }> = new Map();
   private readonly _shipGraphics: Map<ShipId, Graphics> = new Map();
+  private _laserGfx: Graphics;
 
   constructor(app: Application, onSelectAsteroid: (id: AsteroidId) => void) {
     this._onSelectAsteroid = onSelectAsteroid;
@@ -39,6 +40,9 @@ export class SectorView {
     this.container = new Container();
     this._worldLayer = new Container();
     this.container.addChild(this._worldLayer);
+
+    this._laserGfx = new Graphics();
+    this._worldLayer.addChild(this._laserGfx);
 
     // Centre the view initially
     this._offsetX = app.screen.width / 2;
@@ -199,6 +203,16 @@ export class SectorView {
       this._shipGraphics.get(id)!.destroy();
       this._shipGraphics.delete(id);
     }
+
+    // Redraw combat laser lines
+    this._laserGfx.clear();
+    for (const flash of snapshot.combatFlashes) {
+      const fx = flash.fromX * SECTOR_SCALE;
+      const fy = flash.fromY * SECTOR_SCALE;
+      const tx = flash.toX * SECTOR_SCALE;
+      const ty = flash.toY * SECTOR_SCALE;
+      this._laserGfx.moveTo(fx, fy).lineTo(tx, ty).stroke({ color: 0xff8800, alpha: 0.8, width: 1 });
+    }
   }
 
   destroy(): void {
@@ -211,6 +225,7 @@ export class SectorView {
       gfx.destroy();
     }
     this._shipGraphics.clear();
+    this._laserGfx.destroy();
     this.container.destroy({ children: true });
   }
 }

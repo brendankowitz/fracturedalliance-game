@@ -41,12 +41,15 @@ export function tickShips(world: World): void {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist <= ARRIVAL_RADIUS) {
-      // Arrived — snap to target and go idle
+      // Arrived — snap to target
       ship.position.x = targetPos.x;
       ship.position.y = targetPos.y;
       ship.velocity.x = 0;
       ship.velocity.y = 0;
-      ship.order = { kind: "idle" };
+      // Only go idle if not an attack order — attackers stay in place for combat
+      if (ship.order.kind !== "attackAsteroid") {
+        ship.order = { kind: "idle" };
+      }
       continue;
     }
 

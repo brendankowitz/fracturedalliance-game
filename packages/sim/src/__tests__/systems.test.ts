@@ -2,6 +2,7 @@ import { type AsteroidId, buildingId, shipId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { applyCommand } from "../commandProcessor.ts";
 import { tickAI } from "../systems/aiSystem.ts";
+import { tickCombat } from "../systems/combatSystem.ts";
 import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
 import { computePowerBalance, tickResources } from "../systems/resourceSystem.ts";
@@ -488,6 +489,106 @@ describe("traderSystem", () => {
 
     expect(human.oreInventory.selenium ?? 0).toBe(0);
     expect(human.credits).toBeGreaterThan(creditsBefore);
+  });
+});
+
+describe("combatSystem", () => {
+  function makeShip(
+    id: string,
+    kind: "scout" | "assaultCraft",
+    ownerId: import("@fa/domain").PlayerId,
+    position: { x: number; y: number },
+    order: import("@fa/domain").ShipOrder,
+  ) {
+    return {
+      id: shipId(id),
+      defKind: kind,
+      ownerId,
+      hullHp: kind === "assaultCraft" ? 80 : 20,
+      shieldHp: 0,
+      position: { ...position },
+      velocity: { x: 0, y: 0 },
+      order,
+      cargo: {},
+    };
+  }
+
+  it("attacking ship damages asteroid stability when no defenders present", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const humanAsteroid = [...world.asteroids.values()].find(
+      (a) => a.ownerId !== null && world.players.get(a.ownerId!)?.isHuman,
+    );
+    if (!humanAsteroid) throw new Error("human asteroid not found");
+
+    const kryll = [...world.players.values()].find((p) => p.raceId === "kryllCollective")!;
+    const attacker = makeShip(
+      "attacker-1",
+      "assaultCraft",
+      kryll.id,
+      { x: humanAsteroid.sector.x, y: humanAsteroid.sector.y },
+      { kind: "attackAsteroid", target: humanAsteroid.id },
+    );
+    world.ships.set(attacker.id, attacker);
+
+    const stabilityBefore = humanAsteroid.stability;
+    tickCombat(world);
+    expect(humanAsteroid.stability).toBeLessThan(stabilityBefore);
+  });
+
+  it("colony.under_attack event fires when asteroid is attacked", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const humanAsteroid = [...world.asteroids.values()].find(
+      (a) => a.ownerId !== null && world.players.get(a.ownerId!)?.isHuman,
+    );
+    if (!humanAsteroid) throw new Error("human asteroid not found");
+
+    const kryll = [...world.players.values()].find((p) => p.raceId === "kryllCollective")!;
+    const attacker = makeShip(
+      "attacker-2",
+      "assaultCraft",
+      kryll.id,
+      { x: humanAsteroid.sector.x, y: humanAsteroid.sector.y },
+      { kind: "attackAsteroid", target: humanAsteroid.id },
+    );
+    world.ships.set(attacker.id, attacker);
+
+    world.eventQueue = [];
+    tickCombat(world);
+    const event = world.eventQueue.find((e) => e.kind === "colony.under_attack");
+    expect(event).toBeDefined();
+  });
+
+  it("destroyed ships are removed from the world", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const humanAsteroid = [...world.asteroids.values()].find(
+      (a) => a.ownerId !== null && world.players.get(a.ownerId!)?.isHuman,
+    );
+    if (!humanAsteroid) throw new Error("human asteroid not found");
+
+    const kryll = [...world.players.values()].find((p) => p.raceId === "kryllCollective")!;
+    const dyingShip = makeShip(
+      "dying-1",
+      "assaultCraft",
+      kryll.id,
+      { x: humanAsteroid.sector.x, y: humanAsteroid.sector.y },
+      { kind: "attackAsteroid", target: humanAsteroid.id },
+    );
+    dyingShip.hullHp = 1;
+    world.ships.set(dyingShip.id, dyingShip);
+
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    const defender = makeShip(
+      "defender-1",
+      "assaultCraft",
+      human.id,
+      { x: humanAsteroid.sector.x, y: humanAsteroid.sector.y },
+      { kind: "defend", target: humanAsteroid.id },
+    );
+    world.ships.set(defender.id, defender);
+
+    tickCombat(world);
+    // The dying ship (1 HP) should be destroyed by the defender's counter-attack
+    expect(world.ships.has(dyingShip.id)).toBe(false);
   });
 });
 
