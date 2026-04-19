@@ -1,6 +1,7 @@
 import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { AsteroidInspector } from "./AsteroidInspector.tsx";
 import { BuildingPanel } from "./BuildingPanel.tsx";
 import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
 import { GameOverScreen } from "./GameOverScreen.tsx";
@@ -121,6 +122,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
       <DiplomacyPanel snapshot={snapshot} onCommand={onCommand} />
       <NotificationFeed />
+      <AsteroidInspector />
       <TutorialTooltip />
     </>
   );
