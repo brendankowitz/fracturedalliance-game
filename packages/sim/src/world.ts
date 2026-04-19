@@ -88,8 +88,10 @@ export function createWorld(config: WorldConfig): World {
     suspicion: 0,
   };
 
-  // Advance PRNG once so future procedural generation is seeded consistently.
-  prng.next();
+  // TODO(phase-1): Replace this advance with procedural belt generation calls.
+  // Remove this line and use PRNG results directly — do not add new calls after
+  // this one, as that would shift the sequence for existing saves.
+  void prng.next();
 
   return {
     tick: 0,

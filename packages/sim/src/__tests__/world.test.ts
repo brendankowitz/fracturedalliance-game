@@ -46,4 +46,18 @@ describe("createWorld", () => {
     const starterAsteroid = [...world.asteroids.values()].find((a) => a.ownerId === player?.id);
     expect(starterAsteroid?.deposits.selenium).toBeGreaterThan(0);
   });
+
+  it("human player has isHuman set to true", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const player = [...world.players.values()].find((p) => p.isHuman);
+    expect(player).toBeDefined();
+    expect(player?.isHuman).toBe(true);
+  });
+
+  it("starter CPU building is fully constructed and active", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const cpu = [...world.buildings.values()].find((b) => b.defKind === "cpu");
+    expect(cpu?.constructionProgress).toBe(1);
+    expect(cpu?.active).toBe(true);
+  });
 });
