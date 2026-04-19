@@ -15,6 +15,8 @@ export class SimApi {
     this.world = createWorld(config);
   }
 
+  // Phase 0: always advances one fixed step. The worker bridge calls this at TICK_MS
+  // cadence; accumulation will be added in Phase 1 when the RAF loop is wired up.
   tick(_deltaMs: number): void {
     for (const cmd of this.pendingCommands) applyCommand(this.world, cmd);
     this.pendingCommands = [];

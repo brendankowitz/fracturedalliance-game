@@ -1,4 +1,4 @@
-import type { AsteroidId, World } from "@fa/domain";
+import type { AsteroidId, EventPriority, World } from "@fa/domain";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 
 export interface AsteroidSnapshot {
@@ -7,7 +7,7 @@ export interface AsteroidSnapshot {
   ownerId: string | null;
   sector: { x: number; y: number };
   sizeClass: string;
-  deposits: Record<string, number>;
+  deposits: Partial<Record<string, number>>;
   radiation: number;
   stability: number;
   happiness: number;
@@ -21,11 +21,12 @@ export interface HudSnapshot {
   credits: number;
   federationStanding: number;
   asteroids: AsteroidSnapshot[];
-  events: Array<{ kind: string; priority: string }>;
+  events: Array<{ kind: string; priority: EventPriority }>;
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
   const human = [...world.players.values()].find((p) => p.isHuman);
+  if (!human) throw new Error("takeSnapshot: world has no human player");
 
   const asteroids: AsteroidSnapshot[] = [...world.asteroids.values()].map((a) => ({
     id: a.id,
@@ -33,14 +34,16 @@ export function takeSnapshot(world: World): HudSnapshot {
     ownerId: a.ownerId,
     sector: { x: a.sector.x, y: a.sector.y },
     sizeClass: a.sizeClass,
-    deposits: Object.fromEntries(Object.entries(a.deposits).filter(([, v]) => v != null)) as Record<
-      string,
-      number
-    >,
+    deposits: Object.fromEntries(
+      Object.entries(a.deposits).filter((entry): entry is [string, number] => entry[1] != null),
+    ),
     radiation: a.radiation,
     stability: a.stability,
     happiness: a.happiness,
-    buildingKinds: a.buildings.map((bid) => world.buildings.get(bid)?.defKind ?? ""),
+    buildingKinds: a.buildings.flatMap((bid) => {
+      const b = world.buildings.get(bid);
+      return b ? [b.defKind] : [];
+    }),
     buildQueue: a.buildQueue.map((q) => ({
       buildingKind: q.buildingKind,
       progressTicks: q.progressTicks,
@@ -51,8 +54,8 @@ export function takeSnapshot(world: World): HudSnapshot {
 
   return {
     tick: world.tick,
-    credits: human?.credits ?? 0,
-    federationStanding: human?.federationStanding ?? 0,
+    credits: human.credits,
+    federationStanding: human.federationStanding,
     asteroids,
     events: world.eventQueue.map((e) => ({ kind: e.kind, priority: e.priority })),
   };
