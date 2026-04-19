@@ -10,6 +10,7 @@ import type {
   Building,
   BuildingId,
   BuildQueueItem,
+  DifficultyLevel,
   GameEndState,
   OreRecord,
   Player,
@@ -33,6 +34,7 @@ export function serializeWorld(world: World): Record<string, unknown> {
   return {
     tick: world.tick,
     seed: world.seed,
+    difficulty: world.difficulty,
     schemaVersion: world.schemaVersion,
     nextBuildingSeq: world.nextBuildingSeq,
     nextShipSeq: world.nextShipSeq,
@@ -206,6 +208,7 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
   return {
     tick: snapshot["tick"] as number,
     seed,
+    difficulty: (snapshot["difficulty"] as DifficultyLevel | undefined) ?? "normal",
     prng,
     schemaVersion: snapshot["schemaVersion"] as number,
     nextBuildingSeq: snapshot["nextBuildingSeq"] as number,

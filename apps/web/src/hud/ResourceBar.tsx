@@ -1,11 +1,20 @@
+import type { DifficultyLevel } from "@fa/sim";
+
 interface ResourceBarProps {
   credits: number;
   federationStanding: number;
   tick: number;
   seed: number;
+  difficulty: DifficultyLevel;
 }
 
-export function ResourceBar({ credits, federationStanding, tick, seed }: ResourceBarProps) {
+export function ResourceBar({
+  credits,
+  federationStanding,
+  tick,
+  seed,
+  difficulty,
+}: ResourceBarProps) {
   return (
     <div
       style={{
@@ -29,7 +38,9 @@ export function ResourceBar({ credits, federationStanding, tick, seed }: Resourc
       <span>
         Standing: <strong>{federationStanding}</strong>
       </span>
-      <span style={{ marginLeft: "auto", opacity: 0.6, fontSize: 12 }}>Seed: {seed}</span>
+      <span style={{ marginLeft: "auto", opacity: 0.6, fontSize: 12 }}>
+        {difficulty} · Seed: {seed}
+      </span>
       <span>Tick {tick}</span>
     </div>
   );

@@ -16,9 +16,12 @@ export interface Prng {
   restore(state: number): void;
 }
 
+export type DifficultyLevel = "easy" | "normal" | "hard" | "brutal" | "nightmare";
+
 export interface World {
   tick: number;
   readonly seed: number;
+  difficulty: DifficultyLevel;
   asteroids: Map<AsteroidId, Asteroid>;
   buildings: Map<BuildingId, Building>;
   ships: Map<ShipId, Ship>;

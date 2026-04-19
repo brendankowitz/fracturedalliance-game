@@ -10,6 +10,7 @@ import {
   type Prng,
   type SizeClass,
 } from "@fa/domain";
+import { DIFFICULTY_PRESETS, type DifficultyLevel } from "./difficulty.ts";
 import { makePrng } from "./prng.ts";
 
 export interface GeneratedBelt {
@@ -143,15 +144,16 @@ function generateAsteroids(prng: Prng): Asteroid[] {
   });
 }
 
-function generatePlayers(prng: Prng, humanRaceId: string): Player[] {
+function generatePlayers(prng: Prng, humanRaceId: string, difficulty: DifficultyLevel): Player[] {
   const allRaces = getAllRaceDefs();
+  const preset = DIFFICULTY_PRESETS[difficulty];
 
   const humanPlayer: Player = {
     id: HUMAN_PLAYER_ID,
     raceId: humanRaceId,
     isHuman: true,
     alive: true,
-    credits: 10_000,
+    credits: preset.humanStartCredits,
     federationStanding: 0,
     suspicion: 0,
     oreInventory: {},
@@ -166,7 +168,7 @@ function generatePlayers(prng: Prng, humanRaceId: string): Player[] {
     raceId: race.id,
     isHuman: false,
     alive: true,
-    credits: Math.round(8_000 + prng.next() * 4_000),
+    credits: Math.round((8_000 + prng.next() * 4_000) * preset.aiCreditMultiplier),
     federationStanding: 0,
     suspicion: 0,
     oreInventory: {},
@@ -197,10 +199,14 @@ function assignStartingAsteroids(
   }
 }
 
-export function generateBelt(seed: number, humanRaceId: string): GeneratedBelt {
+export function generateBelt(
+  seed: number,
+  humanRaceId = "helionCorp",
+  difficulty: DifficultyLevel = "normal",
+): GeneratedBelt {
   const prng = makePrng(seed);
   const asteroids = generateAsteroids(prng);
-  const players = generatePlayers(prng, humanRaceId);
+  const players = generatePlayers(prng, humanRaceId, difficulty);
   assignStartingAsteroids(asteroids, players, prng);
   return { asteroids, players, prng };
 }

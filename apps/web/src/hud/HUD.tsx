@@ -71,6 +71,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         federationStanding={snapshot.federationStanding}
         tick={snapshot.tick}
         seed={snapshot.seed}
+        difficulty={snapshot.difficulty}
       />
       <button
         type="button"

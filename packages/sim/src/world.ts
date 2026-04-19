@@ -11,10 +11,12 @@ import {
   type World,
 } from "@fa/domain";
 import { generateBelt } from "./beltGenerator.ts";
+import type { DifficultyLevel } from "./difficulty.ts";
 
 export interface WorldConfig {
   seed: number;
   humanPlayerRaceId: string;
+  difficulty?: DifficultyLevel;
 }
 
 const BASE_MARKET_PRICES: OreRecord<number> = {
@@ -45,9 +47,11 @@ function makeCpuBuilding(bid: BuildingId, aid: AsteroidId): Building {
 }
 
 export function createWorld(config: WorldConfig): World {
+  const difficulty: DifficultyLevel = config.difficulty ?? "normal";
   const { asteroids: beltAsteroids, players: beltPlayers, prng } = generateBelt(
     config.seed,
     config.humanPlayerRaceId,
+    difficulty,
   );
 
   const asteroids = new Map(beltAsteroids.map((a) => [a.id, a]));
@@ -83,6 +87,7 @@ export function createWorld(config: WorldConfig): World {
   return {
     tick: 0,
     seed: config.seed,
+    difficulty,
     asteroids,
     buildings,
     ships: new Map(),

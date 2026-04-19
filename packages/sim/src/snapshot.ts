@@ -1,6 +1,7 @@
 import type {
   AgentMissionKind,
   AsteroidId,
+  DifficultyLevel,
   EventPriority,
   GameEndState,
   PlayerId,
@@ -76,6 +77,7 @@ export interface DiplomacyEntry {
 export interface HudSnapshot {
   tick: number;
   seed: number;
+  difficulty: DifficultyLevel;
   credits: number;
   federationStanding: number;
   suspicion: number;
@@ -132,6 +134,7 @@ export function takeSnapshot(world: World): HudSnapshot {
   return {
     tick: world.tick,
     seed: world.seed,
+    difficulty: world.difficulty,
     credits: human.credits,
     federationStanding: human.federationStanding,
     suspicion: human.suspicion,

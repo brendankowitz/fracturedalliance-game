@@ -9,6 +9,7 @@ import type { WorldConfig } from "./world.ts";
 import { createWorld } from "./world.ts";
 
 export type { Command } from "./commands.ts";
+export { DIFFICULTY_PRESETS, type DifficultyLevel } from "./difficulty.ts";
 export { ARRIVAL_RADIUS } from "./systems/shipSystem.ts";
 export type { AgentSnapshot, AsteroidSnapshot, DiplomacyEntry, HudSnapshot };
 
@@ -50,7 +51,7 @@ export class SimApi {
       createdAtIso: new Date().toISOString(),
       playerName: "Commander",
       verdict,
-      difficulty: "manager",
+      difficulty: this.world.difficulty,
       rngSeed: this.world.seed,
       rngState: this.world.prng.state(),
       worldSnapshot,

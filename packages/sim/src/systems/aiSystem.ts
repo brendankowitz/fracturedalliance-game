@@ -1,6 +1,7 @@
 import { findBuildingDef, getBuildingDef, getRaceDef } from "@fa/content";
 import type { Asteroid, Player, RacePersonality, World } from "@fa/domain";
 import { applyCommand } from "../commandProcessor.ts";
+import { DIFFICULTY_PRESETS } from "../difficulty.ts";
 import { computeGrudgeScore } from "./diplomacySystem.ts";
 
 const AI_BUDGET_MS = 10;
@@ -95,6 +96,7 @@ const MAX_AI_ASSAULT_CRAFT = 2;
 
 export function tickAI(world: World): void {
   const start = performance.now();
+  const aggressionBonus = DIFFICULTY_PRESETS[world.difficulty].aiAggressionBonus;
 
   for (const player of world.players.values()) {
     if (player.isHuman || !player.alive) continue;
@@ -108,7 +110,9 @@ export function tickAI(world: World): void {
       if (performance.now() - start > AI_BUDGET_MS) break;
       if (asteroid.buildQueue.length > 0) continue;
 
-      const p = raceDef.personality;
+      const basePersonality = raceDef.personality;
+      const effectiveAggression = Math.min(1, basePersonality.aggression + aggressionBonus);
+      const p: RacePersonality = { ...basePersonality, aggression: effectiveAggression };
       const cell = pickFreeCell(asteroid, world);
       const hasSpace = cell !== null;
 
@@ -224,7 +228,11 @@ export function tickAI(world: World): void {
     const raceDef2 = getRaceDef(owner.raceId);
     if (raceDef2) {
       const grudge = computeGrudgeScore(owner);
-      const minGrudge = (1 - raceDef2.personality.aggression) * 50;
+      const effectiveAggression2 = Math.min(
+        1,
+        raceDef2.personality.aggression + aggressionBonus,
+      );
+      const minGrudge = (1 - effectiveAggression2) * 50;
       if (grudge < minGrudge) continue;
     }
 

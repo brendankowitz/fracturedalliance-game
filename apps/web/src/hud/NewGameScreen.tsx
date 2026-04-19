@@ -1,13 +1,17 @@
+import { DIFFICULTY_PRESETS, type DifficultyLevel } from "@fa/sim";
 import { useState } from "react";
 
+const DIFFICULTY_LEVELS: DifficultyLevel[] = ["easy", "normal", "hard", "brutal", "nightmare"];
+
 interface NewGameScreenProps {
-  onStart: (seed: number) => void;
+  onStart: (seed: number, difficulty: DifficultyLevel) => void;
 }
 
 export function NewGameScreen({ onStart }: NewGameScreenProps) {
   const initialSeed = Math.floor(Math.random() * 1_000_000);
   const [seed, setSeed] = useState<number>(initialSeed);
   const [inputValue, setInputValue] = useState<string>(String(initialSeed));
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>("normal");
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/\D/g, "");
@@ -21,7 +25,7 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
   // Keep display in sync with seed state when input is initialised
   function handleStart() {
     const parsed = parseInt(inputValue, 10);
-    onStart(Number.isNaN(parsed) ? seed : parsed);
+    onStart(Number.isNaN(parsed) ? seed : parsed, difficulty);
   }
 
   return (
@@ -63,6 +67,30 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
             outline: "none",
           }}
         />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, opacity: 0.7 }}>Difficulty</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          {DIFFICULTY_LEVELS.map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => setDifficulty(level)}
+              style={{
+                background: difficulty === level ? "#1a3860" : "#060f20",
+                border: `1px solid ${difficulty === level ? "#4488cc" : "#334"}`,
+                color: difficulty === level ? "#c8d8ff" : "#7890b0",
+                fontFamily: "monospace",
+                fontSize: 13,
+                padding: "6px 14px",
+                cursor: "pointer",
+                letterSpacing: 0.5,
+              }}
+            >
+              {DIFFICULTY_PRESETS[level].label}
+            </button>
+          ))}
+        </div>
       </div>
       <button
         type="button"

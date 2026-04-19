@@ -1,6 +1,6 @@
 import type { AsteroidId } from "@fa/domain";
 import type { SaveV1 } from "@fa/persistence";
-import type { Command, SimApi } from "@fa/sim";
+import type { Command, DifficultyLevel, SimApi } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
 import { useGameStore } from "../store/gameStore.ts";
@@ -18,7 +18,11 @@ export interface RenderLoopHandle {
   loadFromSlot: (slot: number) => Promise<void>;
 }
 
-export function startRenderLoop(WorkerClass: new () => Worker, seed: number): RenderLoopHandle {
+export function startRenderLoop(
+  WorkerClass: new () => Worker,
+  seed: number,
+  difficulty: DifficultyLevel = "normal",
+): RenderLoopHandle {
   const rawWorker = new WorkerClass();
   const RemoteSimApi = Comlink.wrap<typeof SimApi>(rawWorker);
 
@@ -32,7 +36,7 @@ export function startRenderLoop(WorkerClass: new () => Worker, seed: number): Re
   let sectorView: SectorView | null = null;
 
   void (async () => {
-    instance = await new RemoteSimApi({ seed, humanPlayerRaceId: "helionCorp" });
+    instance = await new RemoteSimApi({ seed, humanPlayerRaceId: "helionCorp", difficulty });
 
     const pixiApp = getPixiApp();
     sectorView = new SectorView(pixiApp, (id: AsteroidId) => {
