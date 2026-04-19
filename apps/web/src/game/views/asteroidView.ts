@@ -12,6 +12,7 @@ function isoToScreen(gx: number, gy: number): { x: number; y: number } {
   };
 }
 
+// Colour map for Phase-0 building kinds — keyed by BuildingDef.kind
 const BUILDING_COLOURS: Record<string, number> = {
   cpu: 0x00aaff,
   airProcessor: 0x44ffaa,

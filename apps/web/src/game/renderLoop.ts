@@ -1,4 +1,4 @@
-import type { SimApi } from "@fa/sim";
+import type { Command, SimApi } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
 import { useGameStore } from "../store/gameStore.ts";
@@ -8,7 +8,7 @@ const FIXED_STEP_MS = 50;
 export interface RenderLoopHandle {
   stop: () => void;
   setTimeScale: (scale: number) => void;
-  sendCommand: (cmd: unknown) => void;
+  sendCommand: (cmd: Command) => void;
 }
 
 export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle {
@@ -21,7 +21,7 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
   let lastFrame = performance.now();
   let rafId = 0;
   let running = true;
-  const pendingCommands: unknown[] = [];
+  const pendingCommands: Command[] = [];
 
   void (async () => {
     instance = await new RemoteSimApi({ seed: Date.now(), humanPlayerRaceId: "helionCorp" });
@@ -35,7 +35,7 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
         accumulator += dt * timeScale;
         while (accumulator >= FIXED_STEP_MS) {
           for (const cmd of pendingCommands) {
-            await instance.enqueueCommand(cmd as Parameters<typeof instance.enqueueCommand>[0]);
+            await instance.enqueueCommand(cmd);
           }
           pendingCommands.length = 0;
           await instance.tick(FIXED_STEP_MS);
