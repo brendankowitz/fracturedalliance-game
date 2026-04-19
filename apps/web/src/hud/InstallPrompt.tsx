@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 }
 
 export function InstallPrompt() {
@@ -21,9 +22,10 @@ export function InstallPrompt() {
   if (!deferredPrompt || dismissed) return null;
 
   async function handleInstall() {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    const prompt = deferredPrompt;
+    if (!prompt) return;
+    await prompt.prompt();
+    const { outcome } = await prompt.userChoice;
     if (outcome === "accepted" || outcome === "dismissed") {
       setDeferredPrompt(null);
       setDismissed(true);
