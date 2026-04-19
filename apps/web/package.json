@@ -11,22 +11,25 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fa/domain": "workspace:*",
-    "@fa/sim": "workspace:*",
     "@fa/content": "workspace:*",
+    "@fa/domain": "workspace:*",
     "@fa/persistence": "workspace:*",
+    "@fa/sim": "workspace:*",
+    "@xstate/react": "^4.0.0",
     "comlink": "^4.4.1",
     "pixi.js": "^8.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "xstate": "^5.0.0",
-    "@xstate/react": "^4.0.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "jsdom": "^29.0.2",
     "vite": "^6.0.0",
     "vitest": "^3.0.0"
   }
