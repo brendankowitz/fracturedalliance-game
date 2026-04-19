@@ -1,6 +1,6 @@
 import { findBlueprintDef, findBuildingDef, getShipDef } from "@fa/content";
-import type { BlueprintId, World } from "@fa/domain";
-import { shipId, treatyId } from "@fa/domain";
+import type { World } from "@fa/domain";
+import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
 
@@ -139,16 +139,13 @@ export function applyCommand(world: World, command: Command): void {
       const def = findBlueprintDef(command.blueprintId);
       if (!def) return;
 
-      if (human.blueprintsOwned.has(command.blueprintId as BlueprintId)) return;
+      const bpId = blueprintId(command.blueprintId);
+      if (human.blueprintsOwned.has(bpId)) return;
       if (human.credits < def.costCredits) return;
-      if (
-        def.prerequisiteId !== null &&
-        !human.blueprintsOwned.has(def.prerequisiteId as BlueprintId)
-      )
-        return;
+      if (def.prerequisiteId !== null && !human.blueprintsOwned.has(def.prerequisiteId)) return;
 
       human.credits -= def.costCredits;
-      human.blueprintsOwned.add(command.blueprintId as BlueprintId);
+      human.blueprintsOwned.add(bpId);
       break;
     }
   }

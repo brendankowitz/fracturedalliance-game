@@ -51,7 +51,6 @@ export function BlueprintShop({ onCommand }: Props) {
       }}
     >
       <div style={{ fontWeight: "bold", marginBottom: 10, fontSize: 14 }}>Research & Blueprints</div>
-      {/* Discipline tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap" }}>
         {DISCIPLINES.map((d) => (
           <button
@@ -72,7 +71,6 @@ export function BlueprintShop({ onCommand }: Props) {
           </button>
         ))}
       </div>
-      {/* Blueprint list */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {disciplineBlueprints.map((bp, i) => {
           const isOwned = owned.has(bp.id);
@@ -80,7 +78,6 @@ export function BlueprintShop({ onCommand }: Props) {
           const canAfford = snapshot.credits >= bp.costCredits;
           const canBuy = !isOwned && prereqMet && canAfford;
 
-          // Prerequisite chain arrow
           const prevBp = i > 0 ? disciplineBlueprints[i - 1] : null;
 
           return (

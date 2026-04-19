@@ -1,4 +1,5 @@
 import type { BlueprintDef, BlueprintDiscipline } from "@fa/domain";
+import { blueprintId } from "@fa/domain";
 import rawBlueprints from "../data/blueprints.json" with { type: "json" };
 
 const VALID_DISCIPLINES = new Set<string>([
@@ -16,7 +17,15 @@ function validateBlueprint(raw: (typeof rawBlueprints)[number]): BlueprintDef {
   if (raw.tier < 1 || raw.tier > 8) {
     throw new Error(`Blueprint "${raw.id}" has invalid tier: ${raw.tier}`);
   }
-  return raw as unknown as BlueprintDef;
+  return {
+    id: blueprintId(raw.id),
+    label: raw.label,
+    description: raw.description,
+    discipline: raw.discipline as BlueprintDiscipline,
+    tier: raw.tier,
+    costCredits: raw.costCredits,
+    prerequisiteId: raw.prerequisiteId !== null ? blueprintId(raw.prerequisiteId) : null,
+  };
 }
 
 const allDefs: BlueprintDef[] = rawBlueprints.map(validateBlueprint);
