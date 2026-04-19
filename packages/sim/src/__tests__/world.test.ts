@@ -1,3 +1,4 @@
+import { asteroidId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { createWorld } from "../world.ts";
 
@@ -59,5 +60,15 @@ describe("createWorld", () => {
     const cpu = [...world.buildings.values()].find((b) => b.defKind === "cpu");
     expect(cpu?.constructionProgress).toBe(1);
     expect(cpu?.active).toBe(true);
+  });
+
+  it("starter asteroid has all four Phase 1 ores", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const starter = world.asteroids.get(asteroidId("asteroid-0"));
+    if (!starter) throw new Error("starter asteroid not found");
+    expect(starter.deposits.selenium).toBeGreaterThan(0);
+    expect(starter.deposits.asteros).toBeGreaterThan(0);
+    expect(starter.deposits.barium).toBeGreaterThan(0);
+    expect(starter.deposits.crystalite).toBeGreaterThan(0);
   });
 });

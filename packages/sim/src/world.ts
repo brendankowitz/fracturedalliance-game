@@ -122,6 +122,7 @@ export function createWorld(config: WorldConfig): World {
       selenium: 5000,
       asteros: 2000,
       barium: 800,
+      crystalite: 200,
     },
     radiation: 0,
     stability: 100,

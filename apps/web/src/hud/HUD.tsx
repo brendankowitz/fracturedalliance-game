@@ -2,6 +2,7 @@ import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildingPanel } from "./BuildingPanel.tsx";
+import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
 
@@ -59,6 +60,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         ☰ Save/Load
       </button>
       <BuildingPanel onCommand={onCommand} />
+      <OrePanel snapshot={snapshot} />
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
     </>
   );
