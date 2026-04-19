@@ -1,15 +1,26 @@
 import { getAllBuildingDefs } from "@fa/content";
 import { useUiStore } from "../store/uiStore.ts";
 
-const PHASE_0_BUILDINGS = [
+const PHASE_1_BUILDINGS = [
   "airProcessor",
   "hydrationPlant",
   "hydroponics",
   "livingQuarters",
+  "resiblock",
   "powerPlant",
   "mineMk1",
   "storageTower",
+  "pleasureDome",
+  "medicalCentre",
+  "securityCentre",
+  "ecc",
+  "mineMk2",
+  "deepBoreMine",
+  "radiationFilter",
+  "repairFacility",
 ];
+
+const BLUEPRINT_GATED = new Set(["mineMk2", "deepBoreMine"]);
 
 export function BuildingPanel() {
   const buildingPanelOpen = useUiStore((s) => s.buildingPanelOpen);
@@ -18,7 +29,7 @@ export function BuildingPanel() {
 
   if (!buildingPanelOpen || !selectedAsteroidId || !selectedCell) return null;
 
-  const defs = getAllBuildingDefs().filter((d) => PHASE_0_BUILDINGS.includes(d.kind));
+  const defs = getAllBuildingDefs().filter((d) => PHASE_1_BUILDINGS.includes(d.kind));
 
   return (
     <div
@@ -40,26 +51,32 @@ export function BuildingPanel() {
       }}
     >
       <strong style={{ color: "#ffffff" }}>Place Building</strong>
-      {defs.map((def) => (
-        <button
-          key={def.kind}
-          type="button"
-          style={{
-            background: "#0a1830",
-            border: "1px solid #224",
-            color: "#c8d8ff",
-            padding: "6px 8px",
-            cursor: "pointer",
-            textAlign: "left",
-          }}
-          onClick={() => {
-            // Wired to render loop in Task 16
-            console.log("place", def.kind, "at", selectedCell);
-          }}
-        >
-          {def.label} — {def.costCredits.toLocaleString()}¢
-        </button>
-      ))}
+      {defs.map((def) => {
+        const locked = BLUEPRINT_GATED.has(def.kind);
+        return (
+          <button
+            key={def.kind}
+            type="button"
+            disabled={locked}
+            style={{
+              background: locked ? "#050d1a" : "#0a1830",
+              border: "1px solid #224",
+              color: locked ? "#446" : "#c8d8ff",
+              padding: "6px 8px",
+              cursor: locked ? "default" : "pointer",
+              textAlign: "left",
+              opacity: locked ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (locked) return;
+              console.log("place", def.kind, "at", selectedCell);
+            }}
+          >
+            {locked ? "🔒 " : ""}
+            {def.label} — {def.costCredits.toLocaleString()}¢
+          </button>
+        );
+      })}
     </div>
   );
 }

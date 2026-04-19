@@ -13,6 +13,9 @@ export interface BuildingDef {
   readonly airDelta: number;
   readonly oreProduction?: PartialOreRecord<number>;
   readonly blueprintRequired?: BlueprintId;
+  readonly happinessDelta?: number;
+  readonly radiationReduction?: number;
+  readonly repairRate?: number;
   readonly unique?: boolean;
 }
 

@@ -15,6 +15,7 @@ export function applyCommand(world: World, command: Command): void {
       const def = findBuildingDef(command.buildingKind);
       if (!def) return;
       if (player.credits < def.costCredits) return;
+      if (def.blueprintRequired && !player.blueprintsOwned.has(def.blueprintRequired)) return;
 
       player.credits -= def.costCredits;
       asteroid.buildQueue.push({

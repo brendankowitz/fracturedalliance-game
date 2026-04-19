@@ -88,5 +88,112 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0
+  },
+  {
+    "kind": "resiblock",
+    "label": "Resiblock",
+    "costCredits": 250,
+    "buildTimeTicks": 50,
+    "powerDelta": -1,
+    "popCapDelta": 75,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0
+  },
+  {
+    "kind": "pleasureDome",
+    "label": "Pleasure Dome",
+    "costCredits": 800,
+    "buildTimeTicks": 120,
+    "powerDelta": -3,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "happinessDelta": 0.05
+  },
+  {
+    "kind": "medicalCentre",
+    "label": "Medical Centre",
+    "costCredits": 700,
+    "buildTimeTicks": 100,
+    "powerDelta": -3,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 100,
+    "airDelta": 0,
+    "happinessDelta": 0.03
+  },
+  {
+    "kind": "securityCentre",
+    "label": "Security Centre",
+    "costCredits": 600,
+    "buildTimeTicks": 80,
+    "powerDelta": -2,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0
+  },
+  {
+    "kind": "ecc",
+    "label": "External Comms Centre",
+    "costCredits": 900,
+    "buildTimeTicks": 120,
+    "powerDelta": -4,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0
+  },
+  {
+    "kind": "mineMk2",
+    "label": "Mine Mk2",
+    "costCredits": 1200,
+    "buildTimeTicks": 150,
+    "powerDelta": -4,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "oreProduction": { "selenium": 2, "asteros": 1, "barium": 0.5 },
+    "blueprintRequired": "blueprint.mineMk2"
+  },
+  {
+    "kind": "deepBoreMine",
+    "label": "Deep Bore Mine",
+    "costCredits": 2000,
+    "buildTimeTicks": 200,
+    "powerDelta": -6,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "oreProduction": { "selenium": 4, "asteros": 2, "barium": 1, "crystalite": 0.5 },
+    "blueprintRequired": "blueprint.deepBoreMine"
+  },
+  {
+    "kind": "radiationFilter",
+    "label": "Radiation Filter",
+    "costCredits": 500,
+    "buildTimeTicks": 80,
+    "powerDelta": -3,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "radiationReduction": 0.5
+  },
+  {
+    "kind": "repairFacility",
+    "label": "Repair Facility",
+    "costCredits": 800,
+    "buildTimeTicks": 100,
+    "powerDelta": -3,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "repairRate": 5
   }
 ]

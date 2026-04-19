@@ -1,9 +1,9 @@
-import { buildingId } from "@fa/domain";
+import { type AsteroidId, buildingId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { applyCommand } from "../commandProcessor.ts";
 import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
-import { computePowerBalance } from "../systems/resourceSystem.ts";
+import { computePowerBalance, tickResources } from "../systems/resourceSystem.ts";
 import { createWorld } from "../world.ts";
 
 describe("miningSystem", () => {
@@ -229,5 +229,102 @@ describe("resourceSystem", () => {
     const balance = computePowerBalance(world, asteroid.id);
     // Under-construction plant not counted, only CPU: -5
     expect(balance).toBe(-5);
+  });
+});
+
+describe("resourceSystem — life support & happiness", () => {
+  function makeBuilding(
+    id: string,
+    kind: string,
+    asteroidId: AsteroidId,
+    cell = { x: 1, y: 1 },
+  ) {
+    return {
+      id: buildingId(id),
+      defKind: kind,
+      asteroidId,
+      cell,
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
+    };
+  }
+
+  it("pleasure dome increases happiness each tick", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const asteroid = [...world.asteroids.values()].find((a) => a.ownerId !== null);
+    if (!asteroid) throw new Error("expected owned asteroid");
+
+    asteroid.happiness = 50;
+    const domeId = buildingId("test-dome");
+    world.buildings.set(domeId, makeBuilding("test-dome", "pleasureDome", asteroid.id));
+    asteroid.buildings.push(domeId);
+
+    const before = asteroid.happiness;
+    tickResources(world);
+    expect(asteroid.happiness).toBeGreaterThan(before);
+  });
+
+  it("insufficient food reduces happiness when pop cap > 0", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const asteroid = [...world.asteroids.values()].find((a) => a.ownerId !== null);
+    if (!asteroid) throw new Error("expected owned asteroid");
+
+    // Add living quarters (popCap=50) but no food production
+    asteroid.happiness = 80;
+    const lqId = buildingId("test-lq");
+    world.buildings.set(
+      lqId,
+      makeBuilding("test-lq", "livingQuarters", asteroid.id, { x: 2, y: 2 }),
+    );
+    asteroid.buildings.push(lqId);
+
+    const before = asteroid.happiness;
+    tickResources(world);
+    expect(asteroid.happiness).toBeLessThan(before);
+  });
+
+  it("radiation filter reduces asteroid radiation each tick", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const asteroid = [...world.asteroids.values()].find((a) => a.ownerId !== null);
+    if (!asteroid) throw new Error("expected owned asteroid");
+
+    asteroid.radiation = 10;
+    const filterId = buildingId("test-filter");
+    world.buildings.set(
+      filterId,
+      makeBuilding("test-filter", "radiationFilter", asteroid.id, { x: 3, y: 3 }),
+    );
+    asteroid.buildings.push(filterId);
+
+    tickResources(world);
+    expect(asteroid.radiation).toBeLessThan(10);
+    expect(asteroid.radiation).toBeGreaterThanOrEqual(0);
+  });
+
+  it("repair facility reduces building damage each tick", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const asteroid = [...world.asteroids.values()].find((a) => a.ownerId !== null);
+    if (!asteroid) throw new Error("expected owned asteroid");
+
+    // Add a damaged building and a repair facility
+    const damagedId = buildingId("damaged-cpu");
+    const damaged = makeBuilding("damaged-cpu", "powerPlant", asteroid.id, { x: 4, y: 4 });
+    damaged.damage = 20;
+    world.buildings.set(damagedId, damaged);
+    asteroid.buildings.push(damagedId);
+
+    const repairId = buildingId("test-repair");
+    world.buildings.set(
+      repairId,
+      makeBuilding("test-repair", "repairFacility", asteroid.id, { x: 5, y: 5 }),
+    );
+    asteroid.buildings.push(repairId);
+
+    tickResources(world);
+    const afterDamage = world.buildings.get(damagedId)?.damage ?? 0;
+    expect(afterDamage).toBeLessThan(20);
   });
 });
