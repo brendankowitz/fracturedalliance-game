@@ -4,7 +4,7 @@ import { deserialize, serialize } from "../serializer.ts";
 const SAMPLE_SAVE = {
   schemaVersion: 1 as const,
   gameVersion: "0.1.0",
-  createdAtIso: new Date().toISOString(),
+  createdAtIso: "2024-01-01T00:00:00.000Z",
   playerName: "Test",
   verdict: "inProgress" as const,
   difficulty: "manager" as const,
