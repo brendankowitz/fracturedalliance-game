@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
+use tokio::sync::oneshot;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveSlotMeta {
@@ -10,41 +11,39 @@ pub struct SaveSlotMeta {
     pub updated_at: u64,
 }
 
-/// Export a save slot JSON to the file system via a save-file dialog.
 #[tauri::command]
 async fn export_save(app: AppHandle, json: String) -> Result<String, String> {
-    let path = app
-        .dialog()
+    let (tx, rx) = oneshot::channel();
+    app.dialog()
         .file()
         .add_filter("Fractured Alliance Save", &["fasave"])
         .set_file_name("fractured-alliance.fasave")
-        .blocking_save_file();
-
-    match path {
+        .save_file(move |path| {
+            let _ = tx.send(path);
+        });
+    match rx.await.map_err(|e| e.to_string())? {
         Some(p) => {
             let path_buf: PathBuf = p.into();
-            std::fs::write(&path_buf, json.as_bytes())
-                .map_err(|e| e.to_string())?;
+            std::fs::write(&path_buf, json.as_bytes()).map_err(|e| e.to_string())?;
             Ok(path_buf.to_string_lossy().to_string())
         }
         None => Err("cancelled".to_string()),
     }
 }
 
-/// Import a save slot JSON from the file system via an open-file dialog.
 #[tauri::command]
 async fn import_save(app: AppHandle) -> Result<String, String> {
-    let path = app
-        .dialog()
+    let (tx, rx) = oneshot::channel();
+    app.dialog()
         .file()
         .add_filter("Fractured Alliance Save", &["fasave"])
-        .blocking_pick_file();
-
-    match path {
+        .pick_file(move |path| {
+            let _ = tx.send(path);
+        });
+    match rx.await.map_err(|e| e.to_string())? {
         Some(p) => {
             let path_buf: PathBuf = p.into();
-            let bytes = std::fs::read(&path_buf)
-                .map_err(|e| e.to_string())?;
+            let bytes = std::fs::read(&path_buf).map_err(|e| e.to_string())?;
             String::from_utf8(bytes).map_err(|e| e.to_string())
         }
         None => Err("cancelled".to_string()),
