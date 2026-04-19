@@ -4,6 +4,7 @@ import { initPixi } from "./game/pixiApp.ts";
 import type { RenderLoopHandle } from "./game/renderLoop.ts";
 import { startRenderLoop } from "./game/renderLoop.ts";
 import { HUD } from "./hud/HUD.tsx";
+import { InstallPrompt } from "./hud/InstallPrompt.tsx";
 import { NewGameScreen } from "./hud/NewGameScreen.tsx";
 import { useUiStore } from "./store/uiStore.ts";
 import SimWorker from "./workers/sim.worker.ts?worker";
@@ -73,6 +74,7 @@ export function App() {
           </div>
         </div>
       )}
+      <InstallPrompt />
     </div>
   );
 }
