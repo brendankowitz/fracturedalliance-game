@@ -1,8 +1,9 @@
 import type { GameEndState } from "@fa/domain";
 
-const VICTORY_LABELS: Record<string, string> = {
+const VICTORY_LABELS: Record<GameEndState, string> = {
   "victory.survivor": "Survivor",
   "victory.militaryDominance": "Military Dominance",
+  "defeat": "Defeat",
 };
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 }
 
 export function VictoryScreen({ condition }: Props) {
-  const label = VICTORY_LABELS[condition] ?? condition;
+  const label = VICTORY_LABELS[condition];
   return (
     <div
       style={{
