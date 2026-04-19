@@ -37,6 +37,12 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const espionageOpen = useUiStore((s) => s.espionagePanelOpen);
   const blackMarketOpen = useUiStore((s) => s.blackMarketOpen);
   const tradePanelOpen = useUiStore((s) => s.tradePanelOpen);
+  const saveLoadOpen = useUiStore((s) => s.saveLoadPanelOpen);
+  const diplomacyOpen = useUiStore((s) => s.diplomacyPanelOpen);
+  const colorPalette = useUiStore((s) => s.colorPalette);
+  const setColorPalette = useUiStore((s) => s.setColorPalette);
+  const fontScale = useUiStore((s) => s.fontScale);
+  const setFontScale = useUiStore((s) => s.setFontScale);
 
   if (!snapshot) {
     return (
@@ -76,6 +82,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleBlackMarket}
+        aria-label="Market panel"
+        aria-pressed={blackMarketOpen}
         style={{
           position: "absolute",
           top: 8,
@@ -94,6 +102,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleTradePanel}
+        aria-label="Trade panel"
+        aria-pressed={tradePanelOpen}
         style={{
           position: "absolute",
           top: 8,
@@ -112,6 +122,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleEspionage}
+        aria-label="Espionage panel"
+        aria-pressed={espionageOpen}
         style={{
           position: "absolute",
           top: 8,
@@ -130,6 +142,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleBlueprintShop}
+        aria-label="Research panel"
+        aria-pressed={blueprintShopOpen}
         style={{
           position: "absolute",
           top: 8,
@@ -148,6 +162,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleAlerts}
+        aria-label="Alerts panel"
+        aria-pressed={alertsOpen}
         style={{
           position: "absolute",
           top: 8,
@@ -166,13 +182,15 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleDiplomacy}
+        aria-label="Diplomacy panel"
+        aria-pressed={diplomacyOpen}
         style={{
           position: "absolute",
           top: 8,
           right: 120,
           zIndex: 11,
           background: "#0a1830",
-          border: "1px solid #224",
+          border: `1px solid ${diplomacyOpen ? "#c8d8ff" : "#224"}`,
           color: "#c8d8ff",
           fontFamily: "monospace",
           padding: "4px 10px",
@@ -184,13 +202,15 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <button
         type="button"
         onClick={toggleSaveLoad}
+        aria-label="Save/Load panel"
+        aria-pressed={saveLoadOpen}
         style={{
           position: "absolute",
           top: 8,
           right: 16,
           zIndex: 11,
           background: "#0a1830",
-          border: "1px solid #224",
+          border: `1px solid ${saveLoadOpen ? "#c8d8ff" : "#224"}`,
           color: "#c8d8ff",
           fontFamily: "monospace",
           padding: "4px 10px",
@@ -199,6 +219,67 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       >
         ☰ Save/Load
       </button>
+      <div
+        style={{
+          position: "absolute",
+          top: 44,
+          left: 0,
+          display: "flex",
+          gap: 4,
+          padding: "2px 8px",
+          background: "rgba(0,8,20,0.8)",
+          zIndex: 11,
+          fontSize: 10,
+          fontFamily: "monospace",
+          alignItems: "center",
+        }}
+        role="group"
+        aria-label="Accessibility controls"
+      >
+        <span style={{ color: "#446", marginRight: 4 }}>A11y:</span>
+        {(["normal", "deuteranopia", "protanopia"] as const).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => { setColorPalette(p); }}
+            aria-pressed={colorPalette === p}
+            aria-label={`Colour palette: ${p}`}
+            style={{
+              background: colorPalette === p ? "#1a3860" : "#0a1830",
+              border: `1px solid ${colorPalette === p ? "#4488cc" : "#224"}`,
+              color: "#c8d8ff",
+              fontFamily: "monospace",
+              fontSize: 9,
+              padding: "2px 5px",
+              cursor: "pointer",
+            }}
+          >
+            {p === "normal" ? "Normal" : p === "deuteranopia" ? "Deut" : "Prot"}
+          </button>
+        ))}
+        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
+        <span style={{ color: "#667" }}>Text:</span>
+        {([100, 125, 150, 175, 200] as const).map((scale) => (
+          <button
+            key={scale}
+            type="button"
+            onClick={() => { setFontScale(scale); }}
+            aria-pressed={fontScale === scale}
+            aria-label={`Font size ${scale}%`}
+            style={{
+              background: fontScale === scale ? "#1a3860" : "#0a1830",
+              border: `1px solid ${fontScale === scale ? "#4488cc" : "#224"}`,
+              color: "#c8d8ff",
+              fontFamily: "monospace",
+              fontSize: 9,
+              padding: "2px 5px",
+              cursor: "pointer",
+            }}
+          >
+            {scale}%
+          </button>
+        ))}
+      </div>
       <BlackMarketPanel onCommand={onCommand} />
       <TradePanel onCommand={onCommand} />
       <BuildingPanel onCommand={onCommand} />

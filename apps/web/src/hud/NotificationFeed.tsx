@@ -29,6 +29,20 @@ const PRIORITY_COLORS: Record<EventPriority, string> = {
   green: "#4f4",
 };
 
+const PRIORITY_ICONS: Record<EventPriority, string> = {
+  red: "⚠",
+  amber: "!",
+  grey: "·",
+  green: "✓",
+};
+
+const PRIORITY_LABELS: Record<EventPriority, string> = {
+  red: "Critical",
+  amber: "Warning",
+  grey: "Info",
+  green: "OK",
+};
+
 const MAX_ENTRIES = 50;
 
 export function NotificationFeed() {
@@ -38,6 +52,7 @@ export function NotificationFeed() {
   const snapshot = useGameStore((s) => s.snapshot);
   const [entries, setEntries] = useState<NotificationEntry[]>([]);
   const [autoPause, setAutoPause] = useState({ red: true, amber: false });
+  const [ariaAnnounce, setAriaAnnounce] = useState("");
   const idRef = useRef(0);
   const lastTickRef = useRef(-1);
 
@@ -62,11 +77,21 @@ export function NotificationFeed() {
       doSetPaused(true);
     }
 
+    const latestRed = newEntries.find((e) => e.priority === "red");
+    if (latestRed) setAriaAnnounce(latestRed.label);
+
     setEntries((prev) => [...newEntries, ...prev].slice(0, MAX_ENTRIES));
   }, [snapshot, autoPause]);
 
   return (
     <>
+      <div
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}
+      >
+        {ariaAnnounce}
+      </div>
       {/* Always-visible PAUSED indicator, regardless of feed open state */}
       {paused && (
         <div
@@ -132,7 +157,13 @@ export function NotificationFeed() {
                 key={e.id}
                 style={{ padding: "2px 8px", borderBottom: "1px solid #112", display: "flex", gap: 6 }}
               >
-                <span style={{ color: PRIORITY_COLORS[e.priority], flexShrink: 0 }}>●</span>
+                <span
+                  style={{ color: PRIORITY_COLORS[e.priority], flexShrink: 0, fontSize: 10 }}
+                  title={PRIORITY_LABELS[e.priority]}
+                  aria-label={PRIORITY_LABELS[e.priority]}
+                >
+                  {PRIORITY_ICONS[e.priority]}
+                </span>
                 <span style={{ flex: 1 }}>{e.label}</span>
                 <span style={{ color: "#445", flexShrink: 0 }}>T{e.tick}</span>
               </div>

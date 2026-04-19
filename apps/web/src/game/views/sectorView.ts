@@ -9,9 +9,13 @@ const SIZE_RADIUS: Record<string, number> = {
   large: 18,
 };
 
-const COLOUR_HUMAN = 0x3399ff;
-const COLOUR_AI = 0xff4433;
-const COLOUR_NEUTRAL = 0x888888;
+export type ColorPalette = "normal" | "deuteranopia" | "protanopia";
+
+export const PALETTES: Record<ColorPalette, { human: number; ai: number; neutral: number }> = {
+  normal:       { human: 0x3399ff, ai: 0xff4433, neutral: 0x888888 },
+  deuteranopia: { human: 0x3399ff, ai: 0xff8c00, neutral: 0x888888 },
+  protanopia:   { human: 0x0099cc, ai: 0xd4a017, neutral: 0x888888 },
+};
 
 const SECTOR_SCALE = 80; // pixels per sector unit — 7×80=560px fits a typical 768px-tall screen
 
@@ -27,6 +31,11 @@ export class SectorView {
   private _dragStartY = 0;
   private _dragOffsetStartX = 0;
   private _dragOffsetStartY = 0;
+  private _palette: ColorPalette = "normal";
+
+  setColorPalette(p: ColorPalette): void {
+    this._palette = p;
+  }
 
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
   private readonly _asteroidGraphics: Map<AsteroidId, { gfx: Graphics; label: Text }> = new Map();
@@ -137,11 +146,11 @@ export class SectorView {
 
       let colour: number;
       if (asteroid.ownerId === humanPlayerId) {
-        colour = COLOUR_HUMAN;
+        colour = PALETTES[this._palette].human;
       } else if (asteroid.ownerId !== null && aiPlayerIds.has(asteroid.ownerId)) {
-        colour = COLOUR_AI;
+        colour = PALETTES[this._palette].ai;
       } else {
-        colour = COLOUR_NEUTRAL;
+        colour = PALETTES[this._palette].neutral;
       }
 
       const sx = asteroid.sector.x * SECTOR_SCALE;

@@ -6,6 +6,7 @@ import * as Comlink from "comlink";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { getPixiApp } from "./pixiApp.ts";
+import type { ColorPalette } from "./views/sectorView.ts";
 import { SectorView } from "./views/sectorView.ts";
 
 const FIXED_STEP_MS = 50;
@@ -16,6 +17,7 @@ export interface RenderLoopHandle {
   sendCommand: (cmd: Command) => void;
   saveToSlot: (slot: number, label: string) => Promise<void>;
   loadFromSlot: (slot: number) => Promise<void>;
+  setColorPalette: (p: ColorPalette) => void;
 }
 
 export function startRenderLoop(
@@ -114,6 +116,9 @@ export function startRenderLoop(
       const snap = await instance.getSnapshot();
       useGameStore.getState().setSnapshot(snap);
       sectorView?.update(snap);
+    },
+    setColorPalette(p) {
+      sectorView?.setColorPalette(p);
     },
   };
 }

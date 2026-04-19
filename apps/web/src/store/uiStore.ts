@@ -1,5 +1,6 @@
 import type { AsteroidId } from "@fa/domain";
 import { create } from "zustand";
+import type { ColorPalette } from "../game/views/sectorView.ts";
 
 interface UiState {
   selectedAsteroidId: AsteroidId | null;
@@ -13,6 +14,8 @@ interface UiState {
   tradePanelOpen: boolean;
   paused: boolean;
   notificationFeedOpen: boolean;
+  colorPalette: ColorPalette;
+  fontScale: number;
   selectAsteroid: (id: AsteroidId | null) => void;
   selectCell: (cell: { x: number; y: number } | null) => void;
   toggleBuildingPanel: () => void;
@@ -24,6 +27,8 @@ interface UiState {
   toggleTradePanel: () => void;
   setPaused: (v: boolean) => void;
   toggleNotificationFeed: () => void;
+  setColorPalette: (p: ColorPalette) => void;
+  setFontScale: (v: number) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -38,6 +43,8 @@ export const useUiStore = create<UiState>((set) => ({
   tradePanelOpen: false,
   paused: false,
   notificationFeedOpen: false,
+  colorPalette: "normal",
+  fontScale: 100,
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
   selectCell: (cell) => set({ selectedCell: cell }),
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
@@ -49,4 +56,6 @@ export const useUiStore = create<UiState>((set) => ({
   toggleTradePanel: () => set((s) => ({ tradePanelOpen: !s.tradePanelOpen })),
   setPaused: (v) => set({ paused: v }),
   toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
+  setColorPalette: (p) => set({ colorPalette: p }),
+  setFontScale: (v) => set({ fontScale: v }),
 }));

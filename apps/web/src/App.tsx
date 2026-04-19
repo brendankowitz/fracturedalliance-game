@@ -5,6 +5,7 @@ import type { RenderLoopHandle } from "./game/renderLoop.ts";
 import { startRenderLoop } from "./game/renderLoop.ts";
 import { HUD } from "./hud/HUD.tsx";
 import { NewGameScreen } from "./hud/NewGameScreen.tsx";
+import { useUiStore } from "./store/uiStore.ts";
 import SimWorker from "./workers/sim.worker.ts?worker";
 
 interface GameParams {
@@ -16,6 +17,16 @@ export function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const loopRef = useRef<RenderLoopHandle | null>(null);
   const [gameParams, setGameParams] = useState<GameParams | null>(null);
+  const colorPalette = useUiStore((s) => s.colorPalette);
+  const fontScale = useUiStore((s) => s.fontScale);
+
+  useEffect(() => {
+    loopRef.current?.setColorPalette(colorPalette);
+  }, [colorPalette]);
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = fontScale + "%";
+  }, [fontScale]);
 
   useEffect(() => {
     if (gameParams === null || !canvasRef.current) return;
