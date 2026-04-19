@@ -1,4 +1,6 @@
 import { DIFFICULTY_PRESETS, type DifficultyLevel } from "@fa/sim";
+import type { Scenario } from "@fa/content";
+import { SCENARIOS } from "@fa/content";
 import { useState } from "react";
 
 const DIFFICULTY_LEVELS: DifficultyLevel[] = ["easy", "normal", "hard", "brutal", "nightmare"];
@@ -11,6 +13,7 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
   const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1_000_000));
   const [inputValue, setInputValue] = useState(() => String(seed));
   const [difficulty, setDifficulty] = useState<DifficultyLevel>("normal");
+  const [activeScenario, setActiveScenario] = useState<string | null>(null);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/\D/g, "");
@@ -18,10 +21,22 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
     const parsed = parseInt(raw, 10);
     if (!Number.isNaN(parsed)) {
       setSeed(parsed);
+      setActiveScenario(null);
     }
   }
 
-  // Keep display in sync with seed state when input is initialised
+  function handleSelectScenario(scenario: Scenario) {
+    setSeed(scenario.seed);
+    setInputValue(String(scenario.seed));
+    setDifficulty(scenario.difficulty);
+    setActiveScenario(scenario.id);
+  }
+
+  function handleDifficultyChange(level: DifficultyLevel) {
+    setDifficulty(level);
+    setActiveScenario(null);
+  }
+
   function handleStart() {
     const parsed = parseInt(inputValue, 10);
     onStart(Number.isNaN(parsed) ? seed : parsed, difficulty);
@@ -41,9 +56,48 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
         fontFamily: "monospace",
         gap: 24,
         zIndex: 100,
+        overflowY: "auto",
+        padding: "20px 0",
       }}
     >
       <h1 style={{ fontSize: 32, margin: 0, letterSpacing: 2 }}>FRACTURED ALLIANCE</h1>
+
+      {/* Scenario selection */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, opacity: 0.7 }}>Scenarios</span>
+        <div style={{ display: "flex", gap: 12 }}>
+          {SCENARIOS.map((scenario) => (
+            <button
+              key={scenario.id}
+              type="button"
+              onClick={() => handleSelectScenario(scenario)}
+              aria-pressed={activeScenario === scenario.id}
+              style={{
+                background: activeScenario === scenario.id ? "#1a3860" : "#060f20",
+                border: `1px solid ${activeScenario === scenario.id ? "#4488cc" : "#334"}`,
+                color: activeScenario === scenario.id ? "#c8d8ff" : "#7890b0",
+                fontFamily: "monospace",
+                fontSize: 12,
+                padding: "10px 14px",
+                cursor: "pointer",
+                textAlign: "left",
+                maxWidth: 200,
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              <span style={{ fontWeight: "bold", fontSize: 13 }}>{scenario.name}</span>
+              <span style={{ opacity: 0.8, fontSize: 11, lineHeight: 1.4 }}>{scenario.description}</span>
+              <span style={{ opacity: 0.6, fontSize: 10, marginTop: 4 }}>
+                {DIFFICULTY_PRESETS[scenario.difficulty]!.label} · Seed {scenario.seed}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Seed input */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <label style={{ fontSize: 13, opacity: 0.7 }} htmlFor="seed-input">
           Seed
@@ -66,6 +120,8 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
           }}
         />
       </div>
+
+      {/* Difficulty selection */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Difficulty</span>
         <div style={{ display: "flex", gap: 8 }}>
@@ -73,7 +129,8 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
             <button
               key={level}
               type="button"
-              onClick={() => setDifficulty(level)}
+              onClick={() => handleDifficultyChange(level)}
+              aria-pressed={difficulty === level}
               style={{
                 background: difficulty === level ? "#1a3860" : "#060f20",
                 border: `1px solid ${difficulty === level ? "#4488cc" : "#334"}`,
@@ -85,11 +142,13 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
                 letterSpacing: 0.5,
               }}
             >
-              {DIFFICULTY_PRESETS[level].label}
+              {DIFFICULTY_PRESETS[level]!.label}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Launch */}
       <button
         type="button"
         onClick={handleStart}
