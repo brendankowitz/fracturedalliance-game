@@ -2,27 +2,33 @@ import { describe, expect, it } from "vitest";
 import { getAllBuildingDefs, getBuildingDef } from "../buildings.ts";
 
 describe("building definitions", () => {
-  it("loads all buildings without error", () => {
+  it("loads exactly 8 Phase-0 buildings", () => {
     const defs = getAllBuildingDefs();
-    expect(defs.length).toBeGreaterThan(0);
+    expect(defs.length).toBe(8);
   });
 
-  it("getBuildingDef returns the correct definition", () => {
+  it("getBuildingDef returns the correct definition for mineMk1", () => {
     const def = getBuildingDef("mineMk1");
     expect(def.kind).toBe("mineMk1");
     expect(def.costCredits).toBe(500);
+    expect(def.buildTimeTicks).toBe(80);
+    expect(def.powerDelta).toBe(-2);
   });
 
-  it("throws for unknown building kind", () => {
-    expect(() => getBuildingDef("unicorn")).toThrow();
+  it("throws with informative message for unknown building kind", () => {
+    expect(() => getBuildingDef("unicorn")).toThrow('Unknown building kind: "unicorn"');
   });
 
-  it("every building has required fields", () => {
+  it("every building has all required fields", () => {
     for (const def of getAllBuildingDefs()) {
       expect(typeof def.kind).toBe("string");
       expect(typeof def.costCredits).toBe("number");
       expect(typeof def.buildTimeTicks).toBe("number");
       expect(typeof def.powerDelta).toBe("number");
+      expect(typeof def.popCapDelta).toBe("number");
+      expect(typeof def.foodDelta).toBe("number");
+      expect(typeof def.waterDelta).toBe("number");
+      expect(typeof def.airDelta).toBe("number");
     }
   });
 
@@ -31,8 +37,9 @@ describe("building definitions", () => {
     expect(cpu.unique).toBe(true);
   });
 
-  it("mineMk1 has oreProduction for selenium", () => {
+  it("mineMk1 has valid oreProduction for selenium and asteros", () => {
     const mine = getBuildingDef("mineMk1");
     expect(mine.oreProduction?.selenium).toBe(1);
+    expect(mine.oreProduction?.asteros).toBe(0.5);
   });
 });
