@@ -12,6 +12,7 @@ import {
 import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
 import { checkVictory } from "../systems/victorySystem.ts";
+import { DESTROYED_SECTOR_COORD } from "../systems/asteroidEngineSystem.ts";
 
 function makeMinimalWorld(): World {
   const humanId: PlayerId = playerId("player-human");
@@ -255,7 +256,7 @@ describe("victorySystem", () => {
     const humanId = playerId("player-human");
     // Move AI asteroid to destroyed sector
     const aiAsteroid = world.asteroids.get(asteroidId("asteroid-ai"))!;
-    (aiAsteroid as { sector: { x: number; y: number } }).sector = { x: -9999, y: -9999 };
+    aiAsteroid.sector = { x: DESTROYED_SECTOR_COORD, y: DESTROYED_SECTOR_COORD };
 
     // Human owns 1 non-destroyed asteroid out of 1 — 100% > 50%
     checkVictory(world);
@@ -264,5 +265,28 @@ describe("victorySystem", () => {
     const humanAsteroid = world.asteroids.get(asteroidId("asteroid-human"))!;
     expect(humanAsteroid.ownerId).toBe(humanId);
     expect(world.gameEndState).toBe("victory:independence");
+  });
+
+  it("does not trigger independence victory when human owns exactly 50% of asteroids", () => {
+    const world = makeMinimalWorld();
+    const humanId = playerId("player-human");
+    // 1 human, 1 AI = 50%, not > 50%
+    // (default setup already has this)
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBeNull();
+  });
+
+  it("does not trigger independence victory with zero human-owned asteroids", () => {
+    const world = makeMinimalWorld();
+    const aiId = playerId("player-ai");
+    // Both asteroids owned by AI
+    const humanAsteroid = world.asteroids.get(asteroidId("asteroid-human"))!;
+    humanAsteroid.ownerId = aiId;
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBeNull();
   });
 });

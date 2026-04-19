@@ -1,5 +1,7 @@
 import type { AsteroidId, ShipId, World } from "@fa/domain";
 
+export const DESTROYED_SECTOR_COORD = -9999;
+
 export function tickAsteroidEngines(world: World): void {
   for (const asteroid of world.asteroids.values()) {
     if (asteroid.engines.count <= 0) continue;
@@ -127,6 +129,6 @@ function resolveCollisions(world: World, movedId: AsteroidId, landX: number, lan
     }
 
     loser.name = `${loser.name} (destroyed)`;
-    loser.sector = { x: -9999, y: -9999 };
+    loser.sector = { x: DESTROYED_SECTOR_COORD, y: DESTROYED_SECTOR_COORD };
   }
 }

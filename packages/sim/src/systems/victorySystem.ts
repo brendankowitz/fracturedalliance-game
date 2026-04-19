@@ -1,6 +1,5 @@
 import type { World } from "@fa/domain";
-
-const DESTROYED_SECTOR_COORD = -9999;
+import { DESTROYED_SECTOR_COORD } from "./asteroidEngineSystem.ts";
 
 export function checkVictory(world: World): void {
   if (world.gameEndState !== null) return;
