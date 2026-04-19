@@ -1,6 +1,7 @@
 import type { AsteroidId, EventPriority, PlayerId, ShipId, World } from "@fa/domain";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
+import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 
 export interface AsteroidSnapshot {
   id: AsteroidId;
@@ -107,7 +108,7 @@ export function takeSnapshot(world: World): HudSnapshot {
       if (!target) return [];
       const dx = target.sector.x - ship.position.x;
       const dy = target.sector.y - ship.position.y;
-      if (Math.sqrt(dx * dx + dy * dy) > 0.5) return [];
+      if (Math.sqrt(dx * dx + dy * dy) > COMBAT_RADIUS) return [];
       return [
         {
           fromX: ship.position.x,

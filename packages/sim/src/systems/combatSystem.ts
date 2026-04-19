@@ -1,7 +1,7 @@
 import { getShipDef } from "@fa/content";
-import type { World } from "@fa/domain";
+import type { ShipId, World } from "@fa/domain";
 
-const COMBAT_RADIUS = 0.5; // sector units — ship must be this close to attack
+export const COMBAT_RADIUS = 0.5; // sector units — ship must be this close to attack
 const DAMAGE_PER_HARDPOINT = 5; // HP per tick per hardpoint
 
 export function tickCombat(world: World): void {
@@ -29,6 +29,7 @@ export function tickCombat(world: World): void {
       if (defender.ownerId === ship.ownerId) continue; // don't friendly-fire
       if (defender.order.kind !== "defend") continue;
       if (defender.order.target !== target.id) continue;
+      if (defender.hullHp <= 0) continue; // already killed this tick
 
       defender.hullHp = Math.max(0, defender.hullHp - damage);
       hitDefender = true;
@@ -42,6 +43,7 @@ export function tickCombat(world: World): void {
     // Fire colony.under_attack event once per tick per asteroid
     if (
       target.ownerId &&
+      target.ownerId !== ship.ownerId &&
       !world.eventQueue.some((e) => e.kind === "colony.under_attack" && e.asteroidId === target.id)
     ) {
       world.eventQueue.push({
@@ -80,9 +82,11 @@ export function tickCombat(world: World): void {
   }
 
   // Remove destroyed ships
+  const dead: ShipId[] = [];
   for (const [id, ship] of world.ships) {
-    if (ship.hullHp <= 0) {
-      world.ships.delete(id);
-    }
+    if (ship.hullHp <= 0) dead.push(id);
+  }
+  for (const id of dead) {
+    world.ships.delete(id);
   }
 }
