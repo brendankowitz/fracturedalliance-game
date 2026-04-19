@@ -175,6 +175,7 @@ export function applyCommand(world: World, command: Command): void {
       if (!human || agent.ownerId !== human.id || agent.missionKind !== null) return;
       const target = world.asteroids.get(command.targetAsteroidId);
       if (!target) return;
+      if (target.ownerId === human.id) return;
 
       if (target.ownerId) {
         const noCovertIdx = world.treaties.findIndex(

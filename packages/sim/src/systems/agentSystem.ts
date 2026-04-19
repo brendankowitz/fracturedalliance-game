@@ -1,14 +1,6 @@
 import { getAllBlueprintDefs } from "@fa/content";
-import type { Agent, AgentMissionKind, AsteroidId, Player, World } from "@fa/domain";
+import type { Agent, AsteroidId, Player, World } from "@fa/domain";
 import { blueprintId } from "@fa/domain";
-
-const MISSION_LABELS: Record<AgentMissionKind, string> = {
-  recon: "Recon",
-  techSteal: "Tech Steal",
-  sabotage: "Sabotage",
-  blackmail: "Blackmail",
-  liberate: "Liberate",
-};
 
 function defenderSecurity(world: World, asteroidId: AsteroidId): number {
   const asteroid = world.asteroids.get(asteroidId);
@@ -20,16 +12,12 @@ function defenderSecurity(world: World, asteroidId: AsteroidId): number {
   return Math.min(secCount * 15, 85);
 }
 
-function resolveSuccess(agent: Agent, security: number, world: World): boolean {
+function resolveOutcome(agent: Agent, security: number, world: World): "success" | "captured" | "failed" {
   const roll = Math.floor(world.prng.next() * 100) + 1;
   const threshold = agent.stealth - security;
-  return roll <= threshold;
-}
-
-function isCaptured(agent: Agent, security: number, world: World): boolean {
-  const roll = Math.floor(world.prng.next() * 100) + 1;
-  const threshold = agent.stealth - security;
-  return roll > threshold + 40;
+  if (roll <= threshold) return "success";
+  if (roll > threshold + 40) return "captured";
+  return "failed";
 }
 
 function applyMissionEffect(world: World, agent: Agent, human: Player): void {
@@ -139,35 +127,29 @@ export function tickAgents(world: World): void {
 
   for (const agent of world.agents.values()) {
     if (agent.ownerId !== human.id) continue;
-    if (agent.missionKind === null || agent.missionCompleteTick === null) continue;
+    if (agent.missionKind === null || agent.missionTarget === null || agent.missionCompleteTick === null) continue;
     if (world.tick < agent.missionCompleteTick) continue;
 
-    const security = defenderSecurity(world, agent.missionTarget ?? ("" as AsteroidId));
-    const succeeded = resolveSuccess(agent, security, world);
+    const security = defenderSecurity(world, agent.missionTarget);
+    const outcome = resolveOutcome(agent, security, world);
 
-    if (succeeded) {
+    if (outcome === "success") {
       applyMissionEffect(world, agent, human);
       clearMission(agent);
+    } else if (outcome === "captured") {
+      world.eventQueue.push({
+        kind: "agent.captured",
+        priority: "amber",
+        agentName: agent.name,
+      });
+      world.agents.delete(agent.id);
     } else {
-      const captured = isCaptured(agent, security, world);
-      if (captured) {
-        world.eventQueue.push({
-          kind: "agent.captured",
-          priority: "amber",
-          agentName: agent.name,
-        });
-        world.agents.delete(agent.id);
-      } else {
-        world.eventQueue.push({
-          kind: "agent.mission_failed",
-          priority: "grey",
-          agentName: agent.name,
-        });
-        clearMission(agent);
-      }
+      world.eventQueue.push({
+        kind: "agent.mission_failed",
+        priority: "grey",
+        agentName: agent.name,
+      });
+      clearMission(agent);
     }
   }
 }
-
-// Suppress unused variable warning — MISSION_LABELS is intentionally exported for UI use
-export { MISSION_LABELS };
