@@ -174,6 +174,26 @@ describe("setAsteroidDestination command", () => {
     expect(asteroid.engines.chargeTick).toBe(100);
     expect(world.eventQueue).toHaveLength(0);
   });
+
+  it("ignores when already in transit (etaTick set, chargeTick null)", () => {
+    const world = makeMinimalWorld();
+    const humanAsteroidId = asteroidId("asteroid-human");
+    const aiAsteroidId = asteroidId("asteroid-ai");
+
+    const asteroid = world.asteroids.get(humanAsteroidId)!;
+    asteroid.engines.etaTick = 150;
+    asteroid.engines.chargeTick = null;
+
+    applyCommand(world, {
+      kind: "setAsteroidDestination",
+      asteroidId: humanAsteroidId,
+      destinationId: aiAsteroidId,
+    });
+
+    // etaTick unchanged, no new event
+    expect(asteroid.engines.etaTick).toBe(150);
+    expect(world.eventQueue).toHaveLength(0);
+  });
 });
 
 describe("cancelAsteroidEngine command", () => {
