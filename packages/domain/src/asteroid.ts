@@ -6,6 +6,7 @@ export interface BuildQueueItem {
   progressTicks: number;
   totalTicks: number;
   cell: { x: number; y: number };
+  queuedAt: number;
 }
 
 export interface AsteroidEngineState {

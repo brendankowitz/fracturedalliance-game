@@ -9,6 +9,7 @@ import { createWorld } from "./world.ts";
 
 export type { Command } from "./commands.ts";
 export type { AsteroidSnapshot, DiplomacyEntry, HudSnapshot };
+export { ARRIVAL_RADIUS } from "./systems/shipSystem.ts";
 
 export class SimApi {
   private world: World;

@@ -86,7 +86,7 @@ describe("AsteroidInspector", () => {
 
   it("shows build queue item with percentage text", () => {
     const asteroid = makeAsteroid({
-      buildQueue: [{ buildingKind: "airProcessor", progressTicks: 50, totalTicks: 100 }],
+      buildQueue: [{ buildingKind: "airProcessor", progressTicks: 50, totalTicks: 100, queuedAt: 0 }],
     });
     useGameStore.setState({ snapshot: makeSnapshot({ asteroids: [asteroid] }) });
     useUiStore.setState({ selectedAsteroidId: ASTEROID_ID });

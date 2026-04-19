@@ -1,7 +1,7 @@
 import { getShipDef } from "@fa/content";
 import type { World } from "@fa/domain";
 
-const ARRIVAL_RADIUS = 0.5; // sector units — ship is "at destination" when within this range
+export const ARRIVAL_RADIUS = 0.5; // sector units — ship is "at destination" when within this range
 
 function length(v: { x: number; y: number }): number {
   return Math.sqrt(v.x * v.x + v.y * v.y);

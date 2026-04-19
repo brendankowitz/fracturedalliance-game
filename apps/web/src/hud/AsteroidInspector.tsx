@@ -1,4 +1,5 @@
 import { findBuildingDef, getOreDef, getRaceDef } from "@fa/content";
+import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 
@@ -27,7 +28,7 @@ export function AsteroidInspector() {
 
   const shipsHere = snapshot.ships.filter(
     (s) =>
-      Math.hypot(s.position.x - asteroid.sector.x, s.position.y - asteroid.sector.y) < 1.0,
+      Math.hypot(s.position.x - asteroid.sector.x, s.position.y - asteroid.sector.y) <= ARRIVAL_RADIUS,
   );
 
   return (
@@ -136,7 +137,7 @@ export function AsteroidInspector() {
                 : 0;
             const label = findBuildingDef(item.buildingKind)?.label ?? formatKind(item.buildingKind);
             return (
-              <div key={i} style={{ marginBottom: 4 }}>
+              <div key={`${item.buildingKind}-${item.queuedAt}`} style={{ marginBottom: 4 }}>
                 <div style={{ color: "#aaa" }}>{label}</div>
                 <div
                   style={{

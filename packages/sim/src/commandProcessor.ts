@@ -25,6 +25,7 @@ export function applyCommand(world: World, command: Command): void {
         progressTicks: 0,
         totalTicks: def.buildTimeTicks,
         cell: command.cell,
+        queuedAt: world.tick,
       });
       break;
     }

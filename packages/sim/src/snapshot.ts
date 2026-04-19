@@ -14,7 +14,7 @@ export interface AsteroidSnapshot {
   stability: number;
   happiness: number;
   buildingKinds: string[];
-  buildQueue: Array<{ buildingKind: string; progressTicks: number; totalTicks: number }>;
+  buildQueue: Array<{ buildingKind: string; progressTicks: number; totalTicks: number; queuedAt: number }>;
   powerBalance: number;
 }
 
@@ -82,6 +82,7 @@ export function takeSnapshot(world: World): HudSnapshot {
       buildingKind: q.buildingKind,
       progressTicks: q.progressTicks,
       totalTicks: q.totalTicks,
+      queuedAt: q.queuedAt,
     })),
     powerBalance: computePowerBalance(world, a.id),
   }));
