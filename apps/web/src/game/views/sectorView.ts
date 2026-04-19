@@ -30,7 +30,7 @@ export class SectorView {
   private _dragOffsetStartY = 0;
 
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
-  private readonly _asteroidGraphics: Map<string, { gfx: Graphics; label: Text }> = new Map();
+  private readonly _asteroidGraphics: Map<AsteroidId, { gfx: Graphics; label: Text }> = new Map();
 
   constructor(app: Application, onSelectAsteroid: (id: AsteroidId) => void) {
     this._onSelectAsteroid = onSelectAsteroid;
@@ -94,7 +94,7 @@ export class SectorView {
     // Build a set of AI player ids (non-human, non-neutral)
     const aiPlayerIds = new Set(snapshot.players.filter((p) => !p.isHuman).map((p) => p.id));
 
-    const seenIds = new Set<string>();
+    const seenIds = new Set<AsteroidId>();
 
     for (const asteroid of asteroids) {
       seenIds.add(asteroid.id);
@@ -104,12 +104,11 @@ export class SectorView {
         const gfx = new Graphics();
         gfx.eventMode = "static";
         gfx.cursor = "pointer";
-        gfx.on("pointerdown", (e) => {
-          e.stopPropagation();
-        });
         gfx.on("pointerup", (e) => {
-          e.stopPropagation();
-          this._onSelectAsteroid(asteroid.id as AsteroidId);
+          if (!this._dragging) {
+            this._onSelectAsteroid(asteroid.id);
+            e.stopPropagation();
+          }
         });
 
         const label = new Text({
@@ -154,15 +153,13 @@ export class SectorView {
     }
 
     // Remove graphics for asteroids no longer in snapshot
-    for (const [id, { gfx, label }] of this._asteroidGraphics) {
-      if (!seenIds.has(id)) {
-        gfx.destroy();
-        label.destroy();
-        this._asteroidGraphics.delete(id);
-      }
+    const toRemove = [...this._asteroidGraphics.keys()].filter((id) => !seenIds.has(id));
+    for (const id of toRemove) {
+      const entry = this._asteroidGraphics.get(id)!;
+      entry.gfx.destroy();
+      entry.label.destroy();
+      this._asteroidGraphics.delete(id);
     }
-
-    this._applyTransform();
   }
 
   destroy(): void {

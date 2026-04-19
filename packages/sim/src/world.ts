@@ -68,7 +68,12 @@ function rollDeposits(size: SizeClass, prng: { next(): number }): Partial<OreRec
         ? 2 + Math.round(prng.next())
         : 3 + Math.round(prng.next());
 
-  const shuffled: Phase1Ore[] = [...PHASE1_ORES].sort(() => prng.next() - 0.5);
+  const shuffled: Phase1Ore[] = [...PHASE1_ORES];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(prng.next() * (i + 1));
+    // biome-ignore lint/style/noNonNullAssertion -- bounds guaranteed by loop
+    [shuffled[i], shuffled[j]] = [shuffled[i]!, shuffled[j]!];
+  }
   const chosen = shuffled.slice(0, oreCount);
 
   const result: Partial<OreRecord<number>> = {};
@@ -146,7 +151,7 @@ export function createWorld(config: WorldConfig): World {
   };
 
   // Procedural neutral asteroid belt
-  const neutralCount = 5 + Math.floor(prng.next() * 4); // 5-8
+  const neutralCount = 6 + Math.floor(prng.next() * 5); // 6-10
   const asteroids: Map<AsteroidId, Asteroid> = new Map([[starterAsteroidId, starterAsteroid]]);
   const buildings: Map<BuildingId, Building> = new Map([
     [cpuBuildingId, makeCpuBuilding(cpuBuildingId, starterAsteroidId)],
@@ -192,7 +197,7 @@ export function createWorld(config: WorldConfig): World {
     asteroids.set(aid, neutralAsteroid);
   }
 
-  // Kryll AI player — placed at sector opposite the human (antipodal)
+  // Kryll AI player — placed at the edge of the neutral belt, offset from center along the negative-y axis
   const kryllId: PlayerId = playerId("player-kryll");
   const kryllAsteroidId: AsteroidId = asteroidId("asteroid-kryll");
   const kryllCpuId: BuildingId = buildingId("building-cpu-kryll");

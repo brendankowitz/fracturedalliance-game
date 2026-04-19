@@ -46,6 +46,7 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
 
       if (instance !== null && timeScale > 0) {
         accumulator += dt * timeScale;
+        let ticked = false;
         while (accumulator >= FIXED_STEP_MS) {
           for (const cmd of pendingCommands) {
             await instance.enqueueCommand(cmd);
@@ -53,10 +54,13 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
           pendingCommands.length = 0;
           await instance.tick(FIXED_STEP_MS);
           accumulator -= FIXED_STEP_MS;
+          ticked = true;
         }
-        const snap = await instance.getSnapshot();
-        useGameStore.getState().setSnapshot(snap);
-        sectorView?.update(snap);
+        if (ticked) {
+          const snap = await instance.getSnapshot();
+          useGameStore.getState().setSnapshot(snap);
+          sectorView?.update(snap);
+        }
       }
 
       rafId = requestAnimationFrame(frame);
@@ -90,7 +94,6 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
       const save = await idbLoad(slot);
       if (!save) return;
       // Full restore wired in Phase 1 when SimApi.restore(save) is implemented
-      console.log("loaded save", save);
     },
   };
 }
