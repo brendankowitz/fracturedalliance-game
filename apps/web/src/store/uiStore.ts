@@ -29,6 +29,8 @@ interface UiState {
   toggleNotificationFeed: () => void;
   setColorPalette: (p: ColorPalette) => void;
   setFontScale: (v: number) => void;
+  ecoMode: boolean;
+  toggleEcoMode: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -58,4 +60,6 @@ export const useUiStore = create<UiState>((set) => ({
   toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
   setColorPalette: (p) => set({ colorPalette: p }),
   setFontScale: (v) => set({ fontScale: v }),
+  ecoMode: false,
+  toggleEcoMode: () => set((s) => ({ ecoMode: !s.ecoMode })),
 }));

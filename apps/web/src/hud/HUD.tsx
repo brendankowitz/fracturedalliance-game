@@ -43,6 +43,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const setColorPalette = useUiStore((s) => s.setColorPalette);
   const fontScale = useUiStore((s) => s.fontScale);
   const setFontScale = useUiStore((s) => s.setFontScale);
+  const ecoMode = useUiStore((s) => s.ecoMode);
+  const toggleEcoMode = useUiStore((s) => s.toggleEcoMode);
 
   if (!snapshot) {
     return (
@@ -279,6 +281,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
             {scale}%
           </button>
         ))}
+        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
+        <button
+          type="button"
+          onClick={toggleEcoMode}
+          aria-pressed={ecoMode}
+          aria-label="Eco mode — reduces visual effects for performance"
+          style={{
+            background: ecoMode ? "#0a200a" : "#0a1830",
+            border: `1px solid ${ecoMode ? "#44aa44" : "#224"}`,
+            color: ecoMode ? "#88cc88" : "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 9,
+            padding: "2px 5px",
+            cursor: "pointer",
+          }}
+        >
+          Eco
+        </button>
       </div>
       <BlackMarketPanel onCommand={onCommand} />
       <TradePanel onCommand={onCommand} />
