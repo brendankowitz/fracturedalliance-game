@@ -1,0 +1,92 @@
+[
+  {
+    "kind": "cpu",
+    "label": "CPU Core",
+    "costCredits": 0,
+    "buildTimeTicks": 0,
+    "powerDelta": -5,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "unique": true
+  },
+  {
+    "kind": "airProcessor",
+    "label": "Air Processor",
+    "costCredits": 400,
+    "buildTimeTicks": 60,
+    "powerDelta": -4,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 400
+  },
+  {
+    "kind": "hydrationPlant",
+    "label": "Hydration Plant",
+    "costCredits": 400,
+    "buildTimeTicks": 60,
+    "powerDelta": -3,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 400,
+    "airDelta": 0
+  },
+  {
+    "kind": "hydroponics",
+    "label": "Hydroponics",
+    "costCredits": 600,
+    "buildTimeTicks": 80,
+    "powerDelta": -4,
+    "popCapDelta": 0,
+    "foodDelta": 20,
+    "waterDelta": 0,
+    "airDelta": 0
+  },
+  {
+    "kind": "livingQuarters",
+    "label": "Living Quarters",
+    "costCredits": 300,
+    "buildTimeTicks": 60,
+    "powerDelta": -1,
+    "popCapDelta": 50,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0
+  },
+  {
+    "kind": "powerPlant",
+    "label": "Power Plant",
+    "costCredits": 700,
+    "buildTimeTicks": 100,
+    "powerDelta": 10,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0
+  },
+  {
+    "kind": "mineMk1",
+    "label": "Mine Mk1",
+    "costCredits": 500,
+    "buildTimeTicks": 80,
+    "powerDelta": -2,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0,
+    "oreProduction": { "selenium": 1, "asteros": 0.5 }
+  },
+  {
+    "kind": "storageTower",
+    "label": "Storage Tower",
+    "costCredits": 600,
+    "buildTimeTicks": 80,
+    "powerDelta": -1,
+    "popCapDelta": 0,
+    "foodDelta": 0,
+    "waterDelta": 0,
+    "airDelta": 0
+  }
+]

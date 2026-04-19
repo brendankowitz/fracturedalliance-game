@@ -1,0 +1,12 @@
+[
+  { "kind": "selenium", "label": "Selenium", "basePrice": 100, "depth": "surface" },
+  { "kind": "asteros", "label": "Asteros", "basePrice": 150, "depth": "surface" },
+  { "kind": "barium", "label": "Barium", "basePrice": 220, "depth": "surface" },
+  { "kind": "crystalite", "label": "Crystalite", "basePrice": 300, "depth": "mid" },
+  { "kind": "quazinc", "label": "Quazinc", "basePrice": 380, "depth": "mid" },
+  { "kind": "bytanium", "label": "Bytanium", "basePrice": 500, "depth": "mid" },
+  { "kind": "korellium", "label": "Korellium", "basePrice": 650, "depth": "deep" },
+  { "kind": "dragonium", "label": "Dragonium", "basePrice": 820, "depth": "deep" },
+  { "kind": "traxium", "label": "Traxium", "basePrice": 1100, "depth": "seismic" },
+  { "kind": "nexos", "label": "Nexos", "basePrice": 1500, "depth": "seismic" }
+]
