@@ -16,7 +16,7 @@ export function VictoryScreen({ condition }: Props) {
       style={{
         position: "absolute",
         inset: 0,
-        background: "rgba(0, 8, 24, 0.88)",
+        background: "rgba(0, 20, 8, 0.88)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
