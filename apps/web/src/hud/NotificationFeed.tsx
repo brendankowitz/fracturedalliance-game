@@ -53,48 +53,39 @@ export function NotificationFeed() {
       label: EVENT_LABELS[ev.kind] ?? ev.kind,
     }));
 
+    const { paused: isPaused, setPaused: doSetPaused } = useUiStore.getState();
     const shouldPause = newEntries.some(
       (e) => (e.priority === "red" && autoPause.red) || (e.priority === "amber" && autoPause.amber),
     );
-    if (shouldPause && !paused) {
-      setPaused(true);
+    if (shouldPause && !isPaused) {
+      doSetPaused(true);
     }
 
     setEntries((prev) => [...newEntries, ...prev].slice(0, MAX_ENTRIES));
-  }, [snapshot, autoPause, paused, setPaused]);
-
-  if (!open) return null;
+  }, [snapshot, autoPause]);
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: 44,
-        right: 16,
-        width: 260,
-        maxHeight: 320,
-        background: "#0a1830",
-        border: "1px solid #224",
-        color: "#c8d8ff",
-        fontFamily: "monospace",
-        fontSize: 11,
-        zIndex: 12,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <>
+      {/* Always-visible PAUSED indicator, regardless of feed open state */}
       {paused && (
         <div
           style={{
+            position: "absolute",
+            top: 44,
+            right: 16,
             background: "#220",
-            borderBottom: "1px solid #440",
-            padding: "4px 8px",
+            border: "1px solid #440",
+            color: "#fa4",
+            fontFamily: "monospace",
+            fontSize: 12,
+            padding: "4px 10px",
+            zIndex: 13,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            gap: 8,
           }}
         >
-          <span style={{ color: "#fa4", fontWeight: "bold" }}>⏸ PAUSED</span>
+          <span style={{ fontWeight: "bold" }}>⏸ PAUSED</span>
           <button
             type="button"
             onClick={() => setPaused(false)}
@@ -112,77 +103,98 @@ export function NotificationFeed() {
           </button>
         </div>
       )}
-      <div style={{ overflowY: "auto", flex: 1, padding: "4px 0" }}>
-        {entries.length === 0 && (
-          <div style={{ padding: "6px 8px", color: "#446" }}>No events yet</div>
-        )}
-        {entries.map((e) => (
-          <div
-            key={e.id}
-            style={{ padding: "2px 8px", borderBottom: "1px solid #112", display: "flex", gap: 6 }}
-          >
-            <span style={{ color: PRIORITY_COLORS[e.priority], flexShrink: 0 }}>●</span>
-            <span style={{ flex: 1 }}>{e.label}</span>
-            <span style={{ color: "#445", flexShrink: 0 }}>T{e.tick}</span>
+      {/* Collapsible feed panel */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: paused ? 84 : 44,
+            right: 16,
+            width: 260,
+            maxHeight: 320,
+            background: "#0a1830",
+            border: "1px solid #224",
+            color: "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 11,
+            zIndex: 12,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div style={{ overflowY: "auto", flex: 1, padding: "4px 0" }}>
+            {entries.length === 0 && (
+              <div style={{ padding: "6px 8px", color: "#446" }}>No events yet</div>
+            )}
+            {entries.map((e) => (
+              <div
+                key={e.id}
+                style={{ padding: "2px 8px", borderBottom: "1px solid #112", display: "flex", gap: 6 }}
+              >
+                <span style={{ color: PRIORITY_COLORS[e.priority], flexShrink: 0 }}>●</span>
+                <span style={{ flex: 1 }}>{e.label}</span>
+                <span style={{ color: "#445", flexShrink: 0 }}>T{e.tick}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div
-        style={{
-          borderTop: "1px solid #224",
-          padding: "4px 8px",
-          display: "flex",
-          gap: 6,
-          fontSize: 10,
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setAutoPause((p) => ({ ...p, red: !p.red }))}
-          style={{
-            background: autoPause.red ? "#2a0a0a" : "#1a2840",
-            border: `1px solid ${autoPause.red ? "#f44" : "#449"}`,
-            color: autoPause.red ? "#f44" : "#c8d8ff",
-            fontFamily: "monospace",
-            fontSize: 10,
-            padding: "2px 5px",
-            cursor: "pointer",
-          }}
-        >
-          ⏸ Red
-        </button>
-        <button
-          type="button"
-          onClick={() => setAutoPause((p) => ({ ...p, amber: !p.amber }))}
-          style={{
-            background: autoPause.amber ? "#1a1200" : "#1a2840",
-            border: `1px solid ${autoPause.amber ? "#fa4" : "#449"}`,
-            color: autoPause.amber ? "#fa4" : "#c8d8ff",
-            fontFamily: "monospace",
-            fontSize: 10,
-            padding: "2px 5px",
-            cursor: "pointer",
-          }}
-        >
-          ⏸ Amber
-        </button>
-        <button
-          type="button"
-          onClick={() => setEntries([])}
-          style={{
-            marginLeft: "auto",
-            background: "#1a2840",
-            border: "1px solid #449",
-            color: "#667",
-            fontFamily: "monospace",
-            fontSize: 10,
-            padding: "2px 5px",
-            cursor: "pointer",
-          }}
-        >
-          Clear
-        </button>
-      </div>
-    </div>
+          <div
+            style={{
+              borderTop: "1px solid #224",
+              padding: "4px 8px",
+              display: "flex",
+              gap: 6,
+              fontSize: 10,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setAutoPause((p) => ({ ...p, red: !p.red }))}
+              style={{
+                background: autoPause.red ? "#2a0a0a" : "#1a2840",
+                border: `1px solid ${autoPause.red ? "#f44" : "#449"}`,
+                color: autoPause.red ? "#f44" : "#c8d8ff",
+                fontFamily: "monospace",
+                fontSize: 10,
+                padding: "2px 5px",
+                cursor: "pointer",
+              }}
+            >
+              ⏸ Red
+            </button>
+            <button
+              type="button"
+              onClick={() => setAutoPause((p) => ({ ...p, amber: !p.amber }))}
+              style={{
+                background: autoPause.amber ? "#1a1200" : "#1a2840",
+                border: `1px solid ${autoPause.amber ? "#fa4" : "#449"}`,
+                color: autoPause.amber ? "#fa4" : "#c8d8ff",
+                fontFamily: "monospace",
+                fontSize: 10,
+                padding: "2px 5px",
+                cursor: "pointer",
+              }}
+            >
+              ⏸ Amber
+            </button>
+            <button
+              type="button"
+              onClick={() => setEntries([])}
+              style={{
+                marginLeft: "auto",
+                background: "#1a2840",
+                border: "1px solid #449",
+                color: "#667",
+                fontFamily: "monospace",
+                fontSize: 10,
+                padding: "2px 5px",
+                cursor: "pointer",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
