@@ -1,4 +1,4 @@
-import { getBuildingDef } from "@fa/content";
+import { getBuildingDefOrNull } from "@fa/content";
 import type { World } from "@fa/domain";
 import type { Command } from "./commands.ts";
 
@@ -12,7 +12,8 @@ export function applyCommand(world: World, command: Command): void {
       const player = world.players.get(asteroid.ownerId);
       if (!player) return;
 
-      const def = getBuildingDef(command.buildingKind);
+      const def = getBuildingDefOrNull(command.buildingKind);
+      if (!def) return;
       if (player.credits < def.costCredits) return;
 
       player.credits -= def.costCredits;
@@ -34,8 +35,8 @@ export function applyCommand(world: World, command: Command): void {
       if (asteroid.ownerId) {
         const player = world.players.get(asteroid.ownerId);
         if (player) {
-          const def = getBuildingDef(item.buildingKind);
-          player.credits += Math.floor(def.costCredits * 0.5);
+          const def = getBuildingDefOrNull(item.buildingKind);
+          if (def) player.credits += Math.floor(def.costCredits * 0.5);
         }
       }
 

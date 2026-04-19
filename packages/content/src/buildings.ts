@@ -45,6 +45,10 @@ export function getBuildingDef(kind: string): BuildingDef {
   return def;
 }
 
+export function getBuildingDefOrNull(kind: string): BuildingDef | undefined {
+  return index.get(kind);
+}
+
 export function getAllBuildingDefs(): ReadonlyArray<BuildingDef> {
   return allDefs;
 }
