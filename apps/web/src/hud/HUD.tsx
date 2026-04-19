@@ -2,6 +2,7 @@ import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { AsteroidInspector } from "./AsteroidInspector.tsx";
+import { BlueprintShop } from "./BlueprintShop.tsx";
 import { BuildingPanel } from "./BuildingPanel.tsx";
 import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
 import { GameOverScreen } from "./GameOverScreen.tsx";
@@ -24,7 +25,9 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const toggleSaveLoad = useUiStore((s) => s.toggleSaveLoadPanel);
   const toggleDiplomacy = useUiStore((s) => s.toggleDiplomacyPanel);
   const toggleAlerts = useUiStore((s) => s.toggleNotificationFeed);
+  const toggleBlueprintShop = useUiStore((s) => s.toggleBlueprintShop);
   const alertsOpen = useUiStore((s) => s.notificationFeedOpen);
+  const blueprintShopOpen = useUiStore((s) => s.blueprintShopOpen);
 
   if (!snapshot) {
     return (
@@ -62,6 +65,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         federationStanding={snapshot.federationStanding}
         tick={snapshot.tick}
       />
+      <button
+        type="button"
+        onClick={toggleBlueprintShop}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 344,
+          zIndex: 11,
+          background: "#0a1830",
+          border: `1px solid ${blueprintShopOpen ? "#c8d8ff" : "#224"}`,
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          padding: "4px 10px",
+          cursor: "pointer",
+        }}
+      >
+        ☰ Research
+      </button>
       <button
         type="button"
         onClick={toggleAlerts}
@@ -121,6 +142,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <TransporterPanel snapshot={snapshot} onCommand={onCommand} />
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
       <DiplomacyPanel snapshot={snapshot} onCommand={onCommand} />
+      <BlueprintShop onCommand={onCommand} />
       <NotificationFeed />
       <AsteroidInspector />
       <TutorialTooltip />

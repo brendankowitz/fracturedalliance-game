@@ -14,7 +14,12 @@ export interface AsteroidSnapshot {
   stability: number;
   happiness: number;
   buildingKinds: string[];
-  buildQueue: Array<{ buildingKind: string; progressTicks: number; totalTicks: number; queuedAt: number }>;
+  buildQueue: Array<{
+    buildingKind: string;
+    progressTicks: number;
+    totalTicks: number;
+    queuedAt: number;
+  }>;
   powerBalance: number;
 }
 
@@ -56,6 +61,7 @@ export interface HudSnapshot {
   combatFlashes: CombatFlash[];
   diplomacy: DiplomacyEntry[];
   gameEndState: GameEndState | null;
+  blueprintsOwned: string[];
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
@@ -131,6 +137,7 @@ export function takeSnapshot(world: World): HudSnapshot {
         };
       }),
     gameEndState: world.gameEndState,
+    blueprintsOwned: [...human.blueprintsOwned],
     combatFlashes: [...world.ships.values()].flatMap((ship) => {
       if (ship.order.kind !== "attackAsteroid") return [];
       const target = world.asteroids.get(ship.order.target);

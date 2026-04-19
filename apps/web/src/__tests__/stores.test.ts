@@ -9,7 +9,7 @@ describe("gameStore", () => {
   });
 
   it("setSnapshot updates the store", () => {
-    const mockSnap = {
+    const mockSnap: HudSnapshot = {
       tick: 5,
       credits: 9000,
       federationStanding: 50,
@@ -24,8 +24,9 @@ describe("gameStore", () => {
       combatFlashes: [],
       diplomacy: [],
       gameEndState: null,
+      blueprintsOwned: [],
     };
-    useGameStore.getState().setSnapshot(mockSnap as HudSnapshot);
+    useGameStore.getState().setSnapshot(mockSnap);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);
   });
 });

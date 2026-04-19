@@ -1,5 +1,5 @@
-import { findBuildingDef, getShipDef } from "@fa/content";
-import type { World } from "@fa/domain";
+import { findBlueprintDef, findBuildingDef, getShipDef } from "@fa/content";
+import type { BlueprintId, World } from "@fa/domain";
 import { shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
@@ -130,6 +130,25 @@ export function applyCommand(world: World, command: Command): void {
       if (!human.reputation.has(command.targetPlayerId)) {
         human.reputation.set(command.targetPlayerId, 0);
       }
+      break;
+    }
+    case "buyBlueprint": {
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+
+      const def = findBlueprintDef(command.blueprintId);
+      if (!def) return;
+
+      if (human.blueprintsOwned.has(command.blueprintId as BlueprintId)) return;
+      if (human.credits < def.costCredits) return;
+      if (
+        def.prerequisiteId !== null &&
+        !human.blueprintsOwned.has(def.prerequisiteId as BlueprintId)
+      )
+        return;
+
+      human.credits -= def.costCredits;
+      human.blueprintsOwned.add(command.blueprintId as BlueprintId);
       break;
     }
   }

@@ -1,0 +1,362 @@
+[
+  {
+    "id": "blueprint.mineMk2",
+    "label": "Mine Mk2",
+    "description": "Efficient ore extraction at greater depth.",
+    "discipline": "mining",
+    "tier": 1,
+    "costCredits": 4000,
+    "prerequisiteId": null
+  },
+  {
+    "id": "blueprint.deepBoreMine",
+    "label": "Deep Bore Mine",
+    "description": "Penetrates deep rock to reach richer deposits.",
+    "discipline": "mining",
+    "tier": 2,
+    "costCredits": 10000,
+    "prerequisiteId": "blueprint.mineMk2"
+  },
+  {
+    "id": "blueprint.oreRefinery",
+    "label": "Ore Refinery",
+    "description": "Processes raw ore to boost selenium and asteros yield.",
+    "discipline": "mining",
+    "tier": 3,
+    "costCredits": 20000,
+    "prerequisiteId": "blueprint.deepBoreMine"
+  },
+  {
+    "id": "blueprint.crystalSeparator",
+    "label": "Crystal Separator",
+    "description": "Isolates high-value crystaline and quantum minerals.",
+    "discipline": "mining",
+    "tier": 4,
+    "costCredits": 35000,
+    "prerequisiteId": "blueprint.oreRefinery"
+  },
+  {
+    "id": "blueprint.naniteExtractor",
+    "label": "Nanite Extractor",
+    "description": "Nanoscale machines extract trace amounts of all ore types.",
+    "discipline": "mining",
+    "tier": 5,
+    "costCredits": 55000,
+    "prerequisiteId": "blueprint.crystalSeparator"
+  },
+  {
+    "id": "blueprint.geothermalTap",
+    "label": "Geothermal Tap",
+    "description": "Harnesses asteroid core heat for power and mineral extraction.",
+    "discipline": "mining",
+    "tier": 6,
+    "costCredits": 80000,
+    "prerequisiteId": "blueprint.naniteExtractor"
+  },
+  {
+    "id": "blueprint.astralMiner",
+    "label": "Astral Miner",
+    "description": "Long-range probes mine rare ores: korellium, dragonium, traxium.",
+    "discipline": "mining",
+    "tier": 7,
+    "costCredits": 120000,
+    "prerequisiteId": "blueprint.geothermalTap"
+  },
+  {
+    "id": "blueprint.antimatterDrill",
+    "label": "Antimatter Drill",
+    "description": "Maximum extraction across all ore types using antimatter boring.",
+    "discipline": "mining",
+    "tier": 8,
+    "costCredits": 200000,
+    "prerequisiteId": "blueprint.astralMiner"
+  },
+  {
+    "id": "blueprint.fusionReactor",
+    "label": "Fusion Reactor",
+    "description": "Clean fusion power generation with high output.",
+    "discipline": "infrastructure",
+    "tier": 1,
+    "costCredits": 5000,
+    "prerequisiteId": null
+  },
+  {
+    "id": "blueprint.advHydroponics",
+    "label": "Advanced Hydroponics",
+    "description": "High-yield food cultivation using advanced growing techniques.",
+    "discipline": "infrastructure",
+    "tier": 2,
+    "costCredits": 12000,
+    "prerequisiteId": "blueprint.fusionReactor"
+  },
+  {
+    "id": "blueprint.atmosphericCondenser",
+    "label": "Atmospheric Condenser",
+    "description": "Condenses water vapour and synthesises breathable air at scale.",
+    "discipline": "infrastructure",
+    "tier": 3,
+    "costCredits": 22000,
+    "prerequisiteId": "blueprint.advHydroponics"
+  },
+  {
+    "id": "blueprint.gravityPlating",
+    "label": "Gravity Plating",
+    "description": "Optimised artificial gravity improves colony comfort.",
+    "discipline": "infrastructure",
+    "tier": 4,
+    "costCredits": 38000,
+    "prerequisiteId": "blueprint.atmosphericCondenser"
+  },
+  {
+    "id": "blueprint.biosphereDome",
+    "label": "Biosphere Dome",
+    "description": "Enclosed ecosystem providing food, water, and air.",
+    "discipline": "infrastructure",
+    "tier": 5,
+    "costCredits": 60000,
+    "prerequisiteId": "blueprint.gravityPlating"
+  },
+  {
+    "id": "blueprint.recyclingCentre",
+    "label": "Recycling Centre",
+    "description": "Neutralises radiation and repurposes waste, improving colony health.",
+    "discipline": "infrastructure",
+    "tier": 6,
+    "costCredits": 90000,
+    "prerequisiteId": "blueprint.biosphereDome"
+  },
+  {
+    "id": "blueprint.megaHabitat",
+    "label": "Mega Habitat",
+    "description": "Vast residential complex supporting large populations.",
+    "discipline": "infrastructure",
+    "tier": 7,
+    "costCredits": 140000,
+    "prerequisiteId": "blueprint.recyclingCentre"
+  },
+  {
+    "id": "blueprint.arcology",
+    "label": "Arcology",
+    "description": "Self-contained city-asteroid providing maximum habitation and welfare.",
+    "discipline": "infrastructure",
+    "tier": 8,
+    "costCredits": 220000,
+    "prerequisiteId": "blueprint.megaHabitat"
+  },
+  {
+    "id": "blueprint.turretBattery",
+    "label": "Turret Battery",
+    "description": "Automated defensive turrets to repel boarding craft.",
+    "discipline": "military",
+    "tier": 1,
+    "costCredits": 6000,
+    "prerequisiteId": null
+  },
+  {
+    "id": "blueprint.shieldGenerator",
+    "label": "Shield Generator",
+    "description": "Energy shield dampens incoming fire.",
+    "discipline": "military",
+    "tier": 2,
+    "costCredits": 14000,
+    "prerequisiteId": "blueprint.turretBattery"
+  },
+  {
+    "id": "blueprint.missileSilo",
+    "label": "Missile Silo",
+    "description": "Long-range missiles to strike approaching hostiles.",
+    "discipline": "military",
+    "tier": 3,
+    "costCredits": 25000,
+    "prerequisiteId": "blueprint.shieldGenerator"
+  },
+  {
+    "id": "blueprint.commandCentre",
+    "label": "Command Centre",
+    "description": "Military hub coordinating all defence systems.",
+    "discipline": "military",
+    "tier": 4,
+    "costCredits": 42000,
+    "prerequisiteId": "blueprint.missileSilo"
+  },
+  {
+    "id": "blueprint.ionCannon",
+    "label": "Ion Cannon",
+    "description": "Powerful directed energy weapon to disable enemy shields.",
+    "discipline": "military",
+    "tier": 5,
+    "costCredits": 65000,
+    "prerequisiteId": "blueprint.commandCentre"
+  },
+  {
+    "id": "blueprint.antimatterMine",
+    "label": "Antimatter Mine",
+    "description": "Proximity mines that devastate attacking vessels.",
+    "discipline": "military",
+    "tier": 6,
+    "costCredits": 95000,
+    "prerequisiteId": "blueprint.ionCannon"
+  },
+  {
+    "id": "blueprint.fortressWall",
+    "label": "Fortress Wall",
+    "description": "Impenetrable armoured shell around the asteroid.",
+    "discipline": "military",
+    "tier": 7,
+    "costCredits": 150000,
+    "prerequisiteId": "blueprint.antimatterMine"
+  },
+  {
+    "id": "blueprint.doomsdayDevice",
+    "label": "Doomsday Device",
+    "description": "Planet-killer weapon of last resort.",
+    "discipline": "military",
+    "tier": 8,
+    "costCredits": 250000,
+    "prerequisiteId": "blueprint.fortressWall"
+  },
+  {
+    "id": "blueprint.researchLab",
+    "label": "Research Lab",
+    "description": "Fundamental science facility boosting colony knowledge.",
+    "discipline": "science",
+    "tier": 1,
+    "costCredits": 5000,
+    "prerequisiteId": null
+  },
+  {
+    "id": "blueprint.computingArray",
+    "label": "Computing Array",
+    "description": "Parallel processing cluster accelerating all research.",
+    "discipline": "science",
+    "tier": 2,
+    "costCredits": 13000,
+    "prerequisiteId": "blueprint.researchLab"
+  },
+  {
+    "id": "blueprint.xenologyLab",
+    "label": "Xenology Lab",
+    "description": "Study of alien cultures improves diplomatic outcomes.",
+    "discipline": "science",
+    "tier": 3,
+    "costCredits": 24000,
+    "prerequisiteId": "blueprint.computingArray"
+  },
+  {
+    "id": "blueprint.materialsSynth",
+    "label": "Materials Synthesiser",
+    "description": "Synthesises advanced compounds reducing construction costs.",
+    "discipline": "science",
+    "tier": 4,
+    "costCredits": 40000,
+    "prerequisiteId": "blueprint.xenologyLab"
+  },
+  {
+    "id": "blueprint.quantumProcessor",
+    "label": "Quantum Processor",
+    "description": "Quantum computing provides exponential analytical power.",
+    "discipline": "science",
+    "tier": 5,
+    "costCredits": 62000,
+    "prerequisiteId": "blueprint.materialsSynth"
+  },
+  {
+    "id": "blueprint.warpResearch",
+    "label": "Warp Research Centre",
+    "description": "Investigates faster-than-light propulsion principles.",
+    "discipline": "science",
+    "tier": 6,
+    "costCredits": 92000,
+    "prerequisiteId": "blueprint.quantumProcessor"
+  },
+  {
+    "id": "blueprint.bioResearchLab",
+    "label": "Bio Research Lab",
+    "description": "Advanced biological sciences improve colony efficiency.",
+    "discipline": "science",
+    "tier": 7,
+    "costCredits": 145000,
+    "prerequisiteId": "blueprint.warpResearch"
+  },
+  {
+    "id": "blueprint.omniscienceNode",
+    "label": "Omniscience Node",
+    "description": "Quantum-entangled sensor grid revealing everything.",
+    "discipline": "science",
+    "tier": 8,
+    "costCredits": 230000,
+    "prerequisiteId": "blueprint.bioResearchLab"
+  },
+  {
+    "id": "blueprint.tradingPost",
+    "label": "Trading Post",
+    "description": "Attracts merchant traffic and generates passive income.",
+    "discipline": "commerce",
+    "tier": 1,
+    "costCredits": 4500,
+    "prerequisiteId": null
+  },
+  {
+    "id": "blueprint.blackMarket",
+    "label": "Black Market",
+    "description": "Underground trading bypassing federation trade restrictions.",
+    "discipline": "commerce",
+    "tier": 2,
+    "costCredits": 11000,
+    "prerequisiteId": "blueprint.tradingPost"
+  },
+  {
+    "id": "blueprint.smugglerBay",
+    "label": "Smuggler Bay",
+    "description": "Covert docking for contraband vessels reducing suspicion.",
+    "discipline": "commerce",
+    "tier": 3,
+    "costCredits": 21000,
+    "prerequisiteId": "blueprint.blackMarket"
+  },
+  {
+    "id": "blueprint.pricingOffice",
+    "label": "Pricing Office",
+    "description": "Market analysts negotiate better trade rates.",
+    "discipline": "commerce",
+    "tier": 4,
+    "costCredits": 36000,
+    "prerequisiteId": "blueprint.smugglerBay"
+  },
+  {
+    "id": "blueprint.federationLobby",
+    "label": "Federation Lobby",
+    "description": "Political influence operations improve federation standing.",
+    "discipline": "commerce",
+    "tier": 5,
+    "costCredits": 58000,
+    "prerequisiteId": "blueprint.pricingOffice"
+  },
+  {
+    "id": "blueprint.creditMint",
+    "label": "Credit Mint",
+    "description": "Licensed facility generating a steady credit income.",
+    "discipline": "commerce",
+    "tier": 6,
+    "costCredits": 88000,
+    "prerequisiteId": "blueprint.federationLobby"
+  },
+  {
+    "id": "blueprint.monopolyOffice",
+    "label": "Monopoly Office",
+    "description": "Corners the market on key ore commodities.",
+    "discipline": "commerce",
+    "tier": 7,
+    "costCredits": 135000,
+    "prerequisiteId": "blueprint.creditMint"
+  },
+  {
+    "id": "blueprint.galacticExchange",
+    "label": "Galactic Exchange",
+    "description": "Interstellar financial hub providing ultimate economic control.",
+    "discipline": "commerce",
+    "tier": 8,
+    "costCredits": 210000,
+    "prerequisiteId": "blueprint.monopolyOffice"
+  }
+]

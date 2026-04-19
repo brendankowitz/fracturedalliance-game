@@ -26,6 +26,7 @@ function makeSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
     combatFlashes: [],
     diplomacy: [],
     gameEndState: null,
+    blueprintsOwned: [],
     ...overrides,
   };
 }
