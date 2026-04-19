@@ -7,14 +7,15 @@ import {
   type Player,
   type PlayerId,
   playerId,
+  type Prng,
   type SizeClass,
 } from "@fa/domain";
-import type { Prng } from "@fa/domain";
 import { makePrng } from "./prng.ts";
 
 export interface GeneratedBelt {
   asteroids: Asteroid[];
   players: Player[];
+  prng: Prng;
 }
 
 const ASTEROID_NAMES: readonly string[] = [
@@ -142,12 +143,12 @@ function generateAsteroids(prng: Prng): Asteroid[] {
   });
 }
 
-function generatePlayers(prng: Prng): Player[] {
+function generatePlayers(prng: Prng, humanRaceId: string): Player[] {
   const allRaces = getAllRaceDefs();
 
   const humanPlayer: Player = {
     id: HUMAN_PLAYER_ID,
-    raceId: allRaces.find((r) => r.playable)?.id ?? allRaces[0]?.id ?? "helionCorp",
+    raceId: humanRaceId,
     isHuman: true,
     alive: true,
     credits: 10_000,
@@ -196,10 +197,10 @@ function assignStartingAsteroids(
   }
 }
 
-export function generateBelt(seed: number): GeneratedBelt {
+export function generateBelt(seed: number, humanRaceId: string): GeneratedBelt {
   const prng = makePrng(seed);
   const asteroids = generateAsteroids(prng);
-  const players = generatePlayers(prng);
+  const players = generatePlayers(prng, humanRaceId);
   assignStartingAsteroids(asteroids, players, prng);
-  return { asteroids, players };
+  return { asteroids, players, prng };
 }

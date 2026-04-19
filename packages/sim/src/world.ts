@@ -11,7 +11,6 @@ import {
   type World,
 } from "@fa/domain";
 import { generateBelt } from "./beltGenerator.ts";
-import { makePrng } from "./prng.ts";
 
 export interface WorldConfig {
   seed: number;
@@ -46,9 +45,10 @@ function makeCpuBuilding(bid: BuildingId, aid: AsteroidId): Building {
 }
 
 export function createWorld(config: WorldConfig): World {
-  const prng = makePrng(config.seed);
-
-  const { asteroids: beltAsteroids, players: beltPlayers } = generateBelt(config.seed);
+  const { asteroids: beltAsteroids, players: beltPlayers, prng } = generateBelt(
+    config.seed,
+    config.humanPlayerRaceId,
+  );
 
   const asteroids = new Map(beltAsteroids.map((a) => [a.id, a]));
   const buildings = new Map<BuildingId, Building>();
@@ -64,12 +64,6 @@ export function createWorld(config: WorldConfig): World {
   }
 
   const players = new Map(beltPlayers.map((p) => [p.id, p]));
-
-  // Override human player raceId from config
-  const human = [...players.values()].find((p) => p.isHuman);
-  if (human) {
-    (human as { raceId: string }).raceId = config.humanPlayerRaceId;
-  }
 
   const agents = new Map<AgentId, Agent>();
   for (const def of getAllAgentDefs()) {
