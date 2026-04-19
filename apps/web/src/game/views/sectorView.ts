@@ -47,7 +47,34 @@ export class SectorView {
 
     this.container = new Container();
     this._worldLayer = new Container();
+
+    // Static starfield background (deterministic via LCG)
+    const starfield = new Graphics();
+    let sx = 12345;
+    const rand = () => {
+      sx = (sx * 1664525 + 1013904223) & 0xffffffff;
+      return (sx >>> 0) / 0xffffffff;
+    };
+    for (let i = 0; i < 200; i++) {
+      const x = rand() * 1400;
+      const y = rand() * 900;
+      const size = rand() < 0.8 ? 0.8 : 1.5;
+      const alpha = 0.2 + rand() * 0.5;
+      starfield.circle(x, y, size).fill({ color: 0xffffff, alpha });
+    }
+    this.container.addChild(starfield);
     this.container.addChild(this._worldLayer);
+
+    // Faint coordinate grid in world space (pans/zooms with map)
+    const gridLayer = new Graphics();
+    const GRID_ALPHA = 0.06;
+    const GRID_LINES = 8;
+    for (let i = 0; i <= GRID_LINES; i++) {
+      const pos = i * SECTOR_SCALE;
+      gridLayer.moveTo(pos, 0).lineTo(pos, GRID_LINES * SECTOR_SCALE).stroke({ color: 0x3366aa, alpha: GRID_ALPHA, width: 1 });
+      gridLayer.moveTo(0, pos).lineTo(GRID_LINES * SECTOR_SCALE, pos).stroke({ color: 0x3366aa, alpha: GRID_ALPHA, width: 1 });
+    }
+    this._worldLayer.addChild(gridLayer);
 
     this._laserGfx = new Graphics();
     this._worldLayer.addChild(this._laserGfx);
@@ -157,10 +184,14 @@ export class SectorView {
       const sy = asteroid.sector.y * SECTOR_SCALE;
 
       gfx.clear();
-      gfx
-        .circle(sx, sy, radius)
-        .fill({ color: colour, alpha: 0.85 })
-        .stroke({ color: 0xffffff, alpha: 0.3, width: 1 });
+      // Outer glow ring (ownership indicator)
+      gfx.circle(sx, sy, radius + 3).fill({ color: colour, alpha: 0.12 });
+      // Main body — slightly darker fill with lighter core
+      gfx.circle(sx, sy, radius).fill({ color: colour, alpha: 0.9 });
+      // Highlight (top-left crescent)
+      gfx.circle(sx - radius * 0.25, sy - radius * 0.25, radius * 0.45).fill({ color: 0xffffff, alpha: 0.12 });
+      // Crisp border
+      gfx.circle(sx, sy, radius).stroke({ color: colour, alpha: 0.7, width: 1.5 });
 
       label.x = sx;
       label.y = sy + radius + 2;

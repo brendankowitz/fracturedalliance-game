@@ -1,5 +1,5 @@
 import { findBuildingDef, getOreDef, getRaceDef } from "@fa/content";
-import { asteroidId as mkAsteroidId } from "@fa/domain";
+import { SIZE_CLASS_GRID, asteroidId as mkAsteroidId } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
@@ -38,6 +38,18 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   );
 
   const isOwnedByHuman = asteroid.ownerId === snapshot.humanPlayerId;
+  const selectCell = useUiStore((s) => s.selectCell);
+  const toggleBuildingPanel = useUiStore((s) => s.toggleBuildingPanel);
+  const selectedCell = useUiStore((s) => s.selectedCell);
+
+  const gridDims =
+    (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[asteroid.sizeClass] ??
+    { width: 7, height: 7 };
+
+  const occupiedCells = new Map<string, string>(
+    asteroid.buildingsGrid.map((b) => [`${b.cell.x},${b.cell.y}`, b.kind]),
+  );
+
   const { engines } = asteroid;
 
   const otherAsteroids = snapshot.asteroids.filter((a) => a.id !== asteroid.id);
@@ -120,16 +132,81 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
         </section>
       )}
 
-      {asteroid.buildingKinds.length > 0 && (
+      {isOwnedByHuman && (
+        <section style={{ padding: "6px 8px", borderBottom: "1px solid #112" }}>
+          <div style={{ fontWeight: "bold", color: "#c8d8ff", marginBottom: 4, fontSize: 10 }}>
+            Surface Grid ({gridDims.width}×{gridDims.height})
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${gridDims.width}, 1fr)`,
+              gap: 2,
+            }}
+          >
+            {Array.from({ length: gridDims.height }, (_, y) =>
+              Array.from({ length: gridDims.width }, (_, x) => {
+                const key = `${x},${y}`;
+                const building = occupiedCells.get(key);
+                const isSelected = selectedCell?.x === x && selectedCell?.y === y;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    title={building ? formatKind(building) : `Cell (${x},${y})`}
+                    aria-label={building ? formatKind(building) : `Empty cell ${x},${y}`}
+                    onClick={() => {
+                      selectCell({ x, y });
+                      if (!building) {
+                        const bpOpen = useUiStore.getState().buildingPanelOpen;
+                        if (!bpOpen) toggleBuildingPanel();
+                      }
+                    }}
+                    style={{
+                      width: 18,
+                      height: 18,
+                      background: building
+                        ? "#1a3860"
+                        : isSelected
+                          ? "#2a4870"
+                          : "#0a1420",
+                      border: `1px solid ${isSelected ? "#4488cc" : building ? "#336" : "#1a2840"}`,
+                      color: building ? "#c8d8ff" : "#334",
+                      fontFamily: "monospace",
+                      fontSize: 7,
+                      cursor: "pointer",
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {building ? building.slice(0, 2).toUpperCase() : ""}
+                  </button>
+                );
+              }),
+            )}
+          </div>
+          {selectedCell && (
+            <div style={{ fontSize: 9, color: "#667", marginTop: 2 }}>
+              Selected: ({selectedCell.x},{selectedCell.y}){" "}
+              {occupiedCells.get(`${selectedCell.x},${selectedCell.y}`) ? "— occupied" : "— empty"}
+            </div>
+          )}
+        </section>
+      )}
+
+      {asteroid.buildingsGrid.length > 0 && (
         <section style={{ padding: "4px 8px", borderBottom: "1px solid #112" }}>
           <div style={{ fontWeight: "bold", color: "#c8d8ff", marginBottom: 2 }}>
-            Buildings ({asteroid.buildingKinds.length})
+            Buildings ({asteroid.buildingsGrid.length})
           </div>
-          {asteroid.buildingKinds.map((kind, i) => {
-            const label = findBuildingDef(kind)?.label ?? formatKind(kind);
+          {asteroid.buildingsGrid.map((b, i) => {
+            const label = findBuildingDef(b.kind)?.label ?? formatKind(b.kind);
             return (
-              <div key={`${kind}-${i}`} style={{ color: "#aaa" }}>
-                {label}
+              <div key={`${b.kind}-${i}`} style={{ color: "#aaa" }}>
+                {label} ({b.cell.x},{b.cell.y})
               </div>
             );
           })}

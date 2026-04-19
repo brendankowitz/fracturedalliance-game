@@ -36,6 +36,7 @@ export interface AsteroidSnapshot {
   stability: number;
   happiness: number;
   buildingKinds: string[];
+  buildingsGrid: Array<{ kind: string; cell: { x: number; y: number } }>;
   buildQueue: Array<{
     buildingKind: string;
     progressTicks: number;
@@ -115,6 +116,10 @@ export function takeSnapshot(world: World): HudSnapshot {
     buildingKinds: a.buildings.flatMap((bid) => {
       const b = world.buildings.get(bid);
       return b ? [b.defKind] : [];
+    }),
+    buildingsGrid: a.buildings.flatMap((bid) => {
+      const b = world.buildings.get(bid);
+      return b ? [{ kind: b.defKind, cell: { x: b.cell.x, y: b.cell.y } }] : [];
     }),
     buildQueue: a.buildQueue.map((q) => ({
       buildingKind: q.buildingKind,

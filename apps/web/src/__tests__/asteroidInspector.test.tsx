@@ -45,6 +45,7 @@ function makeAsteroid(overrides = {}) {
     stability: 1,
     happiness: 1,
     buildingKinds: [],
+    buildingsGrid: [],
     buildQueue: [],
     powerBalance: 0,
     engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
