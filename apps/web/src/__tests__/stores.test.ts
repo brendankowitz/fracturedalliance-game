@@ -1,3 +1,4 @@
+import type { HudSnapshot } from "@fa/sim";
 import { describe, expect, it } from "vitest";
 import { useGameStore } from "../store/gameStore.ts";
 
@@ -15,7 +16,7 @@ describe("gameStore", () => {
       asteroids: [],
       events: [],
     };
-    useGameStore.getState().setSnapshot(mockSnap as never);
+    useGameStore.getState().setSnapshot(mockSnap as HudSnapshot);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);
   });
 });
