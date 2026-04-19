@@ -211,7 +211,10 @@ export class SectorView {
       const fy = flash.fromY * SECTOR_SCALE;
       const tx = flash.toX * SECTOR_SCALE;
       const ty = flash.toY * SECTOR_SCALE;
-      this._laserGfx.moveTo(fx, fy).lineTo(tx, ty).stroke({ color: 0xff8800, alpha: 0.8, width: 1 });
+      this._laserGfx
+        .moveTo(fx, fy)
+        .lineTo(tx, ty)
+        .stroke({ color: 0xff8800, alpha: 0.8, width: 1 });
     }
   }
 

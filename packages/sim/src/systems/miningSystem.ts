@@ -20,8 +20,10 @@ export function tickMining(world: World): void {
         if (available <= 0) continue;
 
         const extracted = Math.min(ratePerTick, available);
-        (asteroid.deposits as Partial<Record<OreKind, number>>)[ore as OreKind] =
-          Math.max(0, available - extracted);
+        (asteroid.deposits as Partial<Record<OreKind, number>>)[ore as OreKind] = Math.max(
+          0,
+          available - extracted,
+        );
 
         const current = player.oreInventory[ore as OreKind] ?? 0;
         player.oreInventory[ore as OreKind] = current + extracted;

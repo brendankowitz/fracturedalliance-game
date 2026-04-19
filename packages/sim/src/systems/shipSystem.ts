@@ -1,5 +1,5 @@
-import type { World } from "@fa/domain";
 import { getShipDef } from "@fa/content";
+import type { World } from "@fa/domain";
 
 const ARRIVAL_RADIUS = 0.5; // sector units — ship is "at destination" when within this range
 

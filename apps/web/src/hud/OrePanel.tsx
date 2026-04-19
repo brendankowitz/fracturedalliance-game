@@ -45,7 +45,10 @@ export function OrePanel({ snapshot }: OrePanelProps) {
         {asteroid.name} — Deposits
       </div>
       {deposits.map(({ kind, label, amount }) => (
-        <div key={kind} style={{ display: "flex", justifyContent: "space-between", gap: 16, lineHeight: "1.6" }}>
+        <div
+          key={kind}
+          style={{ display: "flex", justifyContent: "space-between", gap: 16, lineHeight: "1.6" }}
+        >
           <span style={{ color: "#99bbdd" }}>{label}</span>
           <span style={{ color: "#ffffff" }}>{Math.floor(amount).toLocaleString()}</span>
         </div>

@@ -19,6 +19,7 @@ export function TutorialTooltip() {
     if (!snapshot) return;
 
     const current = state.value as string;
+    if (current === "done" || current === "dismissed") return;
 
     if (current === "step1") {
       const met = snapshot.asteroids.some(

@@ -237,12 +237,7 @@ describe("resourceSystem", () => {
 });
 
 describe("resourceSystem — life support & happiness", () => {
-  function makeBuilding(
-    id: string,
-    kind: string,
-    asteroidId: AsteroidId,
-    cell = { x: 1, y: 1 },
-  ) {
+  function makeBuilding(id: string, kind: string, asteroidId: AsteroidId, cell = { x: 1, y: 1 }) {
     return {
       id: buildingId(id),
       defKind: kind,
@@ -635,7 +630,12 @@ describe("aiSystem", () => {
     const kryllAsteroid = [...world.asteroids.values()].find((a) => a.ownerId === kryll.id);
     if (!kryllAsteroid) throw new Error("Kryll asteroid not found");
 
-    kryllAsteroid.buildQueue.push({ buildingKind: "powerPlant", progressTicks: 0, totalTicks: 100, cell: { x: 1, y: 0 } });
+    kryllAsteroid.buildQueue.push({
+      buildingKind: "powerPlant",
+      progressTicks: 0,
+      totalTicks: 100,
+      cell: { x: 1, y: 0 },
+    });
 
     const buildQueueBefore = kryllAsteroid.buildQueue.length;
     tickAI(world);

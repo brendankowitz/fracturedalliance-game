@@ -24,16 +24,54 @@ describe("tutorialMachine", () => {
     expect(actor.getSnapshot().value).toBe("done");
   });
 
-  it("dismisses from any step", () => {
-    for (const startStep of ["step1", "step2", "step3", "step4", "step5"]) {
-      const actor = createActor(tutorialMachine);
-      actor.start();
-      const stepsToAdvance = parseInt(startStep.replace("step", ""), 10) - 1;
-      for (let i = 0; i < stepsToAdvance; i++) actor.send({ type: "ADVANCE" });
-      expect(actor.getSnapshot().value).toBe(startStep);
-      actor.send({ type: "DISMISS" });
-      expect(actor.getSnapshot().value).toBe("dismissed");
-    }
+  it("dismisses from step1", () => {
+    const actor = createActor(tutorialMachine);
+    actor.start();
+    expect(actor.getSnapshot().value).toBe("step1");
+    actor.send({ type: "DISMISS" });
+    expect(actor.getSnapshot().value).toBe("dismissed");
+  });
+
+  it("dismisses from step2", () => {
+    const actor = createActor(tutorialMachine);
+    actor.start();
+    actor.send({ type: "ADVANCE" });
+    expect(actor.getSnapshot().value).toBe("step2");
+    actor.send({ type: "DISMISS" });
+    expect(actor.getSnapshot().value).toBe("dismissed");
+  });
+
+  it("dismisses from step3", () => {
+    const actor = createActor(tutorialMachine);
+    actor.start();
+    actor.send({ type: "ADVANCE" });
+    actor.send({ type: "ADVANCE" });
+    expect(actor.getSnapshot().value).toBe("step3");
+    actor.send({ type: "DISMISS" });
+    expect(actor.getSnapshot().value).toBe("dismissed");
+  });
+
+  it("dismisses from step4", () => {
+    const actor = createActor(tutorialMachine);
+    actor.start();
+    actor.send({ type: "ADVANCE" });
+    actor.send({ type: "ADVANCE" });
+    actor.send({ type: "ADVANCE" });
+    expect(actor.getSnapshot().value).toBe("step4");
+    actor.send({ type: "DISMISS" });
+    expect(actor.getSnapshot().value).toBe("dismissed");
+  });
+
+  it("dismisses from step5", () => {
+    const actor = createActor(tutorialMachine);
+    actor.start();
+    actor.send({ type: "ADVANCE" });
+    actor.send({ type: "ADVANCE" });
+    actor.send({ type: "ADVANCE" });
+    actor.send({ type: "ADVANCE" });
+    expect(actor.getSnapshot().value).toBe("step5");
+    actor.send({ type: "DISMISS" });
+    expect(actor.getSnapshot().value).toBe("dismissed");
   });
 
   it("done is a final state", () => {

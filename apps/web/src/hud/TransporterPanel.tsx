@@ -1,6 +1,6 @@
 import { getAllOreDefs } from "@fa/content";
-import type { Command, HudSnapshot } from "@fa/sim";
 import type { OreKind, PlayerId } from "@fa/domain";
+import type { Command, HudSnapshot } from "@fa/sim";
 
 interface TransporterPanelProps {
   snapshot: HudSnapshot;
@@ -62,11 +62,21 @@ export function TransporterPanel({ snapshot, onCommand }: TransporterPanelProps)
             return (
               <div
                 key={def.kind}
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8 }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 6,
+                  gap: 8,
+                }}
               >
                 <span style={{ color: "#99bbdd", minWidth: 90 }}>{def.label}</span>
-                <span style={{ color: "#ffffff", minWidth: 60, textAlign: "right" }}>{amount.toLocaleString()}</span>
-                <span style={{ color: "#aaffaa", minWidth: 80, textAlign: "right" }}>{earnings.toLocaleString()}¢</span>
+                <span style={{ color: "#ffffff", minWidth: 60, textAlign: "right" }}>
+                  {amount.toLocaleString()}
+                </span>
+                <span style={{ color: "#aaffaa", minWidth: 80, textAlign: "right" }}>
+                  {earnings.toLocaleString()}¢
+                </span>
                 <button
                   type="button"
                   onClick={() => handleSellOne(def.kind)}

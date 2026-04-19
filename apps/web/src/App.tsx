@@ -1,9 +1,9 @@
+import type { Command } from "@fa/sim";
 import { useCallback, useEffect, useRef } from "react";
 import { initPixi } from "./game/pixiApp.ts";
 import type { RenderLoopHandle } from "./game/renderLoop.ts";
 import { startRenderLoop } from "./game/renderLoop.ts";
 import { HUD } from "./hud/HUD.tsx";
-import type { Command } from "@fa/sim";
 import SimWorker from "./workers/sim.worker.ts?worker";
 
 export function App() {
