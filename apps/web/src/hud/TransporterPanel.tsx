@@ -15,7 +15,7 @@ export function TransporterPanel({ snapshot, onCommand }: TransporterPanelProps)
 
   const handleSellOne = (kind: string) => {
     onCommand({
-      kind: "sellOre",
+      kind: "sellOreToTrader",
       playerId: snapshot.humanPlayerId as PlayerId,
       oreKind: kind as OreKind,
     });
@@ -24,7 +24,7 @@ export function TransporterPanel({ snapshot, onCommand }: TransporterPanelProps)
   const handleSellAll = () => {
     for (const def of sellableOres) {
       onCommand({
-        kind: "sellOre",
+        kind: "sellOreToTrader",
         playerId: snapshot.humanPlayerId as PlayerId,
         oreKind: def.kind as OreKind,
       });

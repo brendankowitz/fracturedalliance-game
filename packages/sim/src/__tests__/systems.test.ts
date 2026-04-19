@@ -472,7 +472,7 @@ describe("traderSystem", () => {
     expect(totalInventory).toBeGreaterThan(0); // ore accumulated
   });
 
-  it("sellOre command sells all of a given ore type when trader is active", () => {
+  it("sellOreToTrader command sells all of a given ore type when trader is active", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
     world.tick = TICKS_PER_MONTH; // trader active
 
@@ -480,7 +480,7 @@ describe("traderSystem", () => {
     human.oreInventory.selenium = 100;
     const creditsBefore = human.credits;
 
-    applyCommand(world, { kind: "sellOre", playerId: human.id, oreKind: "selenium" });
+    applyCommand(world, { kind: "sellOreToTrader", playerId: human.id, oreKind: "selenium" });
 
     expect(human.oreInventory.selenium ?? 0).toBe(0);
     expect(human.credits).toBeGreaterThan(creditsBefore);

@@ -2,6 +2,7 @@ import { findBlueprintDef, findBuildingDef, getRaceDef, getShipDef } from "@fa/c
 import type { AgentMissionKind, BlackMarketItemKind, Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
+import { clampOrePrice } from "./systems/economySystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
 
 const ITEM_COSTS: Record<BlackMarketItemKind, number> = {
@@ -103,7 +104,7 @@ export function applyCommand(world: World, command: Command): void {
       ship.order = command.order;
       break;
     }
-    case "sellOre": {
+    case "sellOreToTrader": {
       const human = world.players.get(command.playerId);
       if (!human?.isHuman) return;
       if (!isTraderActive(world.tick)) return;
@@ -336,6 +337,52 @@ export function applyCommand(world: World, command: Command): void {
           targetRaceId: target.raceId,
         });
       }
+      break;
+    }
+    case "sellOre": {
+      if (command.quantity <= 0) return;
+
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+
+      const { oreKind, quantity } = command;
+      const currentStock = human.oreInventory[oreKind] ?? 0;
+      if (currentStock < quantity) return;
+
+      const marketPrice = world.marketPrices[oreKind as keyof typeof world.marketPrices];
+      if (marketPrice === undefined) return;
+
+      human.oreInventory[oreKind] = currentStock - quantity;
+      human.credits += quantity * marketPrice;
+
+      // Selling depresses price — increased supply
+      const depressed = marketPrice * 0.99;
+      world.marketPrices[oreKind as keyof typeof world.marketPrices] = Math.round(
+        clampOrePrice(oreKind, depressed) * 100,
+      ) / 100;
+      break;
+    }
+    case "buyOre": {
+      if (command.quantity <= 0) return;
+
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+
+      const { oreKind, quantity } = command;
+      const marketPrice = world.marketPrices[oreKind as keyof typeof world.marketPrices];
+      if (marketPrice === undefined) return;
+
+      const cost = quantity * marketPrice;
+      if (human.credits < cost) return;
+
+      human.credits -= cost;
+      human.oreInventory[oreKind] = (human.oreInventory[oreKind] ?? 0) + quantity;
+
+      // Buying raises price — reduced supply
+      const raised = marketPrice * 1.01;
+      world.marketPrices[oreKind as keyof typeof world.marketPrices] = Math.round(
+        clampOrePrice(oreKind, raised) * 100,
+      ) / 100;
       break;
     }
   }

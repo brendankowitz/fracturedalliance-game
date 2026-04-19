@@ -12,6 +12,7 @@ import { NotificationFeed } from "./NotificationFeed.tsx";
 import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
+import { TradePanel } from "./TradePanel.tsx";
 import { TransporterPanel } from "./TransporterPanel.tsx";
 import { TutorialTooltip } from "./TutorialTooltip.tsx";
 import { VictoryScreen } from "./VictoryScreen.tsx";
@@ -30,10 +31,12 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const toggleBlueprintShop = useUiStore((s) => s.toggleBlueprintShop);
   const toggleEspionage = useUiStore((s) => s.toggleEspionagePanel);
   const toggleBlackMarket = useUiStore((s) => s.toggleBlackMarket);
+  const toggleTradePanel = useUiStore((s) => s.toggleTradePanel);
   const alertsOpen = useUiStore((s) => s.notificationFeedOpen);
   const blueprintShopOpen = useUiStore((s) => s.blueprintShopOpen);
   const espionageOpen = useUiStore((s) => s.espionagePanelOpen);
   const blackMarketOpen = useUiStore((s) => s.blackMarketOpen);
+  const tradePanelOpen = useUiStore((s) => s.tradePanelOpen);
 
   if (!snapshot) {
     return (
@@ -88,6 +91,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         }}
       >
         ☰ Market
+      </button>
+      <button
+        type="button"
+        onClick={toggleTradePanel}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 686,
+          zIndex: 11,
+          background: "#0a1830",
+          border: `1px solid ${tradePanelOpen ? "#c8d8ff" : "#224"}`,
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          padding: "4px 10px",
+          cursor: "pointer",
+        }}
+      >
+        ☰ Trade
       </button>
       <button
         type="button"
@@ -180,6 +201,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         ☰ Save/Load
       </button>
       <BlackMarketPanel onCommand={onCommand} />
+      <TradePanel onCommand={onCommand} />
       <BuildingPanel onCommand={onCommand} />
       <OrePanel snapshot={snapshot} />
       <TransporterPanel snapshot={snapshot} onCommand={onCommand} />
