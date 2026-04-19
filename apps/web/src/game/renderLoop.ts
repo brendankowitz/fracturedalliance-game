@@ -44,6 +44,7 @@ export function startRenderLoop(
     sectorView = new SectorView(pixiApp, (id: AsteroidId) => {
       useUiStore.getState().selectAsteroid(id);
     });
+    sectorView.setColorPalette(useUiStore.getState().colorPalette);
 
     const frame = async (now: number) => {
       if (!running) return;

@@ -69,19 +69,18 @@ export function NotificationFeed() {
       label: EVENT_LABELS[ev.kind] ?? ev.kind,
     }));
 
-    const { paused: isPaused, setPaused: doSetPaused } = useUiStore.getState();
     const shouldPause = newEntries.some(
       (e) => (e.priority === "red" && autoPause.red) || (e.priority === "amber" && autoPause.amber),
     );
-    if (shouldPause && !isPaused) {
-      doSetPaused(true);
+    if (shouldPause && !paused) {
+      setPaused(true);
     }
 
     const latestRed = newEntries.find((e) => e.priority === "red");
     if (latestRed) setAriaAnnounce(latestRed.label);
 
     setEntries((prev) => [...newEntries, ...prev].slice(0, MAX_ENTRIES));
-  }, [snapshot, autoPause]);
+  }, [snapshot, autoPause, paused, setPaused]);
 
   return (
     <>
