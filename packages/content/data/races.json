@@ -1,0 +1,121 @@
+[
+  {
+    "id": "helionCorp",
+    "name": "Helion Corp",
+    "personality": {
+      "aggression": 0.4,
+      "grudgeDecayPerDay": 0.1,
+      "tradeBias": 0.8,
+      "techBias": 0.6,
+      "expansionBias": 0.7,
+      "treatyRespect": 0.7,
+      "ramWillingness": 0.2
+    },
+    "tradeLove": ["selenium", "asteros"],
+    "tradeHate": [],
+    "federationMember": true,
+    "playable": true
+  },
+  {
+    "id": "kryllCollective",
+    "name": "Kryll Collective",
+    "personality": {
+      "aggression": 0.7,
+      "grudgeDecayPerDay": 0.05,
+      "tradeBias": 0.3,
+      "techBias": 0.5,
+      "expansionBias": 0.8,
+      "treatyRespect": 0.4,
+      "ramWillingness": 0.6
+    },
+    "tradeLove": ["barium", "crystalite"],
+    "tradeHate": ["selenium"],
+    "federationMember": false,
+    "playable": false
+  },
+  {
+    "id": "motkaj",
+    "name": "Motkaj",
+    "personality": {
+      "aggression": 0.9,
+      "grudgeDecayPerDay": 0.03,
+      "tradeBias": 0.4,
+      "techBias": 0.4,
+      "expansionBias": 0.6,
+      "treatyRespect": 0.3,
+      "ramWillingness": 0.8
+    },
+    "tradeLove": ["crystalite"],
+    "tradeHate": ["asteros"],
+    "federationMember": false,
+    "playable": false
+  },
+  {
+    "id": "achar",
+    "name": "Achar",
+    "personality": {
+      "aggression": 0.3,
+      "grudgeDecayPerDay": 0.15,
+      "tradeBias": 0.7,
+      "techBias": 0.9,
+      "expansionBias": 0.5,
+      "treatyRespect": 0.8,
+      "ramWillingness": 0.1
+    },
+    "tradeLove": ["asteros", "crystalite"],
+    "tradeHate": [],
+    "federationMember": true,
+    "playable": false
+  },
+  {
+    "id": "brakkat",
+    "name": "Brakkat",
+    "personality": {
+      "aggression": 0.8,
+      "grudgeDecayPerDay": 0.04,
+      "tradeBias": 0.5,
+      "techBias": 0.3,
+      "expansionBias": 0.7,
+      "treatyRespect": 0.3,
+      "ramWillingness": 0.7
+    },
+    "tradeLove": ["barium"],
+    "tradeHate": ["selenium"],
+    "federationMember": false,
+    "playable": false
+  },
+  {
+    "id": "rigal",
+    "name": "Rigal",
+    "personality": {
+      "aggression": 0.2,
+      "grudgeDecayPerDay": 0.2,
+      "tradeBias": 0.9,
+      "techBias": 0.7,
+      "expansionBias": 0.4,
+      "treatyRespect": 0.9,
+      "ramWillingness": 0.1
+    },
+    "tradeLove": ["selenium", "asteros", "barium"],
+    "tradeHate": [],
+    "federationMember": true,
+    "playable": false
+  },
+  {
+    "id": "mauna",
+    "name": "Mauna",
+    "personality": {
+      "aggression": 0.2,
+      "grudgeDecayPerDay": 0.25,
+      "tradeBias": 0.6,
+      "techBias": 0.8,
+      "expansionBias": 0.3,
+      "treatyRespect": 0.95,
+      "ramWillingness": 0.05
+    },
+    "tradeLove": ["asteros"],
+    "tradeHate": [],
+    "federationMember": true,
+    "playable": false
+  }
+]

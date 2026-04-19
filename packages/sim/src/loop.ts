@@ -1,4 +1,5 @@
 import type { World } from "@fa/domain";
+import { tickAI } from "./systems/aiSystem.ts";
 import { tickConstruction } from "./systems/constructionSystem.ts";
 import { tickMining } from "./systems/miningSystem.ts";
 import { tickResources } from "./systems/resourceSystem.ts";
@@ -15,4 +16,5 @@ export function tick(world: World): void {
   tickResources(world);
   tickShips(world);
   tickTrader(world);
+  tickAI(world);
 }

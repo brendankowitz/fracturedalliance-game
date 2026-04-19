@@ -1,6 +1,7 @@
 import { type AsteroidId, buildingId, shipId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { applyCommand } from "../commandProcessor.ts";
+import { tickAI } from "../systems/aiSystem.ts";
 import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
 import { computePowerBalance, tickResources } from "../systems/resourceSystem.ts";
@@ -487,5 +488,57 @@ describe("traderSystem", () => {
 
     expect(human.oreInventory.selenium ?? 0).toBe(0);
     expect(human.credits).toBeGreaterThan(creditsBefore);
+  });
+});
+
+describe("aiSystem", () => {
+  it("Kryll AI places a mine when it has credits and ore deposits", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+
+    const kryll = [...world.players.values()].find((p) => p.raceId === "kryllCollective");
+    if (!kryll) throw new Error("Kryll player not found");
+    kryll.credits = 10_000;
+
+    const kryllAsteroid = [...world.asteroids.values()].find((a) => a.ownerId === kryll.id);
+    if (!kryllAsteroid) throw new Error("Kryll asteroid not found");
+
+    const buildQueueBefore = kryllAsteroid.buildQueue.length;
+    tickAI(world);
+
+    expect(kryllAsteroid.buildQueue.length).toBeGreaterThan(buildQueueBefore);
+  });
+
+  it("AI does not act when player has insufficient credits", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+
+    const kryll = [...world.players.values()].find((p) => p.raceId === "kryllCollective");
+    if (!kryll) throw new Error("Kryll player not found");
+    kryll.credits = 0;
+
+    const kryllAsteroid = [...world.asteroids.values()].find((a) => a.ownerId === kryll.id);
+    if (!kryllAsteroid) throw new Error("Kryll asteroid not found");
+
+    const buildQueueBefore = kryllAsteroid.buildQueue.length;
+    tickAI(world);
+
+    expect(kryllAsteroid.buildQueue.length).toBe(buildQueueBefore);
+  });
+
+  it("AI skips asteroid that already has something in the build queue", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+
+    const kryll = [...world.players.values()].find((p) => p.raceId === "kryllCollective");
+    if (!kryll) throw new Error("Kryll player not found");
+    kryll.credits = 10_000;
+
+    const kryllAsteroid = [...world.asteroids.values()].find((a) => a.ownerId === kryll.id);
+    if (!kryllAsteroid) throw new Error("Kryll asteroid not found");
+
+    kryllAsteroid.buildQueue.push({ buildingKind: "powerPlant", progressTicks: 0, totalTicks: 100, cell: { x: 1, y: 0 } });
+
+    const buildQueueBefore = kryllAsteroid.buildQueue.length;
+    tickAI(world);
+
+    expect(kryllAsteroid.buildQueue.length).toBe(buildQueueBefore);
   });
 });
