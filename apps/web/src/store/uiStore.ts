@@ -7,11 +7,15 @@ interface UiState {
   buildingPanelOpen: boolean;
   saveLoadPanelOpen: boolean;
   diplomacyPanelOpen: boolean;
+  paused: boolean;
+  notificationFeedOpen: boolean;
   selectAsteroid: (id: AsteroidId | null) => void;
   selectCell: (cell: { x: number; y: number } | null) => void;
   toggleBuildingPanel: () => void;
   toggleSaveLoadPanel: () => void;
   toggleDiplomacyPanel: () => void;
+  setPaused: (v: boolean) => void;
+  toggleNotificationFeed: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -20,9 +24,13 @@ export const useUiStore = create<UiState>((set) => ({
   buildingPanelOpen: false,
   saveLoadPanelOpen: false,
   diplomacyPanelOpen: false,
+  paused: false,
+  notificationFeedOpen: false,
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
   selectCell: (cell) => set({ selectedCell: cell }),
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
   toggleSaveLoadPanel: () => set((s) => ({ saveLoadPanelOpen: !s.saveLoadPanelOpen })),
   toggleDiplomacyPanel: () => set((s) => ({ diplomacyPanelOpen: !s.diplomacyPanelOpen })),
+  setPaused: (v) => set({ paused: v }),
+  toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
 }));

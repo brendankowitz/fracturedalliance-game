@@ -44,7 +44,7 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
       const dt = now - lastFrame;
       lastFrame = now;
 
-      if (instance !== null && timeScale > 0) {
+      if (instance !== null && timeScale > 0 && !useUiStore.getState().paused) {
         accumulator += dt * timeScale;
         let ticked = false;
         while (accumulator >= FIXED_STEP_MS) {

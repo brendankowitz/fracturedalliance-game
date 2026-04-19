@@ -4,6 +4,7 @@ import { useUiStore } from "../store/uiStore.ts";
 import { BuildingPanel } from "./BuildingPanel.tsx";
 import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
 import { GameOverScreen } from "./GameOverScreen.tsx";
+import { NotificationFeed } from "./NotificationFeed.tsx";
 import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
@@ -21,6 +22,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const snapshot = useGameStore((s) => s.snapshot);
   const toggleSaveLoad = useUiStore((s) => s.toggleSaveLoadPanel);
   const toggleDiplomacy = useUiStore((s) => s.toggleDiplomacyPanel);
+  const toggleAlerts = useUiStore((s) => s.toggleNotificationFeed);
 
   if (!snapshot) {
     return (
@@ -58,6 +60,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         federationStanding={snapshot.federationStanding}
         tick={snapshot.tick}
       />
+      <button
+        type="button"
+        onClick={toggleAlerts}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 230,
+          zIndex: 11,
+          background: "#0a1830",
+          border: "1px solid #224",
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          padding: "4px 10px",
+          cursor: "pointer",
+        }}
+      >
+        ☰ Alerts
+      </button>
       <button
         type="button"
         onClick={toggleDiplomacy}
@@ -99,6 +119,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <TransporterPanel snapshot={snapshot} onCommand={onCommand} />
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
       <DiplomacyPanel snapshot={snapshot} onCommand={onCommand} />
+      <NotificationFeed />
       <TutorialTooltip />
     </>
   );
