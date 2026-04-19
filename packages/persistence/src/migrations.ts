@@ -8,13 +8,16 @@ const MIGRATIONS: Array<(raw: AnyRaw) => AnyRaw> = [
 ];
 
 export function applyMigrations(raw: AnyRaw): SaveV1 {
-  let current = raw;
   const version = (raw.schemaVersion as number | undefined) ?? 0;
+  if (version > MIGRATIONS.length) {
+    throw new Error(
+      `Save schema version ${version} is newer than this build (max ${MIGRATIONS.length}). Cannot load.`,
+    );
+  }
+  let current = raw;
   for (let i = version; i < MIGRATIONS.length; i++) {
     const migrate = MIGRATIONS[i];
-    if (migrate !== undefined) {
-      current = migrate(current);
-    }
+    if (migrate !== undefined) current = migrate(current);
   }
   return current as unknown as SaveV1;
 }

@@ -23,8 +23,6 @@ describe("serializer", () => {
   it("deserialize round-trips correctly", () => {
     const bytes = serialize(SAMPLE_SAVE);
     const restored = deserialize(bytes);
-    expect(restored.schemaVersion).toBe(1);
-    expect(restored.rngSeed).toBe(42);
-    expect(restored.worldSnapshot.tick).toBe(10);
+    expect(restored).toEqual(SAMPLE_SAVE);
   });
 });

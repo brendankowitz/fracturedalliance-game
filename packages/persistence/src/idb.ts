@@ -12,12 +12,17 @@ interface FaDb extends DBSchema {
 const DB_NAME = "fractured-alliance";
 const DB_VERSION = 1;
 
-async function getDb() {
-  return openDB<FaDb>(DB_NAME, DB_VERSION, {
+// Module-level connection cache — justified exception to the no-module-state rule;
+// opening a new IDB handle on every call accumulates handles that are never closed.
+let _dbPromise: ReturnType<typeof openDB<FaDb>> | undefined;
+
+function getDb() {
+  _dbPromise ??= openDB<FaDb>(DB_NAME, DB_VERSION, {
     upgrade(db) {
       db.createObjectStore("saves", { keyPath: "slot" });
     },
   });
+  return _dbPromise;
 }
 
 export async function saveToSlot(slot: number, save: SaveV1, label: string): Promise<void> {
