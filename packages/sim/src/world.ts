@@ -5,6 +5,7 @@ import {
   type Building,
   type BuildingId,
   buildingId,
+  type OreKind,
   type OreRecord,
   type Player,
   type PlayerId,
@@ -12,6 +13,7 @@ import {
   type SizeClass,
   type World,
 } from "@fa/domain";
+import { PHASE1_ORES } from "@fa/content";
 import { makePrng } from "./prng.ts";
 
 export interface WorldConfig {
@@ -45,15 +47,6 @@ const NEUTRAL_NAMES: readonly string[] = [
   "Fomalhaut Ridge",
 ];
 
-const PHASE1_ORES: readonly ["selenium", "asteros", "barium", "crystalite"] = [
-  "selenium",
-  "asteros",
-  "barium",
-  "crystalite",
-];
-
-type Phase1Ore = (typeof PHASE1_ORES)[number];
-
 function rollSizeClass(rand: number): SizeClass {
   if (rand < 0.5) return "M";
   if (rand < 0.8) return "S";
@@ -68,7 +61,7 @@ function rollDeposits(size: SizeClass, prng: { next(): number }): Partial<OreRec
         ? 2 + Math.round(prng.next())
         : 3 + Math.round(prng.next());
 
-  const shuffled: Phase1Ore[] = [...PHASE1_ORES];
+  const shuffled: OreKind[] = [...PHASE1_ORES];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(prng.next() * (i + 1));
     // biome-ignore lint/style/noNonNullAssertion -- bounds guaranteed by loop

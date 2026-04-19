@@ -1,12 +1,10 @@
-import { getOreDef } from "@fa/content";
+import { getOreDef, PHASE1_ORES } from "@fa/content";
 import type { HudSnapshot } from "@fa/sim";
 import { useUiStore } from "../store/uiStore.ts";
 
 interface OrePanelProps {
   snapshot: HudSnapshot;
 }
-
-const PHASE1_ORES = ["selenium", "asteros", "barium", "crystalite"] as const;
 
 export function OrePanel({ snapshot }: OrePanelProps) {
   const selectedAsteroidId = useUiStore((s) => s.selectedAsteroidId);
