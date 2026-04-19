@@ -89,8 +89,8 @@ export function applyCommand(world: World, command: Command): void {
       break;
     }
     case "sellOre": {
-      const human = [...world.players.values()].find((p) => p.isHuman);
-      if (!human) return;
+      const human = world.players.get(command.playerId);
+      if (!human?.isHuman) return;
       if (!isTraderActive(world.tick)) return;
 
       const oreKind = command.oreKind;

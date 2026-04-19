@@ -4,8 +4,7 @@ export const TICKS_PER_MONTH = 3_000;
 export const TRADER_WINDOW_TICKS = 600;
 
 export function isTraderActive(tick: number): boolean {
-  if (tick <= 0) return false;
-  return tick % TICKS_PER_MONTH < TRADER_WINDOW_TICKS;
+  return tick >= TICKS_PER_MONTH && tick % TICKS_PER_MONTH < TRADER_WINDOW_TICKS;
 }
 
 export function tickTrader(world: World): void {

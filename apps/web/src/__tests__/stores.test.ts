@@ -20,6 +20,7 @@ describe("gameStore", () => {
       asteroids: [],
       ships: [],
       events: [],
+      marketPrices: {},
     };
     useGameStore.getState().setSnapshot(mockSnap as HudSnapshot);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);

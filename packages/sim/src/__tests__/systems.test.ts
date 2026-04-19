@@ -437,6 +437,7 @@ describe("shipSystem", () => {
 describe("traderSystem", () => {
   it("isTraderActive returns false at tick 0", () => {
     expect(isTraderActive(0)).toBe(false);
+    expect(isTraderActive(1)).toBe(false);
   });
 
   it("isTraderActive returns true at tick TICKS_PER_MONTH", () => {
@@ -482,7 +483,7 @@ describe("traderSystem", () => {
     human.oreInventory.selenium = 100;
     const creditsBefore = human.credits;
 
-    applyCommand(world, { kind: "sellOre", oreKind: "selenium" });
+    applyCommand(world, { kind: "sellOre", playerId: human.id, oreKind: "selenium" });
 
     expect(human.oreInventory.selenium ?? 0).toBe(0);
     expect(human.credits).toBeGreaterThan(creditsBefore);

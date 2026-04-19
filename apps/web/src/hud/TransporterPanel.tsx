@@ -1,6 +1,6 @@
 import { getAllOreDefs } from "@fa/content";
 import type { Command, HudSnapshot } from "@fa/sim";
-import type { OreKind } from "@fa/domain";
+import type { OreKind, PlayerId } from "@fa/domain";
 
 interface TransporterPanelProps {
   snapshot: HudSnapshot;
@@ -14,12 +14,20 @@ export function TransporterPanel({ snapshot, onCommand }: TransporterPanelProps)
   const sellableOres = oreDefs.filter((def) => (snapshot.oreInventory[def.kind] ?? 0) > 0);
 
   const handleSellOne = (kind: string) => {
-    onCommand({ kind: "sellOre", oreKind: kind as OreKind });
+    onCommand({
+      kind: "sellOre",
+      playerId: snapshot.humanPlayerId as PlayerId,
+      oreKind: kind as OreKind,
+    });
   };
 
   const handleSellAll = () => {
     for (const def of sellableOres) {
-      onCommand({ kind: "sellOre", oreKind: def.kind as OreKind });
+      onCommand({
+        kind: "sellOre",
+        playerId: snapshot.humanPlayerId as PlayerId,
+        oreKind: def.kind as OreKind,
+      });
     }
   };
 
@@ -49,7 +57,8 @@ export function TransporterPanel({ snapshot, onCommand }: TransporterPanelProps)
         <>
           {sellableOres.map((def) => {
             const amount = Math.floor(snapshot.oreInventory[def.kind] ?? 0);
-            const earnings = Math.floor(amount * def.basePrice * 0.7);
+            const price = snapshot.marketPrices[def.kind] ?? def.basePrice;
+            const earnings = Math.floor(amount * price * 0.7);
             return (
               <div
                 key={def.kind}

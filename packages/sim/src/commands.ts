@@ -1,4 +1,4 @@
-import type { AsteroidId, OreKind, ShipId } from "@fa/domain";
+import type { AsteroidId, OreKind, PlayerId, ShipId } from "@fa/domain";
 import type { ShipOrder } from "@fa/domain";
 
 export type Command =
@@ -6,4 +6,4 @@ export type Command =
   | { kind: "cancelBuildQueue"; asteroidId: AsteroidId; index: number }
   | { kind: "launchShip"; asteroidId: AsteroidId; shipKind: string }
   | { kind: "orderShip"; shipId: ShipId; order: ShipOrder }
-  | { kind: "sellOre"; oreKind: OreKind };
+  | { kind: "sellOre"; playerId: PlayerId; oreKind: OreKind };

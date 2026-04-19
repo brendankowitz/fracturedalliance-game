@@ -36,6 +36,7 @@ export interface HudSnapshot {
   asteroids: AsteroidSnapshot[];
   ships: ShipSnapshot[];
   events: Array<{ kind: string; priority: EventPriority }>;
+  marketPrices: Record<string, number>;
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
@@ -91,5 +92,6 @@ export function takeSnapshot(world: World): HudSnapshot {
       orderKind: s.order.kind,
     })),
     events: world.eventQueue.map((e) => ({ kind: e.kind, priority: e.priority })),
+    marketPrices: Object.fromEntries(Object.entries(world.marketPrices)),
   };
 }
