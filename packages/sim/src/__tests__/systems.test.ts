@@ -1,9 +1,10 @@
-import { type AsteroidId, buildingId } from "@fa/domain";
+import { type AsteroidId, buildingId, shipId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { applyCommand } from "../commandProcessor.ts";
 import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
 import { computePowerBalance, tickResources } from "../systems/resourceSystem.ts";
+import { tickShips } from "../systems/shipSystem.ts";
 import { createWorld } from "../world.ts";
 
 describe("miningSystem", () => {
@@ -326,5 +327,108 @@ describe("resourceSystem — life support & happiness", () => {
     tickResources(world);
     const afterDamage = world.buildings.get(damagedId)?.damage ?? 0;
     expect(afterDamage).toBeLessThan(20);
+  });
+});
+
+describe("commandProcessor — launchShip", () => {
+  it("launchShip creates a ship at an asteroid with a ship yard", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    // Add a complete ship yard
+    const yardId = buildingId("test-yard");
+    world.buildings.set(yardId, {
+      id: yardId,
+      defKind: "shipYard",
+      asteroidId: asteroid.id,
+      cell: { x: 6, y: 6 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
+    });
+    asteroid.buildings.push(yardId);
+
+    const shipsBefore = world.ships.size;
+    applyCommand(world, { kind: "launchShip", asteroidId: asteroid.id, shipKind: "scout" });
+    expect(world.ships.size).toBe(shipsBefore + 1);
+  });
+});
+
+describe("shipSystem", () => {
+  it("scout moves toward its target each tick", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    const id = shipId("test-scout");
+    world.ships.set(id, {
+      id,
+      defKind: "scout",
+      ownerId: asteroid.ownerId ?? (asteroid.id as unknown as import("@fa/domain").PlayerId),
+      hullHp: 20,
+      shieldHp: 5,
+      position: { x: 0, y: 0 },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "scout", target: { x: 5, y: 5 } },
+      cargo: {},
+    });
+
+    const before = { x: world.ships.get(id)!.position.x, y: world.ships.get(id)!.position.y };
+    tickShips(world);
+    const after = world.ships.get(id)!.position;
+
+    expect(after.x).toBeGreaterThan(before.x);
+    expect(after.y).toBeGreaterThan(before.y);
+  });
+
+  it("ship goes idle when it reaches its destination", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    const id = shipId("arriving-scout");
+    world.ships.set(id, {
+      id,
+      defKind: "scout",
+      ownerId: asteroid.ownerId ?? (asteroid.id as unknown as import("@fa/domain").PlayerId),
+      hullHp: 20,
+      shieldHp: 5,
+      position: { x: 0.3, y: 0 }, // within ARRIVAL_RADIUS of (0,0)
+      velocity: { x: 0, y: 0 },
+      order: { kind: "moveTo", target: { x: 0, y: 0 } },
+      cargo: {},
+    });
+
+    tickShips(world);
+
+    expect(world.ships.get(id)!.order.kind).toBe("idle");
+  });
+
+  it("idle ship does not move", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+
+    const id = shipId("idle-ship");
+    world.ships.set(id, {
+      id,
+      defKind: "scout",
+      ownerId: asteroid.ownerId ?? (asteroid.id as unknown as import("@fa/domain").PlayerId),
+      hullHp: 20,
+      shieldHp: 5,
+      position: { x: 2, y: 3 },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "idle" },
+      cargo: {},
+    });
+
+    tickShips(world);
+
+    const ship = world.ships.get(id)!;
+    expect(ship.position.x).toBe(2);
+    expect(ship.position.y).toBe(3);
   });
 });

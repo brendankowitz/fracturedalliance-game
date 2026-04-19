@@ -254,5 +254,6 @@ export function createWorld(config: WorldConfig): World {
     prng,
     schemaVersion: 1,
     nextBuildingSeq: 0,
+    nextShipSeq: 0,
   };
 }

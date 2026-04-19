@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "scout",
+    "label": "Scout",
+    "hullHp": 20,
+    "shieldHp": 5,
+    "speed": 0.1,
+    "hardpoints": 0,
+    "cargoCap": 0,
+    "fuelRange": 999,
+    "costCredits": 500,
+    "buildTimeTicks": 100
+  },
+  {
+    "kind": "assaultCraft",
+    "label": "Assault Craft",
+    "hullHp": 80,
+    "shieldHp": 40,
+    "speed": 0.08,
+    "hardpoints": 2,
+    "cargoCap": 0,
+    "fuelRange": 999,
+    "costCredits": 1500,
+    "buildTimeTicks": 200
+  }
+]

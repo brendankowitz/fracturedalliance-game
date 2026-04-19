@@ -26,4 +26,5 @@ export interface World {
   prng: Prng;
   readonly schemaVersion: number;
   nextBuildingSeq: number;
+  nextShipSeq: number;
 }

@@ -1,5 +1,6 @@
-import { findBuildingDef } from "@fa/content";
-import type { World } from "@fa/domain";
+import { findBuildingDef, getShipDef } from "@fa/content";
+import type { ShipKind, World } from "@fa/domain";
+import { shipId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 
 export function applyCommand(world: World, command: Command): void {
@@ -45,6 +46,45 @@ export function applyCommand(world: World, command: Command): void {
           player.credits += def.costCredits * 0.5;
         }
       }
+      break;
+    }
+    case "launchShip": {
+      const asteroid = world.asteroids.get(command.asteroidId);
+      if (!asteroid?.ownerId) return;
+      const player = world.players.get(asteroid.ownerId);
+      if (!player) return;
+
+      // ShipYard must be present and complete
+      const hasYard = asteroid.buildings.some((bid) => {
+        const b = world.buildings.get(bid);
+        return b?.defKind === "shipYard" && b.constructionProgress >= 1;
+      });
+      if (!hasYard) return;
+
+      const def = getShipDef(command.shipKind);
+      if (!def) return;
+      if (player.credits < def.costCredits) return;
+
+      player.credits -= def.costCredits;
+
+      const id = shipId(`ship-${world.nextShipSeq++}`);
+      world.ships.set(id, {
+        id,
+        defKind: command.shipKind as ShipKind,
+        ownerId: asteroid.ownerId,
+        hullHp: def.hullHp,
+        shieldHp: def.shieldHp,
+        position: { x: asteroid.sector.x, y: asteroid.sector.y },
+        velocity: { x: 0, y: 0 },
+        order: { kind: "idle" },
+        cargo: {},
+      });
+      break;
+    }
+    case "orderShip": {
+      const ship = world.ships.get(command.shipId);
+      if (!ship) return;
+      ship.order = command.order;
       break;
     }
   }

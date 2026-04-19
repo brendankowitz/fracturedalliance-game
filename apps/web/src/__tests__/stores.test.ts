@@ -16,6 +16,7 @@ describe("gameStore", () => {
       humanPlayerId: "player-human",
       players: [],
       asteroids: [],
+      ships: [],
       events: [],
     };
     useGameStore.getState().setSnapshot(mockSnap as HudSnapshot);

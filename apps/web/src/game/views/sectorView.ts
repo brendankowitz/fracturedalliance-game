@@ -31,6 +31,7 @@ export class SectorView {
 
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
   private readonly _asteroidGraphics: Map<AsteroidId, { gfx: Graphics; label: Text }> = new Map();
+  private readonly _shipGraphics: Map<string, Graphics> = new Map();
 
   constructor(app: Application, onSelectAsteroid: (id: AsteroidId) => void) {
     this._onSelectAsteroid = onSelectAsteroid;
@@ -160,6 +161,36 @@ export class SectorView {
       entry.label.destroy();
       this._asteroidGraphics.delete(id);
     }
+
+    // Render ships
+    const seenShipIds = new Set<string>();
+
+    for (const ship of snapshot.ships) {
+      seenShipIds.add(ship.id);
+
+      let gfx = this._shipGraphics.get(ship.id);
+      if (!gfx) {
+        gfx = new Graphics();
+        this._worldLayer.addChild(gfx);
+        this._shipGraphics.set(ship.id, gfx);
+      }
+
+      const isHuman = ship.ownerId === snapshot.humanPlayerId;
+      const colour = isHuman ? 0x66ccff : 0xff8866;
+
+      const sx = ship.position.x * SECTOR_SCALE;
+      const sy = ship.position.y * SECTOR_SCALE;
+
+      gfx.clear();
+      gfx.circle(sx, sy, 3).fill({ color: colour, alpha: 0.9 });
+    }
+
+    // Remove stale ship graphics
+    const toRemoveShips = [...this._shipGraphics.keys()].filter((id) => !seenShipIds.has(id));
+    for (const id of toRemoveShips) {
+      this._shipGraphics.get(id)!.destroy();
+      this._shipGraphics.delete(id);
+    }
   }
 
   destroy(): void {
@@ -168,6 +199,10 @@ export class SectorView {
       label.destroy();
     }
     this._asteroidGraphics.clear();
+    for (const gfx of this._shipGraphics.values()) {
+      gfx.destroy();
+    }
+    this._shipGraphics.clear();
     this.container.destroy({ children: true });
   }
 }

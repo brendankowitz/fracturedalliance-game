@@ -16,6 +16,14 @@ export interface AsteroidSnapshot {
   powerBalance: number;
 }
 
+export interface ShipSnapshot {
+  id: string;
+  defKind: string;
+  ownerId: string;
+  position: { x: number; y: number };
+  orderKind: string;
+}
+
 export interface HudSnapshot {
   tick: number;
   credits: number;
@@ -23,6 +31,7 @@ export interface HudSnapshot {
   humanPlayerId: string;
   players: Array<{ id: string; raceId: string; isHuman: boolean; alive: boolean; credits: number }>;
   asteroids: AsteroidSnapshot[];
+  ships: ShipSnapshot[];
   events: Array<{ kind: string; priority: EventPriority }>;
 }
 
@@ -67,6 +76,13 @@ export function takeSnapshot(world: World): HudSnapshot {
       credits: p.credits,
     })),
     asteroids,
+    ships: [...world.ships.values()].map((s) => ({
+      id: s.id,
+      defKind: s.defKind,
+      ownerId: s.ownerId,
+      position: { x: s.position.x, y: s.position.y },
+      orderKind: s.order.kind,
+    })),
     events: world.eventQueue.map((e) => ({ kind: e.kind, priority: e.priority })),
   };
 }
