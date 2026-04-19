@@ -28,6 +28,7 @@ export function BlackMarketPanel({ onCommand }: Props) {
 
   const maunaAlive = snapshot.players.some((p) => p.raceId === "mauna" && p.alive);
   const aiPlayers = snapshot.players.filter((p) => !p.isHuman && p.alive);
+  const canBribe = !!selectedBribeTarget && snapshot.credits >= bribeAmount;
 
   const suspicionPct = Math.round(snapshot.suspicion);
   const suspicionColor = suspicionPct >= 80 ? "#f44" : suspicionPct >= 50 ? "#fa4" : "#4d8";
@@ -169,7 +170,7 @@ export function BlackMarketPanel({ onCommand }: Props) {
           </div>
           <button
             type="button"
-            disabled={!selectedBribeTarget || snapshot.credits < bribeAmount}
+            disabled={!canBribe}
             onClick={() => {
               if (!selectedBribeTarget) return;
               onCommand({
@@ -180,16 +181,13 @@ export function BlackMarketPanel({ onCommand }: Props) {
             }}
             style={{
               width: "100%",
-              background:
-                selectedBribeTarget && snapshot.credits >= bribeAmount ? "#1a3060" : "#111",
+              background: canBribe ? "#1a3060" : "#111",
               border: "1px solid #224",
-              color:
-                selectedBribeTarget && snapshot.credits >= bribeAmount ? "#c8d8ff" : "#446",
+              color: canBribe ? "#c8d8ff" : "#446",
               fontFamily: "monospace",
               fontSize: 12,
               padding: "4px 0",
-              cursor:
-                selectedBribeTarget && snapshot.credits >= bribeAmount ? "pointer" : "not-allowed",
+              cursor: canBribe ? "pointer" : "not-allowed",
             }}
           >
             Bribe

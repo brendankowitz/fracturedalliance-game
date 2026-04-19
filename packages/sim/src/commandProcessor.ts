@@ -1,8 +1,22 @@
 import { findBlueprintDef, findBuildingDef, getRaceDef, getShipDef } from "@fa/content";
-import type { AgentMissionKind, Treaty, TreatyKind, World } from "@fa/domain";
+import type { AgentMissionKind, BlackMarketItemKind, Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
+
+const ITEM_COSTS: Record<BlackMarketItemKind, number> = {
+  oreCache: 800,
+  stealth: 2000,
+  sabotageKit: 1500,
+  contraband: 500,
+};
+
+const ITEM_SUSPICION: Record<BlackMarketItemKind, number> = {
+  oreCache: 5,
+  stealth: 10,
+  sabotageKit: 15,
+  contraband: 20,
+};
 
 export function applyCommand(world: World, command: Command): void {
   switch (command.kind) {
@@ -252,24 +266,11 @@ export function applyCommand(world: World, command: Command): void {
       const human = [...world.players.values()].find((p) => p.isHuman);
       if (!human) return;
 
-      const ITEM_COSTS: Record<string, number> = {
-        oreCache: 800,
-        stealth: 2000,
-        sabotageKit: 1500,
-        contraband: 500,
-      };
-      const ITEM_SUSPICION: Record<string, number> = {
-        oreCache: 5,
-        stealth: 10,
-        sabotageKit: 15,
-        contraband: 20,
-      };
-
       const cost = ITEM_COSTS[command.itemKind];
       if (cost === undefined || human.credits < cost) return;
 
       human.credits -= cost;
-      human.suspicion = Math.min(100, human.suspicion + (ITEM_SUSPICION[command.itemKind] ?? 0));
+      human.suspicion = Math.min(100, human.suspicion + ITEM_SUSPICION[command.itemKind]);
 
       switch (command.itemKind) {
         case "oreCache": {
@@ -278,11 +279,12 @@ export function applyCommand(world: World, command: Command): void {
         }
         case "stealth": {
           const unhired = [...world.agents.values()].filter((a) => a.ownerId === null);
-          if (unhired.length > 0) {
+          if (unhired.length === 0) {
+            human.credits += cost;
+            human.suspicion = Math.max(0, human.suspicion - ITEM_SUSPICION[command.itemKind]);
+          } else {
             const agent = unhired[Math.floor(world.prng.next() * unhired.length)];
             if (agent) agent.ownerId = human.id;
-          } else {
-            human.credits += cost;
           }
           break;
         }

@@ -5,10 +5,14 @@ type JsonShip = (typeof rawShips)[number];
 
 function validateShip(raw: JsonShip): ShipClassDef {
   if (!raw.kind || typeof raw.kind !== "string") throw new Error(`Ship entry missing "kind"`);
-  if (!raw.label || typeof raw.label !== "string") throw new Error(`Ship "${raw.kind}" missing "label"`);
-  if (typeof raw.hullHp !== "number" || raw.hullHp <= 0) throw new Error(`Ship "${raw.kind}" invalid "hullHp"`);
-  if (typeof raw.speed !== "number" || raw.speed <= 0) throw new Error(`Ship "${raw.kind}" invalid "speed"`);
-  if (typeof raw.costCredits !== "number" || raw.costCredits < 0) throw new Error(`Ship "${raw.kind}" invalid "costCredits"`);
+  if (!raw.label || typeof raw.label !== "string")
+    throw new Error(`Ship "${raw.kind}" missing "label"`);
+  if (typeof raw.hullHp !== "number" || raw.hullHp <= 0)
+    throw new Error(`Ship "${raw.kind}" invalid "hullHp"`);
+  if (typeof raw.speed !== "number" || raw.speed <= 0)
+    throw new Error(`Ship "${raw.kind}" invalid "speed"`);
+  if (typeof raw.costCredits !== "number" || raw.costCredits < 0)
+    throw new Error(`Ship "${raw.kind}" invalid "costCredits"`);
   if (typeof raw.shieldHp !== "number" || raw.shieldHp < 0) {
     throw new Error(`Ship "${raw.kind}" has invalid "shieldHp"`);
   }

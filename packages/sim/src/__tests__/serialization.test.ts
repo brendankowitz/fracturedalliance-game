@@ -58,7 +58,9 @@ describe("world serialization", () => {
     const snapshot = serializeWorld(world);
     const restored = deserializeWorld(snapshot, world.prng.state());
     const restoredHuman = [...restored.players.values()].find((p) => p.isHuman);
-    expect(restoredHuman?.blueprintsOwned.has("bp-advancedMining" as import("@fa/domain").BlueprintId)).toBe(true);
+    expect(
+      restoredHuman?.blueprintsOwned.has("bp-advancedMining" as import("@fa/domain").BlueprintId),
+    ).toBe(true);
   });
 
   it("round-trips PRNG state", () => {
