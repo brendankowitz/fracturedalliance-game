@@ -1,8 +1,13 @@
-import type { PlayerId, TreatyId } from './ids.ts';
+import type { PlayerId, TreatyId } from "./ids.ts";
 
 export type TreatyKind =
-  | 'nonAggression' | 'noCovert'      | 'trade'
-  | 'openBorders'   | 'defensivePact' | 'jointWar' | 'peace';
+  | "nonAggression"
+  | "noCovert"
+  | "trade"
+  | "openBorders"
+  | "defensivePact"
+  | "jointWar"
+  | "peace";
 
 export interface Treaty {
   readonly id: TreatyId;
