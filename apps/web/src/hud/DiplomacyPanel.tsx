@@ -45,7 +45,7 @@ function DiplomacyRow({
           onClick={() =>
             onCommand({
               kind: "proposeTreaty",
-              targetPlayerId: entry.playerId as PlayerId,
+              targetPlayerId: entry.playerId,
               treatyKind: "nonAggression",
             })
           }

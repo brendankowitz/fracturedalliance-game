@@ -34,7 +34,7 @@ export interface CombatFlash {
 }
 
 export interface DiplomacyEntry {
-  playerId: string;
+  playerId: PlayerId;
   raceId: string;
   reputation: number;
   napActive: boolean;

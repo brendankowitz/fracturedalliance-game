@@ -2,7 +2,7 @@ import type { World } from "@fa/domain";
 import { applyCommand } from "./commandProcessor.ts";
 import type { Command } from "./commands.ts";
 import { tick } from "./loop.ts";
-import type { AsteroidSnapshot, HudSnapshot } from "./snapshot.ts";
+import type { AsteroidSnapshot, DiplomacyEntry, HudSnapshot } from "./snapshot.ts";
 import { takeSnapshot } from "./snapshot.ts";
 import type { WorldConfig } from "./world.ts";
 import { createWorld } from "./world.ts";
