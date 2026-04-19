@@ -52,7 +52,7 @@ export function tickShips(world: World): void {
 
     // Reynolds arrive: slow down when near destination
     const speedFraction = dist < 2.0 ? dist / 2.0 : 1.0;
-    const desiredSpeed = def.speed * speedFraction;
+    const desiredSpeed = Math.min(def.speed * speedFraction, dist);
     const dir = normalize({ x: dx, y: dy });
 
     ship.velocity.x = dir.x * desiredSpeed;

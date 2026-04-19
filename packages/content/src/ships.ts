@@ -9,6 +9,21 @@ function validateShip(raw: JsonShip): ShipClassDef {
   if (typeof raw.hullHp !== "number" || raw.hullHp <= 0) throw new Error(`Ship "${raw.kind}" invalid "hullHp"`);
   if (typeof raw.speed !== "number" || raw.speed <= 0) throw new Error(`Ship "${raw.kind}" invalid "speed"`);
   if (typeof raw.costCredits !== "number" || raw.costCredits < 0) throw new Error(`Ship "${raw.kind}" invalid "costCredits"`);
+  if (typeof raw.shieldHp !== "number" || raw.shieldHp < 0) {
+    throw new Error(`Ship "${raw.kind}" has invalid "shieldHp"`);
+  }
+  if (typeof raw.hardpoints !== "number" || raw.hardpoints < 0) {
+    throw new Error(`Ship "${raw.kind}" has invalid "hardpoints"`);
+  }
+  if (typeof raw.cargoCap !== "number" || raw.cargoCap < 0) {
+    throw new Error(`Ship "${raw.kind}" has invalid "cargoCap"`);
+  }
+  if (typeof raw.fuelRange !== "number" || raw.fuelRange <= 0) {
+    throw new Error(`Ship "${raw.kind}" has invalid "fuelRange"`);
+  }
+  if (typeof raw.buildTimeTicks !== "number" || raw.buildTimeTicks < 0) {
+    throw new Error(`Ship "${raw.kind}" has invalid "buildTimeTicks"`);
+  }
   return raw as unknown as ShipClassDef;
 }
 

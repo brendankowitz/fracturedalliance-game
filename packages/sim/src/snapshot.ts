@@ -1,4 +1,4 @@
-import type { AsteroidId, EventPriority, World } from "@fa/domain";
+import type { AsteroidId, EventPriority, PlayerId, ShipId, World } from "@fa/domain";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 
 export interface AsteroidSnapshot {
@@ -17,9 +17,9 @@ export interface AsteroidSnapshot {
 }
 
 export interface ShipSnapshot {
-  id: string;
+  id: ShipId;
   defKind: string;
-  ownerId: string;
+  ownerId: PlayerId;
   position: { x: number; y: number };
   orderKind: string;
 }

@@ -1,4 +1,4 @@
-import type { AsteroidId } from "@fa/domain";
+import type { AsteroidId, ShipId } from "@fa/domain";
 import type { HudSnapshot } from "@fa/sim";
 import type { Application } from "pixi.js";
 import { Container, Graphics, Text } from "pixi.js";
@@ -31,7 +31,7 @@ export class SectorView {
 
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
   private readonly _asteroidGraphics: Map<AsteroidId, { gfx: Graphics; label: Text }> = new Map();
-  private readonly _shipGraphics: Map<string, Graphics> = new Map();
+  private readonly _shipGraphics: Map<ShipId, Graphics> = new Map();
 
   constructor(app: Application, onSelectAsteroid: (id: AsteroidId) => void) {
     this._onSelectAsteroid = onSelectAsteroid;
@@ -106,7 +106,8 @@ export class SectorView {
         gfx.eventMode = "static";
         gfx.cursor = "pointer";
         gfx.on("pointerup", (e) => {
-          if (!this._dragging) {
+          const moved = Math.hypot(e.globalX - this._dragStartX, e.globalY - this._dragStartY);
+          if (moved < 4) {
             this._onSelectAsteroid(asteroid.id);
             e.stopPropagation();
           }
@@ -163,7 +164,7 @@ export class SectorView {
     }
 
     // Render ships
-    const seenShipIds = new Set<string>();
+    const seenShipIds = new Set<ShipId>();
 
     for (const ship of snapshot.ships) {
       seenShipIds.add(ship.id);
@@ -175,14 +176,21 @@ export class SectorView {
         this._shipGraphics.set(ship.id, gfx);
       }
 
-      const isHuman = ship.ownerId === snapshot.humanPlayerId;
-      const colour = isHuman ? 0x66ccff : 0xff8866;
-
       const sx = ship.position.x * SECTOR_SCALE;
       const sy = ship.position.y * SECTOR_SCALE;
+      const isHuman = ship.ownerId === snapshot.humanPlayerId;
+      const colour = isHuman ? 0x66ccff : 0xff8866;
+      const r = 3;
 
       gfx.clear();
-      gfx.circle(sx, sy, 3).fill({ color: colour, alpha: 0.9 });
+      // Diamond shape (rotated square)
+      gfx
+        .moveTo(sx, sy - r)
+        .lineTo(sx + r, sy)
+        .lineTo(sx, sy + r)
+        .lineTo(sx - r, sy)
+        .closePath()
+        .fill({ color: colour, alpha: 0.95 });
     }
 
     // Remove stale ship graphics

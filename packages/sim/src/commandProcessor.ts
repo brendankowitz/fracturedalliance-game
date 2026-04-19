@@ -1,5 +1,5 @@
 import { findBuildingDef, getShipDef } from "@fa/content";
-import type { ShipKind, World } from "@fa/domain";
+import type { World } from "@fa/domain";
 import { shipId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 
@@ -70,7 +70,7 @@ export function applyCommand(world: World, command: Command): void {
       const id = shipId(`ship-${world.nextShipSeq++}`);
       world.ships.set(id, {
         id,
-        defKind: command.shipKind as ShipKind,
+        defKind: def.kind,
         ownerId: asteroid.ownerId,
         hullHp: def.hullHp,
         shieldHp: def.shieldHp,
