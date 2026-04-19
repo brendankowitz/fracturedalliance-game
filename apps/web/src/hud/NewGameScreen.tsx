@@ -8,9 +8,8 @@ interface NewGameScreenProps {
 }
 
 export function NewGameScreen({ onStart }: NewGameScreenProps) {
-  const initialSeed = Math.floor(Math.random() * 1_000_000);
-  const [seed, setSeed] = useState<number>(initialSeed);
-  const [inputValue, setInputValue] = useState<string>(String(initialSeed));
+  const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1_000_000));
+  const [inputValue, setInputValue] = useState(() => String(seed));
   const [difficulty, setDifficulty] = useState<DifficultyLevel>("normal");
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {

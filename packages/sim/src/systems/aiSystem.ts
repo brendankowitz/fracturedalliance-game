@@ -7,6 +7,10 @@ import { computeGrudgeScore } from "./diplomacySystem.ts";
 const AI_BUDGET_MS = 10;
 const DEFENSE_BUILDING = "securityCentre";
 
+function effectiveAggression(personality: RacePersonality, bonus: number): number {
+  return Math.min(1, personality.aggression + bonus);
+}
+
 function pickFreeCell(asteroid: Asteroid, world: World): { x: number; y: number } | null {
   const occupied = new Set<string>();
   for (const bid of asteroid.buildings) {
@@ -111,8 +115,8 @@ export function tickAI(world: World): void {
       if (asteroid.buildQueue.length > 0) continue;
 
       const basePersonality = raceDef.personality;
-      const effectiveAggression = Math.min(1, basePersonality.aggression + aggressionBonus);
-      const p: RacePersonality = { ...basePersonality, aggression: effectiveAggression };
+      const aggValue = effectiveAggression(basePersonality, aggressionBonus);
+      const p: RacePersonality = { ...basePersonality, aggression: aggValue };
       const cell = pickFreeCell(asteroid, world);
       const hasSpace = cell !== null;
 
@@ -225,14 +229,11 @@ export function tickAI(world: World): void {
     }
 
     // Grudge influences attack willingness — low-aggression AI needs accumulated grudge
-    const raceDef2 = getRaceDef(owner.raceId);
-    if (raceDef2) {
+    const raceDef = getRaceDef(owner.raceId);
+    if (raceDef) {
       const grudge = computeGrudgeScore(owner);
-      const effectiveAggression2 = Math.min(
-        1,
-        raceDef2.personality.aggression + aggressionBonus,
-      );
-      const minGrudge = (1 - effectiveAggression2) * 50;
+      const aggValue = effectiveAggression(raceDef.personality, aggressionBonus);
+      const minGrudge = (1 - aggValue) * 50;
       if (grudge < minGrudge) continue;
     }
 
