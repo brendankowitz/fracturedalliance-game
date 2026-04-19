@@ -1,6 +1,7 @@
 import type { AgentMissionKind } from "./agent.ts";
 import type { AsteroidId, BlueprintId, PlayerId } from "./ids.ts";
 import type { TreatyKind } from "./treaty.ts";
+import type { GameEndState } from "./types.ts";
 
 export type EventPriority = "red" | "amber" | "grey" | "green";
 
@@ -37,4 +38,5 @@ export type GameEvent =
   | { kind: "bribe.accepted"; priority: "green"; targetRaceId: string }
   | { kind: "bribe.rejected"; priority: "grey"; targetRaceId: string }
   | { kind: "federation.investigation_warning"; priority: "amber" }
-  | { kind: "asteroid.independence"; priority: "amber"; asteroidName: string };
+  | { kind: "asteroid.independence"; priority: "amber"; asteroidName: string }
+  | { kind: "game.ended"; priority: "red"; state: GameEndState };

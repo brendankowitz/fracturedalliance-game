@@ -1,17 +1,21 @@
 import type { GameEndState } from "@fa/domain";
 
-const VICTORY_LABELS: Record<GameEndState, string> = {
-  "victory.survivor": "Survivor",
-  "victory.militaryDominance": "Military Dominance",
-  "defeat": "Defeat",
+type VictoryState = Exclude<GameEndState, "defeat">;
+
+const VICTORY_MESSAGES: Record<VictoryState, string> = {
+  "victory:military": "Military Supremacy — All rivals eliminated!",
+  "victory:economic": "Economic Supremacy — 1,000,000 credits amassed!",
+  "victory:diplomatic": "Federation Champion — Maximum standing achieved!",
+  "victory:science": "Scientific Ascension — All blueprints mastered!",
+  "victory:independence": "Belt Dominion — Majority of asteroids claimed!",
 };
 
 interface Props {
-  condition: GameEndState;
+  condition: VictoryState;
 }
 
 export function VictoryScreen({ condition }: Props) {
-  const label = VICTORY_LABELS[condition];
+  const message = VICTORY_MESSAGES[condition];
   return (
     <div
       style={{
@@ -30,7 +34,7 @@ export function VictoryScreen({ condition }: Props) {
       <div style={{ fontSize: 36, fontWeight: "bold", color: "#4f8", marginBottom: 12 }}>
         VICTORY
       </div>
-      <div style={{ fontSize: 18, color: "#8af", marginBottom: 32 }}>{label}</div>
+      <div style={{ fontSize: 18, color: "#8af", marginBottom: 32 }}>{message}</div>
       <button
         type="button"
         onClick={() => window.location.reload()}

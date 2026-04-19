@@ -56,15 +56,12 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
     );
   }
 
-  if (
-    snapshot.gameEndState === "victory.survivor" ||
-    snapshot.gameEndState === "victory.militaryDominance"
-  ) {
-    return <VictoryScreen condition={snapshot.gameEndState} />;
-  }
-
   if (snapshot.gameEndState === "defeat") {
     return <GameOverScreen />;
+  }
+
+  if (snapshot.gameEndState !== null) {
+    return <VictoryScreen condition={snapshot.gameEndState} />;
   }
 
   return (

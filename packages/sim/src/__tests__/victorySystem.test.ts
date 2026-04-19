@@ -2,6 +2,8 @@ import type { World } from "@fa/domain";
 import {
   type AsteroidId,
   asteroidId,
+  type BlueprintId,
+  blueprintId,
   type BuildingId,
   buildingId,
   type PlayerId,
@@ -9,7 +11,7 @@ import {
 } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
-import { tickVictory } from "../systems/victorySystem.ts";
+import { checkVictory } from "../systems/victorySystem.ts";
 
 function makeMinimalWorld(): World {
   const humanId: PlayerId = playerId("player-human");
@@ -58,7 +60,7 @@ function makeMinimalWorld(): World {
     oreInventory: {},
     reputation: new Map<PlayerId, number>(),
     federationStanding: 50,
-    blueprintsOwned: new Set<import("@fa/domain").BlueprintId>(),
+    blueprintsOwned: new Set<BlueprintId>(),
     eventLog: [],
     alive: true,
     suspicion: 0,
@@ -72,7 +74,7 @@ function makeMinimalWorld(): World {
     oreInventory: {},
     reputation: new Map<PlayerId, number>(),
     federationStanding: 30,
-    blueprintsOwned: new Set<import("@fa/domain").BlueprintId>(),
+    blueprintsOwned: new Set<BlueprintId>(),
     eventLog: [],
     alive: true,
     suspicion: 0,
@@ -123,81 +125,144 @@ function makeMinimalWorld(): World {
     nextShipSeq: 0,
     nextTreatySeq: 0,
     gameEndState: null,
+    agents: new Map(),
   };
 }
 
 describe("victorySystem", () => {
-  it("does nothing before 30 sim-days when human has asteroid", () => {
+  it("is a no-op when gameEndState is already set", () => {
     const world = makeMinimalWorld();
-    // tick = 100, well below 3000
-    tickVictory(world);
+    world.gameEndState = "defeat";
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBe("defeat");
+    expect(world.eventQueue).toHaveLength(0);
+  });
+
+  it("sets defeat when human.alive is false", () => {
+    const world = makeMinimalWorld();
+    const human = world.players.get(playerId("player-human"))!;
+    human.alive = false;
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBe("defeat");
+  });
+
+  it("fires game.ended event on defeat", () => {
+    const world = makeMinimalWorld();
+    const human = world.players.get(playerId("player-human"))!;
+    human.alive = false;
+
+    checkVictory(world);
+
+    expect(world.eventQueue).toContainEqual({
+      kind: "game.ended",
+      priority: "red",
+      state: "defeat",
+    });
+  });
+
+  it("sets victory:military when all AI players are dead", () => {
+    const world = makeMinimalWorld();
+    const ai = world.players.get(playerId("player-ai"))!;
+    ai.alive = false;
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBe("victory:military");
+  });
+
+  it("does not set military victory when some AI is still alive", () => {
+    const world = makeMinimalWorld();
+
+    checkVictory(world);
+
     expect(world.gameEndState).toBeNull();
   });
 
-  it("sets victory.survivor at tick 3000", () => {
+  it("fires game.ended event on military victory", () => {
     const world = makeMinimalWorld();
-    world.tick = 3_000;
-    tickVictory(world);
-    expect(world.gameEndState).toBe("victory.survivor");
+    const ai = world.players.get(playerId("player-ai"))!;
+    ai.alive = false;
+
+    checkVictory(world);
+
+    expect(world.eventQueue).toContainEqual({
+      kind: "game.ended",
+      priority: "red",
+      state: "victory:military",
+    });
   });
 
-  it("sets defeat when human has no asteroids", () => {
+  it("sets victory:economic when credits >= 1,000,000", () => {
     const world = makeMinimalWorld();
-    // Remove human ownership of their asteroid
+    const human = world.players.get(playerId("player-human"))!;
+    human.credits = 1_000_000;
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBe("victory:economic");
+  });
+
+  it("does not set economic victory when credits < 1,000,000", () => {
+    const world = makeMinimalWorld();
+    const human = world.players.get(playerId("player-human"))!;
+    human.credits = 999_999;
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBeNull();
+  });
+
+  it("sets victory:diplomatic when federationStanding >= 100", () => {
+    const world = makeMinimalWorld();
+    const human = world.players.get(playerId("player-human"))!;
+    human.federationStanding = 100;
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBe("victory:diplomatic");
+  });
+
+  it("sets victory:science when blueprintsOwned.size >= 40", () => {
+    const world = makeMinimalWorld();
+    const human = world.players.get(playerId("player-human"))!;
+    for (let i = 0; i < 40; i++) {
+      human.blueprintsOwned.add(blueprintId(`bp-${i}`));
+    }
+
+    checkVictory(world);
+
+    expect(world.gameEndState).toBe("victory:science");
+  });
+
+  it("sets victory:independence when human owns > 50% of non-destroyed asteroids", () => {
+    const world = makeMinimalWorld();
     const humanId = playerId("player-human");
-    const humanAsteroid = world.asteroids.get(asteroidId("asteroid-human"));
-    if (humanAsteroid) humanAsteroid.ownerId = null;
+    // Human owns both asteroids, AI owns none — 2/2 = 100%
+    const aiAsteroid = world.asteroids.get(asteroidId("asteroid-ai"))!;
+    aiAsteroid.ownerId = humanId;
 
-    tickVictory(world);
+    checkVictory(world);
 
-    expect(world.gameEndState).toBe("defeat");
-    // Ensure the human player is still alive (defeat is asteroid-based, not player-alive)
-    expect(world.players.get(humanId)?.alive).toBe(true);
+    expect(world.gameEndState).toBe("victory:independence");
   });
 
-  it("sets defeat when human is not alive", () => {
+  it("excludes destroyed asteroids (sector -9999,-9999) from independence count", () => {
     const world = makeMinimalWorld();
     const humanId = playerId("player-human");
-    const human = world.players.get(humanId);
-    if (human) human.alive = false;
+    // Move AI asteroid to destroyed sector
+    const aiAsteroid = world.asteroids.get(asteroidId("asteroid-ai"))!;
+    (aiAsteroid as { sector: { x: number; y: number } }).sector = { x: -9999, y: -9999 };
 
-    tickVictory(world);
+    // Human owns 1 non-destroyed asteroid out of 1 — 100% > 50%
+    checkVictory(world);
 
-    expect(world.gameEndState).toBe("defeat");
-  });
-
-  it("sets victory.militaryDominance when AI owns no asteroids", () => {
-    const world = makeMinimalWorld();
-    // Remove AI ownership of their asteroid
-    const aiAsteroid = world.asteroids.get(asteroidId("asteroid-ai"));
-    if (aiAsteroid) aiAsteroid.ownerId = null;
-
-    tickVictory(world);
-
-    expect(world.gameEndState).toBe("victory.militaryDominance");
-  });
-
-  it("does not change gameEndState once set", () => {
-    const world = makeMinimalWorld();
-    world.gameEndState = "defeat";
-    world.tick = 3_000;
-
-    tickVictory(world);
-
-    // Still "defeat", survivor check is skipped
-    expect(world.gameEndState).toBe("defeat");
-  });
-
-  it("prefers defeat over survivor when human loses asteroid at tick 3000", () => {
-    const world = makeMinimalWorld();
-    world.tick = 3_000;
-    // Human still alive but owns no asteroid
-    const humanAsteroid = world.asteroids.get(asteroidId("asteroid-human"));
-    if (humanAsteroid) humanAsteroid.ownerId = null;
-
-    tickVictory(world);
-
-    // Defeat is checked before survivor win
-    expect(world.gameEndState).toBe("defeat");
+    // The sole remaining non-destroyed asteroid is human-owned
+    const humanAsteroid = world.asteroids.get(asteroidId("asteroid-human"))!;
+    expect(humanAsteroid.ownerId).toBe(humanId);
+    expect(world.gameEndState).toBe("victory:independence");
   });
 });

@@ -61,3 +61,11 @@ export const SIZE_CLASS_GRID: Record<SizeClass, { width: number; height: number 
 };
 
 export type Difficulty = "intern" | "manager" | "director" | "ceo" | "board";
+
+export type GameEndState =
+  | "victory:military"
+  | "victory:economic"
+  | "victory:diplomatic"
+  | "victory:science"
+  | "victory:independence"
+  | "defeat";

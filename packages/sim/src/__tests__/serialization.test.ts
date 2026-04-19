@@ -110,10 +110,10 @@ describe("world serialization", () => {
 
   it("round-trips gameEndState non-null", () => {
     const world = createWorld({ seed: 14, humanPlayerRaceId: "helionCorp" });
-    world.gameEndState = "victory.survivor";
+    world.gameEndState = "victory:military";
     const snapshot = serializeWorld(world);
     const restored = deserializeWorld(snapshot, world.prng.state());
-    expect(restored.gameEndState).toBe("victory.survivor");
+    expect(restored.gameEndState).toBe("victory:military");
   });
 
   it("round-trips marketPrices", () => {

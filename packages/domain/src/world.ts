@@ -6,15 +6,15 @@ import type { AgentId, AsteroidId, BuildingId, PlayerId, ShipId } from "./ids.ts
 import type { Player } from "./player.ts";
 import type { Ship } from "./ship.ts";
 import type { Treaty } from "./treaty.ts";
-import type { OreRecord } from "./types.ts";
+import type { GameEndState, OreRecord } from "./types.ts";
+
+export type { GameEndState };
 
 export interface Prng {
   next(): number;
   state(): number;
   restore(state: number): void;
 }
-
-export type GameEndState = "victory.survivor" | "victory.militaryDominance" | "defeat";
 
 export interface World {
   tick: number;

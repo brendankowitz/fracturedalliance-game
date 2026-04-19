@@ -17,7 +17,9 @@ export function GameOverScreen() {
       <div style={{ fontSize: 36, fontWeight: "bold", color: "#f44", marginBottom: 12 }}>
         DEFEAT
       </div>
-      <div style={{ fontSize: 18, color: "#a88", marginBottom: 32 }}>Colony Lost</div>
+      <div style={{ fontSize: 18, color: "#a88", marginBottom: 32 }}>
+        Defeated — Your empire has fallen.
+      </div>
       <button
         type="button"
         onClick={() => window.location.reload()}
