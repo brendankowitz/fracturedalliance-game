@@ -12,7 +12,7 @@ import {
 } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
-import { tickDiplomacy } from "../systems/diplomacySystem.ts";
+import { computeGrudgeScore, tickDiplomacy } from "../systems/diplomacySystem.ts";
 
 function makeMinimalWorld(): World {
   const humanId: PlayerId = playerId("player-human");
@@ -125,6 +125,7 @@ function makeMinimalWorld(): World {
     nextBuildingSeq: 0,
     nextShipSeq: 0,
     nextTreatySeq: 0,
+    gameEndState: null,
   };
 }
 
@@ -327,5 +328,107 @@ describe("diplomacySystem — NAP violation detection", () => {
 
     expect(world.eventQueue.find((e) => e.kind === "treaty.broken")).toBeUndefined();
     expect(world.treaties).toHaveLength(1);
+  });
+});
+
+describe("diplomacySystem — extended violation detection", () => {
+  it("fires treaty.broken and removes openBorders when AI ship attacks human under openBorders treaty", () => {
+    const world = makeMinimalWorld();
+    const humanId = playerId("player-human");
+    const aiId = playerId("player-ai");
+    const humanAsteroidId = asteroidId("asteroid-human");
+    world.treaties.push({
+      id: treatyId("treaty-ob"),
+      parties: [humanId, aiId],
+      kind: "openBorders",
+      signedTick: 1,
+      expiresTick: 100,
+    });
+    makeAttackingAiShip(world, aiId, humanAsteroidId);
+    tickDiplomacy(world);
+    expect(world.treaties).toHaveLength(0);
+    expect(world.eventQueue.find((e) => e.kind === "treaty.broken")).toBeDefined();
+  });
+
+  it("fires treaty.broken and removes peace when AI ship attacks human under peace treaty", () => {
+    const world = makeMinimalWorld();
+    const humanId = playerId("player-human");
+    const aiId = playerId("player-ai");
+    const humanAsteroidId = asteroidId("asteroid-human");
+    world.treaties.push({
+      id: treatyId("treaty-peace"),
+      parties: [humanId, aiId],
+      kind: "peace",
+      signedTick: 1,
+      expiresTick: 100,
+    });
+    makeAttackingAiShip(world, aiId, humanAsteroidId);
+    tickDiplomacy(world);
+    expect(world.treaties).toHaveLength(0);
+    const broken = world.eventQueue.find((e) => e.kind === "treaty.broken");
+    expect(broken?.kind === "treaty.broken" && broken.treaty).toBe("peace");
+  });
+});
+
+describe("diplomacySystem — grudge memory", () => {
+  it("trims AI event log entries older than 2400 ticks", () => {
+    const world = makeMinimalWorld();
+    world.tick = 3000;
+    const aiId = playerId("player-ai");
+    const aiPlayer = world.players.get(aiId)!;
+    aiPlayer.eventLog = [
+      { tick: 100, kind: "human_attacked_asteroid", data: {} },
+      { tick: 2999, kind: "human_attacked_asteroid", data: {} },
+    ];
+    tickDiplomacy(world);
+    expect(aiPlayer.eventLog).toHaveLength(1);
+    expect(aiPlayer.eventLog[0]?.tick).toBe(2999);
+  });
+
+  it("records grudge event when human ship attacks AI asteroid (on multiples of 20)", () => {
+    const world = makeMinimalWorld();
+    world.tick = 20;
+    const humanId = playerId("player-human");
+    const aiId = playerId("player-ai");
+    const aiAsteroidId = asteroidId("asteroid-ai");
+
+    const id = shipId("ship-human-attacker");
+    world.ships.set(id, {
+      id,
+      defKind: "assaultCraft",
+      ownerId: humanId,
+      hullHp: 80,
+      shieldHp: 0,
+      position: { x: 0, y: 0 },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "attackAsteroid", target: aiAsteroidId },
+      cargo: {},
+    });
+
+    tickDiplomacy(world);
+
+    const aiPlayer = world.players.get(aiId)!;
+    expect(aiPlayer.eventLog.some((e) => e.kind === "human_attacked_asteroid")).toBe(true);
+  });
+});
+
+describe("computeGrudgeScore", () => {
+  it("returns 0 for empty event log", () => {
+    const world = makeMinimalWorld();
+    const aiId = playerId("player-ai");
+    const aiPlayer = world.players.get(aiId)!;
+    expect(computeGrudgeScore(aiPlayer)).toBe(0);
+  });
+
+  it("sums grudge weights from known event kinds", () => {
+    const world = makeMinimalWorld();
+    const aiId = playerId("player-ai");
+    const aiPlayer = world.players.get(aiId)!;
+    aiPlayer.eventLog = [
+      { tick: 1, kind: "human_attacked_asteroid", data: {} },
+      { tick: 2, kind: "human_attacked_asteroid", data: {} },
+      { tick: 3, kind: "human_captured_asteroid", data: {} },
+    ];
+    expect(computeGrudgeScore(aiPlayer)).toBe(40);
   });
 });

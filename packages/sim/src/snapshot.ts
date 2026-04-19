@@ -1,5 +1,6 @@
-import type { AsteroidId, EventPriority, GameEndState, PlayerId, ShipId, World } from "@fa/domain";
+import type { AsteroidId, EventPriority, GameEndState, PlayerId, ShipId, TreatyKind, World } from "@fa/domain";
 import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
+import { computeGrudgeScore } from "./systems/diplomacySystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
 
@@ -42,8 +43,8 @@ export interface DiplomacyEntry {
   playerId: PlayerId;
   raceId: string;
   reputation: number;
-  napActive: boolean;
-  napExpiresTick: number | null;
+  activeTreaties: Array<{ kind: TreatyKind; expiresTick: number | null }>;
+  grudgeScore: number;
 }
 
 export interface HudSnapshot {
@@ -123,19 +124,15 @@ export function takeSnapshot(world: World): HudSnapshot {
     marketPrices: Object.fromEntries(Object.entries(world.marketPrices)),
     diplomacy: [...world.players.values()]
       .filter((p) => !p.isHuman && p.alive)
-      .map((p) => {
-        const nap = world.treaties.find(
-          (t) =>
-            t.kind === "nonAggression" && t.parties.includes(human.id) && t.parties.includes(p.id),
-        );
-        return {
-          playerId: p.id,
-          raceId: p.raceId,
-          reputation: human.reputation.get(p.id) ?? 0,
-          napActive: nap != null,
-          napExpiresTick: nap?.expiresTick ?? null,
-        };
-      }),
+      .map((p) => ({
+        playerId: p.id,
+        raceId: p.raceId,
+        reputation: human.reputation.get(p.id) ?? 0,
+        activeTreaties: world.treaties
+          .filter((t) => t.parties.includes(human.id) && t.parties.includes(p.id))
+          .map((t) => ({ kind: t.kind, expiresTick: t.expiresTick ?? null })),
+        grudgeScore: computeGrudgeScore(p),
+      })),
     gameEndState: world.gameEndState,
     blueprintsOwned: [...human.blueprintsOwned],
     combatFlashes: [...world.ships.values()].flatMap((ship) => {

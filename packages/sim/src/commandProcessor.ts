@@ -1,5 +1,5 @@
 import { findBlueprintDef, findBuildingDef, getShipDef } from "@fa/content";
-import type { World } from "@fa/domain";
+import type { Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
@@ -117,15 +117,25 @@ export function applyCommand(world: World, command: Command): void {
       );
       if (alreadyExists) return;
 
-      const NAP_DURATION = 6000;
+      const TREATY_DURATIONS: Partial<Record<TreatyKind, number>> = {
+        nonAggression: 6000,
+        peace: 1200,
+        noCovert: 4000,
+        trade: 4000,
+        openBorders: 4000,
+        jointWar: 3000,
+      };
+
+      const duration = TREATY_DURATIONS[command.treatyKind];
       const id = treatyId(`treaty-${world.nextTreatySeq++}`);
-      world.treaties.push({
+      const treaty: Treaty = {
         id,
         parties: [human.id, command.targetPlayerId],
         kind: command.treatyKind,
         signedTick: world.tick,
-        expiresTick: world.tick + NAP_DURATION,
-      });
+        ...(duration !== undefined ? { expiresTick: world.tick + duration } : {}),
+      };
+      world.treaties.push(treaty);
 
       if (!human.reputation.has(command.targetPlayerId)) {
         human.reputation.set(command.targetPlayerId, 0);

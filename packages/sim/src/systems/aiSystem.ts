@@ -1,6 +1,7 @@
 import { findBuildingDef, getBuildingDef, getRaceDef } from "@fa/content";
 import type { Asteroid, Player, RacePersonality, World } from "@fa/domain";
 import { applyCommand } from "../commandProcessor.ts";
+import { computeGrudgeScore } from "./diplomacySystem.ts";
 
 const AI_BUDGET_MS = 10;
 const DEFENSE_BUILDING = "securityCentre";
@@ -217,6 +218,14 @@ export function tickAI(world: World): void {
           t.parties.includes(targetOwnerId),
       );
       if (hasNap) continue;
+    }
+
+    // Grudge influences attack willingness — low-aggression AI needs accumulated grudge
+    const raceDef2 = getRaceDef(owner.raceId);
+    if (raceDef2) {
+      const grudge = computeGrudgeScore(owner);
+      const minGrudge = (1 - raceDef2.personality.aggression) * 50;
+      if (grudge < minGrudge) continue;
     }
 
     applyCommand(world, {
