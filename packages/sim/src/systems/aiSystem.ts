@@ -132,9 +132,15 @@ export function tickAI(world: World): void {
 
       // Score all three strategic actions
       const candidates: Array<{ utility: number; buildingKind: string }> = [
-        { utility: utilityBuildMine(world, asteroid, player, p, hasSpace), buildingKind: "mineMk1" },
+        {
+          utility: utilityBuildMine(world, asteroid, player, p, hasSpace),
+          buildingKind: "mineMk1",
+        },
         { utility: utilityExpand(world, asteroid, player, p, hasSpace), buildingKind: "shipYard" },
-        { utility: utilityBuildDefense(world, asteroid, player, p, hasSpace), buildingKind: DEFENSE_BUILDING },
+        {
+          utility: utilityBuildDefense(world, asteroid, player, p, hasSpace),
+          buildingKind: DEFENSE_BUILDING,
+        },
       ];
 
       let best: { utility: number; buildingKind: string } | undefined;
@@ -173,7 +179,11 @@ export function tickAI(world: World): void {
     );
     if (!launchAsteroid) continue;
 
-    applyCommand(world, { kind: "launchShip", asteroidId: launchAsteroid.id, shipKind: "assaultCraft" });
+    applyCommand(world, {
+      kind: "launchShip",
+      asteroidId: launchAsteroid.id,
+      shipKind: "assaultCraft",
+    });
     if (performance.now() - start > AI_BUDGET_MS) break;
   }
 
@@ -196,6 +206,18 @@ export function tickAI(world: World): void {
       if (!closest || d < closest.dist) closest = { id: asteroid.id, dist: d };
     }
     if (!closest) continue;
+
+    const targetAsteroid = world.asteroids.get(closest.id);
+    const targetOwnerId = targetAsteroid?.ownerId;
+    if (targetOwnerId) {
+      const hasNap = world.treaties.some(
+        (t) =>
+          t.kind === "nonAggression" &&
+          t.parties.includes(owner.id) &&
+          t.parties.includes(targetOwnerId),
+      );
+      if (hasNap) continue;
+    }
 
     applyCommand(world, {
       kind: "orderShip",

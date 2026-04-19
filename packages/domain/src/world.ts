@@ -27,4 +27,5 @@ export interface World {
   readonly schemaVersion: number;
   nextBuildingSeq: number;
   nextShipSeq: number;
+  nextTreatySeq: number;
 }

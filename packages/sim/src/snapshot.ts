@@ -1,7 +1,7 @@
 import type { AsteroidId, EventPriority, PlayerId, ShipId, World } from "@fa/domain";
+import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
-import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 
 export interface AsteroidSnapshot {
   id: AsteroidId;
@@ -33,6 +33,14 @@ export interface CombatFlash {
   toY: number;
 }
 
+export interface DiplomacyEntry {
+  playerId: string;
+  raceId: string;
+  reputation: number;
+  napActive: boolean;
+  napExpiresTick: number | null;
+}
+
 export interface HudSnapshot {
   tick: number;
   credits: number;
@@ -46,6 +54,7 @@ export interface HudSnapshot {
   events: Array<{ kind: string; priority: EventPriority }>;
   marketPrices: Record<string, number>;
   combatFlashes: CombatFlash[];
+  diplomacy: DiplomacyEntry[];
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
@@ -83,7 +92,9 @@ export function takeSnapshot(world: World): HudSnapshot {
     humanPlayerId: human.id,
     traderActive: isTraderActive(world.tick),
     oreInventory: Object.fromEntries(
-      Object.entries(human.oreInventory).filter((entry): entry is [string, number] => (entry[1] ?? 0) > 0),
+      Object.entries(human.oreInventory).filter(
+        (entry): entry is [string, number] => (entry[1] ?? 0) > 0,
+      ),
     ),
     players: [...world.players.values()].map((p) => ({
       id: p.id,
@@ -102,6 +113,21 @@ export function takeSnapshot(world: World): HudSnapshot {
     })),
     events: world.eventQueue.map((e) => ({ kind: e.kind, priority: e.priority })),
     marketPrices: Object.fromEntries(Object.entries(world.marketPrices)),
+    diplomacy: [...world.players.values()]
+      .filter((p) => !p.isHuman && p.alive)
+      .map((p) => {
+        const nap = world.treaties.find(
+          (t) =>
+            t.kind === "nonAggression" && t.parties.includes(human.id) && t.parties.includes(p.id),
+        );
+        return {
+          playerId: p.id,
+          raceId: p.raceId,
+          reputation: human.reputation.get(p.id) ?? 0,
+          napActive: nap != null,
+          napExpiresTick: nap?.expiresTick ?? null,
+        };
+      }),
     combatFlashes: [...world.ships.values()].flatMap((ship) => {
       if (ship.order.kind !== "attackAsteroid") return [];
       const target = world.asteroids.get(ship.order.target);

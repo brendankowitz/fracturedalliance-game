@@ -1,3 +1,4 @@
+import { PHASE1_ORES } from "@fa/content";
 import {
   type Asteroid,
   type AsteroidId,
@@ -13,7 +14,6 @@ import {
   type SizeClass,
   type World,
 } from "@fa/domain";
-import { PHASE1_ORES } from "@fa/content";
 import { makePrng } from "./prng.ts";
 
 export interface WorldConfig {
@@ -257,5 +257,6 @@ export function createWorld(config: WorldConfig): World {
     schemaVersion: 1,
     nextBuildingSeq: 0,
     nextShipSeq: 0,
+    nextTreatySeq: 0,
   };
 }

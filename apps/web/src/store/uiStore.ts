@@ -6,10 +6,12 @@ interface UiState {
   selectedCell: { x: number; y: number } | null;
   buildingPanelOpen: boolean;
   saveLoadPanelOpen: boolean;
+  diplomacyPanelOpen: boolean;
   selectAsteroid: (id: AsteroidId | null) => void;
   selectCell: (cell: { x: number; y: number } | null) => void;
   toggleBuildingPanel: () => void;
   toggleSaveLoadPanel: () => void;
+  toggleDiplomacyPanel: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -17,8 +19,10 @@ export const useUiStore = create<UiState>((set) => ({
   selectedCell: null,
   buildingPanelOpen: false,
   saveLoadPanelOpen: false,
+  diplomacyPanelOpen: false,
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
   selectCell: (cell) => set({ selectedCell: cell }),
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
   toggleSaveLoadPanel: () => set((s) => ({ saveLoadPanelOpen: !s.saveLoadPanelOpen })),
+  toggleDiplomacyPanel: () => set((s) => ({ diplomacyPanelOpen: !s.diplomacyPanelOpen })),
 }));

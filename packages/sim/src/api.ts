@@ -8,7 +8,7 @@ import type { WorldConfig } from "./world.ts";
 import { createWorld } from "./world.ts";
 
 export type { Command } from "./commands.ts";
-export type { AsteroidSnapshot, HudSnapshot };
+export type { AsteroidSnapshot, DiplomacyEntry, HudSnapshot };
 
 export class SimApi {
   private world: World;

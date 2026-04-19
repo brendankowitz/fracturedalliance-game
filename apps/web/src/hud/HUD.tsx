@@ -2,6 +2,7 @@ import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildingPanel } from "./BuildingPanel.tsx";
+import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
 import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
@@ -16,6 +17,7 @@ interface HUDProps {
 export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const snapshot = useGameStore((s) => s.snapshot);
   const toggleSaveLoad = useUiStore((s) => s.toggleSaveLoadPanel);
+  const toggleDiplomacy = useUiStore((s) => s.toggleDiplomacyPanel);
 
   if (!snapshot) {
     return (
@@ -44,6 +46,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       />
       <button
         type="button"
+        onClick={toggleDiplomacy}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 120,
+          zIndex: 11,
+          background: "#0a1830",
+          border: "1px solid #224",
+          color: "#c8d8ff",
+          fontFamily: "monospace",
+          padding: "4px 10px",
+          cursor: "pointer",
+        }}
+      >
+        ☰ Diplomacy
+      </button>
+      <button
+        type="button"
         onClick={toggleSaveLoad}
         style={{
           position: "absolute",
@@ -64,6 +84,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <OrePanel snapshot={snapshot} />
       <TransporterPanel snapshot={snapshot} onCommand={onCommand} />
       <SaveLoadPanel onSave={onSave} onLoad={onLoad} />
+      <DiplomacyPanel snapshot={snapshot} onCommand={onCommand} />
     </>
   );
 }

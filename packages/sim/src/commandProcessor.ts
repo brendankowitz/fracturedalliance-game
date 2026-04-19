@@ -1,6 +1,6 @@
 import { findBuildingDef, getShipDef } from "@fa/content";
 import type { World } from "@fa/domain";
-import { shipId } from "@fa/domain";
+import { shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
 
@@ -100,6 +100,35 @@ export function applyCommand(world: World, command: Command): void {
       human.oreInventory[oreKind] = 0;
       const price = world.marketPrices[oreKind] ?? 0;
       human.credits += amount * price * 0.7;
+      break;
+    }
+    case "proposeTreaty": {
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+      const target = world.players.get(command.targetPlayerId);
+      if (!target || target.isHuman) return;
+
+      const alreadyExists = world.treaties.some(
+        (t) =>
+          t.kind === command.treatyKind &&
+          t.parties.includes(human.id) &&
+          t.parties.includes(command.targetPlayerId),
+      );
+      if (alreadyExists) return;
+
+      const NAP_DURATION = 6000;
+      const id = treatyId(`treaty-${world.nextTreatySeq++}`);
+      world.treaties.push({
+        id,
+        parties: [human.id, command.targetPlayerId],
+        kind: command.treatyKind,
+        signedTick: world.tick,
+        expiresTick: world.tick + NAP_DURATION,
+      });
+
+      if (!human.reputation.has(command.targetPlayerId)) {
+        human.reputation.set(command.targetPlayerId, 0);
+      }
       break;
     }
   }
