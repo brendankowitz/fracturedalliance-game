@@ -24,9 +24,11 @@ export function App() {
     };
   }, []);
 
-  const handleSave = useCallback((slot: number, label: string) => {
-    void loopRef.current?.saveToSlot(slot, label);
-  }, []);
+  const handleSave = useCallback(
+    (slot: number, label: string): Promise<void> =>
+      loopRef.current?.saveToSlot(slot, label) ?? Promise.resolve(),
+    [],
+  );
 
   const handleLoad = useCallback((slot: number) => {
     void loopRef.current?.loadFromSlot(slot);

@@ -5,7 +5,7 @@ import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
 
 interface HUDProps {
-  onSave: (slot: number, label: string) => void;
+  onSave: (slot: number, label: string) => Promise<void>;
   onLoad: (slot: number) => void;
 }
 

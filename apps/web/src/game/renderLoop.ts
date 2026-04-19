@@ -68,9 +68,9 @@ export function startRenderLoop(WorkerClass: new () => Worker): RenderLoopHandle
     },
     async saveToSlot(slot, label) {
       if (!instance) return;
-      const blob = await instance.getSaveBlob();
+      const json = await instance.getSaveBlob();
       const { saveToSlot: idbSave } = await import("@fa/persistence");
-      await idbSave(slot, JSON.parse(blob) as SaveV1, label);
+      await idbSave(slot, JSON.parse(json) as SaveV1, label);
     },
     async loadFromSlot(slot) {
       const { loadFromSlot: idbLoad } = await import("@fa/persistence");

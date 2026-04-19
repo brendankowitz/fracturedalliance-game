@@ -9,7 +9,7 @@ interface SaveSlot {
 }
 
 interface SaveLoadPanelProps {
-  onSave: (slot: number, label: string) => void;
+  onSave: (slot: number, label: string) => Promise<void>;
   onLoad: (slot: number) => void;
 }
 
@@ -47,7 +47,12 @@ export function SaveLoadPanel({ onSave, onLoad }: SaveLoadPanelProps) {
             <span style={{ flex: 1 }}>
               Slot {slot + 1}: {saved ? saved.label : "— empty —"}
             </span>
-            <button type="button" onClick={() => onSave(slot, `Save ${slot + 1}`)}>
+            <button
+              type="button"
+              onClick={() => {
+                void onSave(slot, `Save ${slot + 1}`).then(() => listSaveSlots().then(setSlots));
+              }}
+            >
               Save
             </button>
             {saved && (
