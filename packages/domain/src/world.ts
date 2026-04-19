@@ -13,6 +13,8 @@ export interface Prng {
   restore(state: number): void;
 }
 
+export type GameEndState = "victory.survivor" | "victory.militaryDominance" | "defeat";
+
 export interface World {
   tick: number;
   readonly seed: number;
@@ -28,4 +30,5 @@ export interface World {
   nextBuildingSeq: number;
   nextShipSeq: number;
   nextTreatySeq: number;
+  gameEndState: GameEndState | null;
 }

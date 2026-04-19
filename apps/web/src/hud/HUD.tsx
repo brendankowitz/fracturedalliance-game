@@ -3,11 +3,13 @@ import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildingPanel } from "./BuildingPanel.tsx";
 import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
+import { GameOverScreen } from "./GameOverScreen.tsx";
 import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
 import { SaveLoadPanel } from "./SaveLoadPanel.tsx";
 import { TransporterPanel } from "./TransporterPanel.tsx";
 import { TutorialTooltip } from "./TutorialTooltip.tsx";
+import { VictoryScreen } from "./VictoryScreen.tsx";
 
 interface HUDProps {
   onSave: (slot: number, label: string) => Promise<void>;
@@ -36,6 +38,17 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         Loading…
       </div>
     );
+  }
+
+  if (
+    snapshot.gameEndState === "victory.survivor" ||
+    snapshot.gameEndState === "victory.militaryDominance"
+  ) {
+    return <VictoryScreen condition={snapshot.gameEndState} />;
+  }
+
+  if (snapshot.gameEndState === "defeat") {
+    return <GameOverScreen />;
   }
 
   return (

@@ -23,6 +23,7 @@ describe("gameStore", () => {
       marketPrices: {},
       combatFlashes: [],
       diplomacy: [],
+      gameEndState: null,
     };
     useGameStore.getState().setSnapshot(mockSnap as HudSnapshot);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);

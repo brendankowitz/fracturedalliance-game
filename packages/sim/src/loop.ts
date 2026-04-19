@@ -7,6 +7,7 @@ import { tickMining } from "./systems/miningSystem.ts";
 import { tickResources } from "./systems/resourceSystem.ts";
 import { tickShips } from "./systems/shipSystem.ts";
 import { tickTrader } from "./systems/traderSystem.ts";
+import { tickVictory } from "./systems/victorySystem.ts";
 
 export const TICK_MS = 50;
 
@@ -21,4 +22,5 @@ export function tick(world: World): void {
   tickTrader(world);
   tickAI(world);
   tickDiplomacy(world);
+  tickVictory(world);
 }

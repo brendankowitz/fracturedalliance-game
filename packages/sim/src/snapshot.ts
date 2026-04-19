@@ -1,4 +1,4 @@
-import type { AsteroidId, EventPriority, PlayerId, ShipId, World } from "@fa/domain";
+import type { AsteroidId, EventPriority, GameEndState, PlayerId, ShipId, World } from "@fa/domain";
 import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
@@ -55,6 +55,7 @@ export interface HudSnapshot {
   marketPrices: Record<string, number>;
   combatFlashes: CombatFlash[];
   diplomacy: DiplomacyEntry[];
+  gameEndState: GameEndState | null;
 }
 
 export function takeSnapshot(world: World): HudSnapshot {
@@ -128,6 +129,7 @@ export function takeSnapshot(world: World): HudSnapshot {
           napExpiresTick: nap?.expiresTick ?? null,
         };
       }),
+    gameEndState: world.gameEndState,
     combatFlashes: [...world.ships.values()].flatMap((ship) => {
       if (ship.order.kind !== "attackAsteroid") return [];
       const target = world.asteroids.get(ship.order.target);

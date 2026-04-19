@@ -258,5 +258,6 @@ export function createWorld(config: WorldConfig): World {
     nextBuildingSeq: 0,
     nextShipSeq: 0,
     nextTreatySeq: 0,
+    gameEndState: null,
   };
 }
