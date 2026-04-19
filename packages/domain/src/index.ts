@@ -1,5 +1,6 @@
 export * from "./agent.ts";
 export * from "./asteroid.ts";
+export * from "./blackMarket.ts";
 export * from "./blueprint.ts";
 export * from "./building.ts";
 export * from "./events.ts";

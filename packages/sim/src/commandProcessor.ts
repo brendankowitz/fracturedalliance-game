@@ -1,4 +1,4 @@
-import { findBlueprintDef, findBuildingDef, getShipDef } from "@fa/content";
+import { findBlueprintDef, findBuildingDef, getRaceDef, getShipDef } from "@fa/content";
 import type { AgentMissionKind, Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
@@ -241,6 +241,99 @@ export function applyCommand(world: World, command: Command): void {
       asteroid.engines.destinationId = null;
       asteroid.engines.chargeTick = null;
       asteroid.engines.etaTick = null;
+      break;
+    }
+    case "blackMarketBuy": {
+      const maunaAlive = [...world.players.values()].some(
+        (p) => p.raceId === "mauna" && p.alive,
+      );
+      if (!maunaAlive) return;
+
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+
+      const ITEM_COSTS: Record<string, number> = {
+        oreCache: 800,
+        stealth: 2000,
+        sabotageKit: 1500,
+        contraband: 500,
+      };
+      const ITEM_SUSPICION: Record<string, number> = {
+        oreCache: 5,
+        stealth: 10,
+        sabotageKit: 15,
+        contraband: 20,
+      };
+
+      const cost = ITEM_COSTS[command.itemKind];
+      if (cost === undefined || human.credits < cost) return;
+
+      human.credits -= cost;
+      human.suspicion = Math.min(100, human.suspicion + (ITEM_SUSPICION[command.itemKind] ?? 0));
+
+      switch (command.itemKind) {
+        case "oreCache": {
+          human.oreInventory["iron"] = (human.oreInventory["iron"] ?? 0) + 200;
+          break;
+        }
+        case "stealth": {
+          const unhired = [...world.agents.values()].filter((a) => a.ownerId === null);
+          if (unhired.length > 0) {
+            const agent = unhired[Math.floor(world.prng.next() * unhired.length)];
+            if (agent) agent.ownerId = human.id;
+          } else {
+            human.credits += cost;
+          }
+          break;
+        }
+        case "sabotageKit": {
+          human.credits += 800;
+          break;
+        }
+        case "contraband": {
+          human.federationStanding = Math.min(100, human.federationStanding + 5);
+          break;
+        }
+      }
+
+      world.eventQueue.push({
+        kind: "blackmarket.purchase",
+        priority: "grey",
+        itemKind: command.itemKind,
+      });
+      break;
+    }
+    case "bribeOfficial": {
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human || human.credits < command.credits) return;
+
+      const target = world.players.get(command.targetPlayerId);
+      if (!target || target.isHuman) return;
+
+      const raceDef = getRaceDef(target.raceId);
+      const receptiveness = raceDef?.personality.bribeReceptiveness ?? 0.5;
+
+      human.credits -= command.credits;
+
+      if (world.prng.next() < receptiveness) {
+        const current = human.reputation.get(command.targetPlayerId) ?? 0;
+        human.reputation.set(
+          command.targetPlayerId,
+          Math.min(100, current + Math.round(command.credits / 100)),
+        );
+        world.eventQueue.push({
+          kind: "bribe.accepted",
+          priority: "green",
+          targetRaceId: target.raceId,
+        });
+      } else {
+        human.suspicion = Math.min(100, human.suspicion + 5);
+        world.eventQueue.push({
+          kind: "bribe.rejected",
+          priority: "grey",
+          targetRaceId: target.raceId,
+        });
+      }
       break;
     }
   }

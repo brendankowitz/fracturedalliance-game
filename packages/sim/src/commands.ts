@@ -2,6 +2,7 @@ import type {
   AgentId,
   AgentMissionKind,
   AsteroidId,
+  BlackMarketItemKind,
   OreKind,
   PlayerId,
   ShipId,
@@ -25,4 +26,6 @@ export type Command =
   | { kind: "hireAgent"; agentId: AgentId }
   | { kind: "assignMission"; agentId: AgentId; missionKind: AgentMissionKind; targetAsteroidId: AsteroidId }
   | { kind: "setAsteroidDestination"; asteroidId: AsteroidId; destinationId: AsteroidId }
-  | { kind: "cancelAsteroidEngine"; asteroidId: AsteroidId };
+  | { kind: "cancelAsteroidEngine"; asteroidId: AsteroidId }
+  | { kind: "blackMarketBuy"; itemKind: BlackMarketItemKind }
+  | { kind: "bribeOfficial"; targetPlayerId: PlayerId; credits: number };

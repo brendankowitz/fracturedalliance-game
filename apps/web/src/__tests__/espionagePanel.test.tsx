@@ -10,6 +10,7 @@ function makeSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
     tick: 0,
     credits: 10_000,
     federationStanding: 0,
+    suspicion: 0,
     humanPlayerId: "player-human",
     traderActive: false,
     oreInventory: {},

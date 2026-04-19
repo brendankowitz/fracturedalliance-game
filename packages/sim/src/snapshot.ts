@@ -77,6 +77,7 @@ export interface HudSnapshot {
   tick: number;
   credits: number;
   federationStanding: number;
+  suspicion: number;
   humanPlayerId: string;
   traderActive: boolean;
   oreInventory: Partial<Record<string, number>>;
@@ -131,6 +132,7 @@ export function takeSnapshot(world: World): HudSnapshot {
     tick: world.tick,
     credits: human.credits,
     federationStanding: human.federationStanding,
+    suspicion: human.suspicion,
     humanPlayerId: human.id,
     traderActive: isTraderActive(world.tick),
     oreInventory: Object.fromEntries(

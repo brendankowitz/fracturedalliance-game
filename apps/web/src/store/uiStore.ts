@@ -9,6 +9,7 @@ interface UiState {
   diplomacyPanelOpen: boolean;
   blueprintShopOpen: boolean;
   espionagePanelOpen: boolean;
+  blackMarketOpen: boolean;
   paused: boolean;
   notificationFeedOpen: boolean;
   selectAsteroid: (id: AsteroidId | null) => void;
@@ -18,6 +19,7 @@ interface UiState {
   toggleDiplomacyPanel: () => void;
   toggleBlueprintShop: () => void;
   toggleEspionagePanel: () => void;
+  toggleBlackMarket: () => void;
   setPaused: (v: boolean) => void;
   toggleNotificationFeed: () => void;
 }
@@ -30,6 +32,7 @@ export const useUiStore = create<UiState>((set) => ({
   diplomacyPanelOpen: false,
   blueprintShopOpen: false,
   espionagePanelOpen: false,
+  blackMarketOpen: false,
   paused: false,
   notificationFeedOpen: false,
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
@@ -39,6 +42,7 @@ export const useUiStore = create<UiState>((set) => ({
   toggleDiplomacyPanel: () => set((s) => ({ diplomacyPanelOpen: !s.diplomacyPanelOpen })),
   toggleBlueprintShop: () => set((s) => ({ blueprintShopOpen: !s.blueprintShopOpen })),
   toggleEspionagePanel: () => set((s) => ({ espionagePanelOpen: !s.espionagePanelOpen })),
+  toggleBlackMarket: () => set((s) => ({ blackMarketOpen: !s.blackMarketOpen })),
   setPaused: (v) => set({ paused: v }),
   toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
 }));

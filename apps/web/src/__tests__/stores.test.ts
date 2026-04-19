@@ -13,6 +13,7 @@ describe("gameStore", () => {
       tick: 5,
       credits: 9000,
       federationStanding: 50,
+      suspicion: 0,
       humanPlayerId: "player-human",
       traderActive: false,
       oreInventory: {},

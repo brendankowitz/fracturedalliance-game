@@ -2,6 +2,7 @@ import type { World } from "@fa/domain";
 import { tickAgents } from "./systems/agentSystem.ts";
 import { tickAI } from "./systems/aiSystem.ts";
 import { tickAsteroidEngines } from "./systems/asteroidEngineSystem.ts";
+import { tickBlackMarket } from "./systems/blackMarketSystem.ts";
 import { tickCombat } from "./systems/combatSystem.ts";
 import { tickConstruction } from "./systems/constructionSystem.ts";
 import { tickDiplomacy } from "./systems/diplomacySystem.ts";
@@ -23,6 +24,7 @@ export function tick(world: World): void {
   tickCombat(world);
   tickAgents(world);
   tickAsteroidEngines(world);
+  tickBlackMarket(world);
   tickTrader(world);
   tickAI(world);
   tickDiplomacy(world);

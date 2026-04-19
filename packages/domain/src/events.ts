@@ -32,4 +32,9 @@ export type GameEvent =
   | { kind: "asteroid.engine_fired"; priority: "red"; asteroidName: string; destinationName: string }
   | { kind: "asteroid.lost_in_collision"; priority: "red"; asteroidName: string }
   | { kind: "asteroid.captured_in_collision"; priority: "green"; asteroidName: string }
-  | { kind: "asteroid.deflected"; priority: "amber"; asteroidName: string };
+  | { kind: "asteroid.deflected"; priority: "amber"; asteroidName: string }
+  | { kind: "blackmarket.purchase"; priority: "grey"; itemKind: string }
+  | { kind: "bribe.accepted"; priority: "green"; targetRaceId: string }
+  | { kind: "bribe.rejected"; priority: "grey"; targetRaceId: string }
+  | { kind: "federation.investigation_warning"; priority: "amber" }
+  | { kind: "asteroid.independence"; priority: "amber"; asteroidName: string };
