@@ -16,6 +16,7 @@
     },
     "tradeLove": ["selenium", "asteros"],
     "tradeHate": [],
+    "demandModifiers": { "selenium": 1.2, "asteros": 1.1 },
     "federationMember": true,
     "playable": true
   },
@@ -36,6 +37,7 @@
     },
     "tradeLove": ["barium", "crystalite"],
     "tradeHate": ["selenium"],
+    "demandModifiers": { "barium": 1.25, "crystalite": 1.2, "selenium": 0.7 },
     "federationMember": false,
     "playable": false
   },
@@ -56,6 +58,7 @@
     },
     "tradeLove": ["crystalite"],
     "tradeHate": ["asteros"],
+    "demandModifiers": { "korellium": 1.3, "bytanium": 0.9, "asteros": 0.6 },
     "federationMember": false,
     "playable": false
   },
@@ -76,6 +79,7 @@
     },
     "tradeLove": ["asteros", "crystalite"],
     "tradeHate": [],
+    "demandModifiers": { "quazinc": 0.8, "dragonium": 1.15 },
     "federationMember": true,
     "playable": false
   },
@@ -96,6 +100,7 @@
     },
     "tradeLove": ["barium"],
     "tradeHate": ["selenium"],
+    "demandModifiers": { "barium": 1.4, "selenium": 0.5 },
     "federationMember": false,
     "playable": false
   },
@@ -116,6 +121,7 @@
     },
     "tradeLove": ["selenium", "asteros", "barium"],
     "tradeHate": [],
+    "demandModifiers": { "selenium": 1.25, "asteros": 1.2, "barium": 1.15, "nexos": 0.4 },
     "federationMember": true,
     "playable": false
   },
@@ -136,6 +142,7 @@
     },
     "tradeLove": ["asteros"],
     "tradeHate": [],
+    "demandModifiers": { "asteros": 1.35, "traxium": 1.2 },
     "federationMember": false,
     "playable": false
   }

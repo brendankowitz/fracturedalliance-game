@@ -1,3 +1,4 @@
+import { getRaceDef } from "@fa/content";
 import type { OreKind, OreRecord, World } from "@fa/domain";
 
 export const BASE_PRICES: OreRecord<number> = {
@@ -17,6 +18,12 @@ export function clampOrePrice(oreKind: string, price: number): number {
   const base = BASE_PRICES[oreKind as OreKind];
   if (base === undefined) return price;
   return Math.max(base * 0.5, Math.min(base * 2.0, price));
+}
+
+export function getSellPrice(ore: OreKind, basePrice: number, buyerRaceId: string): number {
+  const race = getRaceDef(buyerRaceId);
+  const modifier = race?.demandModifiers?.[ore] ?? 1.0;
+  return Math.round(basePrice * modifier * 100) / 100;
 }
 
 export function tickEconomy(world: World): void {

@@ -19,6 +19,7 @@ export interface RaceDef {
   readonly personality: RacePersonality;
   readonly tradeLove: ReadonlyArray<OreKind>;
   readonly tradeHate: ReadonlyArray<OreKind>;
+  readonly demandModifiers: Readonly<Partial<Record<OreKind, number>>>;
   readonly federationMember: boolean;
   readonly playable: boolean;
 }
