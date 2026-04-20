@@ -1,6 +1,6 @@
 import type { Player, World } from "@fa/domain";
 
-const EXPEDITION_DURATION_TICKS = 1800;
+export const EXPEDITION_DURATION_TICKS = 1800;
 const ENFORCER_CADENCE_TICKS = 200;
 const SUSPICION_DECAY_TICK_PERIOD = 100;
 const INDEPENDENCE_CHECK_TICK_PERIOD = 50;

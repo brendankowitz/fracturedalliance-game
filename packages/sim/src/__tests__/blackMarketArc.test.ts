@@ -2,7 +2,7 @@ import { asteroidId, buildingId, playerId } from "@fa/domain";
 import type { AsteroidId, BuildingId, PlayerId, World } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
-import { tickBlackMarket } from "../systems/blackMarketSystem.ts";
+import { EXPEDITION_DURATION_TICKS, tickBlackMarket } from "../systems/blackMarketSystem.ts";
 import { tickTrader } from "../systems/traderSystem.ts";
 
 function makeWorld(): World {
@@ -117,7 +117,7 @@ describe("Black Market Arc", () => {
     human.suspicion = 100;
     tickBlackMarket(world);
     expect(world.expeditionFleet.active).toBe(true);
-    expect(world.expeditionFleet.ticksRemaining).toBe(1800);
+    expect(world.expeditionFleet.ticksRemaining).toBe(EXPEDITION_DURATION_TICKS);
   });
 
   it("pushes victory.independence event after 1800 expedition ticks", () => {
