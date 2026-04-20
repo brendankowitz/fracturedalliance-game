@@ -74,3 +74,13 @@ describe("uiStore buildTemplates", () => {
     expect(useUiStore.getState().buildTemplates["ToDelete"]).toBeUndefined();
   });
 });
+
+describe("uiStore autoHire", () => {
+  it("sets auto-hire budget for an asteroid", () => {
+    useUiStore.getState().setAutoHireBudget("ast1", 5000);
+    expect(useUiStore.getState().autoHireBudgets["ast1"]).toBe(5000);
+  });
+  it("defaults to empty", () => {
+    expect(useUiStore.getState().autoHireBudgets["nonexistent"]).toBeUndefined();
+  });
+});

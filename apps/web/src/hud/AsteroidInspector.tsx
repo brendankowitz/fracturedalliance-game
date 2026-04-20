@@ -20,6 +20,8 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   const selectCell = useUiStore((s) => s.selectCell);
   const toggleBuildingPanel = useUiStore((s) => s.toggleBuildingPanel);
   const selectedCell = useUiStore((s) => s.selectedCell);
+  const autoHireBudgets = useUiStore((s) => s.autoHireBudgets);
+  const setAutoHireBudget = useUiStore((s) => s.setAutoHireBudget);
   const snapshot = useGameStore((s) => s.snapshot);
 
   if (!selectedId || !snapshot) return null;
@@ -276,6 +278,40 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
               }
             }}
           />
+        </section>
+      )}
+
+      {isOwnedByHuman && (
+        <section style={{ padding: "4px 8px", borderBottom: "1px solid #112" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#c8d8ff", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={(autoHireBudgets[asteroid.id] ?? 0) > 0}
+                onChange={(e) =>
+                  setAutoHireBudget(asteroid.id, e.target.checked ? 2000 : 0)
+                }
+                style={{ cursor: "pointer" }}
+              />
+              Auto-hire workers
+            </label>
+          </div>
+          {(autoHireBudgets[asteroid.id] ?? 0) > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="range"
+                min={500}
+                max={20000}
+                step={500}
+                value={autoHireBudgets[asteroid.id]}
+                onChange={(e) => setAutoHireBudget(asteroid.id, Number(e.target.value))}
+                style={{ flex: 1 }}
+              />
+              <span style={{ fontSize: 10, color: "#7890b0", minWidth: 40 }}>
+                {((autoHireBudgets[asteroid.id] ?? 0) / 1000).toFixed(1)}k
+              </span>
+            </div>
+          )}
         </section>
       )}
 

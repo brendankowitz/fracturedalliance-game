@@ -41,6 +41,15 @@ interface UiState {
   toggleHelp: () => void;
   unlockedScenarios: Set<string>;
   unlockScenario: (id: string) => void;
+  autoHireBudgets: Record<string, number>;
+  setAutoHireBudget: (asteroidId: string, budget: number) => void;
+  pauseOnPriority: { red: boolean; amber: boolean };
+  setPauseOnPriority: (priority: "red" | "amber", enabled: boolean) => void;
+  slowSimMode: boolean;
+  toggleSlowSimMode: () => void;
+  pendingEndTurn: boolean;
+  triggerEndTurn: () => void;
+  consumeEndTurn: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -90,4 +99,10 @@ export const useUiStore = create<UiState>((set) => ({
   toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
   unlockedScenarios: new Set<string>(),
   unlockScenario: (id) => set((s) => ({ unlockedScenarios: new Set([...s.unlockedScenarios, id]) })),
+  autoHireBudgets: {},
+  setAutoHireBudget: (asteroidId, budget) =>
+    set((s) => ({ autoHireBudgets: { ...s.autoHireBudgets, [asteroidId]: budget } })),
+  pauseOnPriority: { red: true, amber: false },
+  setPauseOnPriority: (priority, enabled) =>
+    set((s) => ({ pauseOnPriority: { ...s.pauseOnPriority, [priority]: enabled } })),
 }));
