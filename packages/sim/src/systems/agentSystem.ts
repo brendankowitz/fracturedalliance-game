@@ -83,9 +83,8 @@ function applyMissionEffect(world: World, agent: Agent, human: Player): void {
       if (target.ownerId) {
         const targetOwner = world.players.get(target.ownerId);
         if (targetOwner && !targetOwner.isHuman) {
-          const stolen = Math.floor(targetOwner.credits * 0.1);
-          targetOwner.credits -= stolen;
-          human.credits += stolen;
+          agent.tributeActive = true;
+          agent.tributeEndTick = world.tick + 200;
         }
       }
       world.eventQueue.push({
@@ -98,12 +97,16 @@ function applyMissionEffect(world: World, agent: Agent, human: Player): void {
       break;
     }
     case "liberate": {
-      if (!target.ownerId) {
-        target.ownerId = human.id;
+      // Precondition: target must be enemy-owned with low happiness
+      if (!target.ownerId || target.ownerId === human.id || target.happiness >= 0.2) {
+        world.eventQueue.push({ kind: "agent.mission_failed", priority: "grey", agentName: agent.name });
+        clearMission(agent);
+        return;
       }
+      target.ownerId = human.id;
       world.eventQueue.push({
         kind: "agent.mission_complete",
-        priority: "grey",
+        priority: "green",
         agentName: agent.name,
         missionKind: "liberate",
         targetAsteroidName: targetName,
@@ -117,13 +120,45 @@ function applyMissionEffect(world: World, agent: Agent, human: Player): void {
 
 function clearMission(agent: Agent): void {
   agent.missionKind = null;
-  agent.missionTarget = null;
+  // Keep missionTarget when tribute is active so the tribute pass knows where to extract from
+  if (!agent.tributeActive) {
+    agent.missionTarget = null;
+  }
   agent.missionCompleteTick = null;
 }
 
 export function tickAgents(world: World): void {
   const human = [...world.players.values()].find((p) => p.isHuman);
   if (!human) return;
+
+  // Tribute collection pass: process recurring blackmail payments
+  for (const agent of world.agents.values()) {
+    if (!agent.tributeActive || agent.tributeEndTick === null) continue;
+    if (agent.ownerId !== human.id) {
+      agent.tributeActive = false;
+      agent.tributeEndTick = null;
+      agent.missionTarget = null;
+      continue;
+    }
+    if (world.tick >= agent.tributeEndTick) {
+      agent.tributeActive = false;
+      agent.tributeEndTick = null;
+      agent.missionTarget = null;
+      continue;
+    }
+
+    if (!agent.missionTarget) continue;
+    const targetAst = world.asteroids.get(agent.missionTarget);
+    if (!targetAst?.ownerId) continue;
+    const targetOwner = world.players.get(targetAst.ownerId);
+    if (!targetOwner || targetOwner.isHuman) continue;
+
+    const tribute = Math.floor(targetOwner.credits * 0.02);
+    if (tribute > 0) {
+      targetOwner.credits -= tribute;
+      human.credits += tribute;
+    }
+  }
 
   for (const agent of world.agents.values()) {
     if (agent.ownerId !== human.id) continue;
@@ -135,8 +170,11 @@ export function tickAgents(world: World): void {
 
     if (outcome === "success") {
       applyMissionEffect(world, agent, human);
-      clearMission(agent);
+      // applyMissionEffect may call clearMission itself (e.g. liberate precondition fail)
+      if (agent.missionKind !== null) clearMission(agent);
     } else if (outcome === "captured") {
+      agent.tributeActive = false;
+      agent.tributeEndTick = null;
       world.eventQueue.push({
         kind: "agent.captured",
         priority: "amber",
@@ -144,6 +182,13 @@ export function tickAgents(world: World): void {
       });
       world.agents.delete(agent.id);
     } else {
+      // Liberate failure spikes happiness on target
+      if (agent.missionKind === "liberate") {
+        const target = world.asteroids.get(agent.missionTarget);
+        if (target) {
+          target.happiness = Math.min(1.0, target.happiness + 0.1);
+        }
+      }
       world.eventQueue.push({
         kind: "agent.mission_failed",
         priority: "grey",

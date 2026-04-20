@@ -81,6 +81,8 @@ export function createWorld(config: WorldConfig): World {
       missionKind: null,
       missionTarget: null,
       missionCompleteTick: null,
+      tributeActive: false,
+      tributeEndTick: null,
     });
   }
 

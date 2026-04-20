@@ -11,4 +11,6 @@ export interface Agent {
   missionKind: AgentMissionKind | null;
   missionTarget: AsteroidId | null;
   missionCompleteTick: number | null;
+  tributeActive: boolean;
+  tributeEndTick: number | null;
 }

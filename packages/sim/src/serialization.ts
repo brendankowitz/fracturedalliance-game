@@ -55,6 +55,8 @@ export function serializeWorld(world: World): Record<string, unknown> {
       missionKind: a.missionKind ?? null,
       missionTarget: a.missionTarget ?? null,
       missionCompleteTick: a.missionCompleteTick ?? null,
+      tributeActive: a.tributeActive,
+      tributeEndTick: a.tributeEndTick ?? null,
     })),
     expeditionFleet: {
       active: world.expeditionFleet.active,
@@ -206,6 +208,8 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
         missionKind: (a["missionKind"] as AgentMissionKind | null) ?? null,
         missionTarget: a["missionTarget"] != null ? asteroidId(a["missionTarget"] as string) : null,
         missionCompleteTick: (a["missionCompleteTick"] as number | null) ?? null,
+        tributeActive: (a["tributeActive"] as boolean | undefined) ?? false,
+        tributeEndTick: (a["tributeEndTick"] as number | null | undefined) ?? null,
       };
       return [id, agent];
     }),

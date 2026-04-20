@@ -21,6 +21,8 @@ function makeMinimalWorld(): World {
     missionKind: null,
     missionTarget: null,
     missionCompleteTick: null,
+    tributeActive: false,
+    tributeEndTick: null,
   };
 
   return {
