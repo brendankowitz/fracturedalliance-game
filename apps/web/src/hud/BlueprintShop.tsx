@@ -4,6 +4,7 @@ import type { Command } from "@fa/sim";
 import { useState } from "react";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { HelpTip } from "./HelpTip.tsx";
 
 const DISCIPLINES: BlueprintDiscipline[] = ["mining", "infrastructure", "military", "science", "commerce"];
 const DISCIPLINE_LABELS: Record<BlueprintDiscipline, string> = {
@@ -50,7 +51,7 @@ export function BlueprintShop({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 10, fontSize: 14 }}>Research & Blueprints</div>
+      <div style={{ fontWeight: "bold", marginBottom: 10, fontSize: 14 }}>Research & Blueprints<HelpTip text="Purchase blueprints to unlock advanced buildings and ships. Tier-2 requires a tier-1 first." /></div>
       <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap" }}>
         {DISCIPLINES.map((d) => (
           <button

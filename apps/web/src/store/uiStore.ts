@@ -18,6 +18,7 @@ interface UiState {
   colorPalette: ColorPalette;
   fontScale: number;
   selectedDifficulty: DifficultyLevel;
+  buildTemplates: Record<string, string[]>;
   selectAsteroid: (id: AsteroidId | null) => void;
   selectCell: (cell: { x: number; y: number } | null) => void;
   toggleBuildingPanel: () => void;
@@ -32,8 +33,12 @@ interface UiState {
   setColorPalette: (p: ColorPalette) => void;
   setFontScale: (v: number) => void;
   setDifficulty: (d: DifficultyLevel) => void;
+  saveBuildTemplate: (name: string, buildings: string[]) => void;
+  deleteBuildTemplate: (name: string) => void;
   ecoMode: boolean;
   toggleEcoMode: () => void;
+  showHelp: boolean;
+  toggleHelp: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -51,6 +56,10 @@ export const useUiStore = create<UiState>((set) => ({
   colorPalette: "normal",
   fontScale: 100,
   selectedDifficulty: "manager",
+  buildTemplates: {
+    "Standard Mining Colony": ["airProcessor", "waterPurifier", "mineMk1", "mineMk1", "mineMk1"],
+    "Forward Fortress": ["airProcessor", "securityCentre", "securityCentre", "shipyard"],
+  },
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
   selectCell: (cell) => set({ selectedCell: cell }),
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
@@ -65,6 +74,16 @@ export const useUiStore = create<UiState>((set) => ({
   setColorPalette: (p) => set({ colorPalette: p }),
   setFontScale: (v) => set({ fontScale: v }),
   setDifficulty: (d) => set({ selectedDifficulty: d }),
+  saveBuildTemplate: (name, buildings) =>
+    set((s) => ({ buildTemplates: { ...s.buildTemplates, [name]: buildings } })),
+  deleteBuildTemplate: (name) =>
+    set((s) => {
+      const next = { ...s.buildTemplates };
+      delete next[name];
+      return { buildTemplates: next };
+    }),
   ecoMode: false,
   toggleEcoMode: () => set((s) => ({ ecoMode: !s.ecoMode })),
+  showHelp: false,
+  toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
 }));

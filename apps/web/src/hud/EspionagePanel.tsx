@@ -4,6 +4,7 @@ import type { AgentSnapshot, Command, HudSnapshot } from "@fa/sim";
 import { useState } from "react";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { HelpTip } from "./HelpTip.tsx";
 
 const MISSION_LABELS: Record<AgentMissionKind, string> = {
   recon: "Recon",
@@ -157,7 +158,7 @@ export function EspionagePanel({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Espionage</div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Espionage<HelpTip text="Deploy agents on espionage missions to steal tech, sabotage enemies, or gather intel." /></div>
       {ownedAgents.length > 0 && (
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: "#7090b0", marginBottom: 4 }}>

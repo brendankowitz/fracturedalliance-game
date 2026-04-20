@@ -1,6 +1,7 @@
 import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { HelpTip } from "./HelpTip.tsx";
 
 interface Props {
   onCommand: (cmd: Command) => void;
@@ -34,7 +35,7 @@ export function TradePanel({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Ore Market</div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Ore Market<HelpTip text="Trade ore with passing transporters. Prices vary by supply, demand, and race." /></div>
 
       <div style={{ marginBottom: 10, fontSize: 12, color: "#7090b0" }}>
         Credits:{" "}

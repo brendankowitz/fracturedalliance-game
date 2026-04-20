@@ -4,6 +4,7 @@ import type { Command } from "@fa/sim";
 import { useState } from "react";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { HelpTip } from "./HelpTip.tsx";
 
 interface Props {
   onCommand: (cmd: Command) => void;
@@ -51,7 +52,7 @@ export function BlackMarketPanel({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Black Market</div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Black Market<HelpTip text="Purchase illegal goods from the black market. Each buy raises your suspicion level." /></div>
 
       <div style={{ marginBottom: 10, fontSize: 12 }}>
         <span style={{ color: "#7090b0" }}>Suspicion: </span>

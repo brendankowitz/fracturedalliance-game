@@ -45,6 +45,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const setFontScale = useUiStore((s) => s.setFontScale);
   const ecoMode = useUiStore((s) => s.ecoMode);
   const toggleEcoMode = useUiStore((s) => s.toggleEcoMode);
+  const showHelp = useUiStore((s) => s.showHelp);
+  const toggleHelp = useUiStore((s) => s.toggleHelp);
 
   if (!snapshot) {
     return (
@@ -298,6 +300,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
           }}
         >
           Eco
+        </button>
+        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
+        <button
+          type="button"
+          onClick={toggleHelp}
+          aria-pressed={showHelp}
+          aria-label="Toggle help tooltips"
+          style={{
+            background: showHelp ? "#0a1820" : "#0a1830",
+            border: `1px solid ${showHelp ? "#4488cc" : "#224"}`,
+            color: showHelp ? "#4488cc" : "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 9,
+            padding: "2px 5px",
+            cursor: "pointer",
+          }}
+        >
+          Help
         </button>
       </div>
       <BlackMarketPanel onCommand={onCommand} />

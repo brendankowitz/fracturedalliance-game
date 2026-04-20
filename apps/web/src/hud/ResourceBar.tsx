@@ -1,4 +1,5 @@
 import type { DifficultyLevel } from "@fa/sim";
+import { HelpTip } from "./HelpTip.tsx";
 
 interface ResourceBarProps {
   credits: number;
@@ -34,6 +35,7 @@ export function ResourceBar({
     >
       <span>
         Credits: <strong>{credits.toLocaleString()}</strong>
+        <HelpTip text="Your current credits. Earn by selling ore to traders or through income buildings." />
       </span>
       <span>
         Standing: <strong>{federationStanding}</strong>

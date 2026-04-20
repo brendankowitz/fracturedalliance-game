@@ -43,3 +43,34 @@ describe("uiStore difficulty", () => {
     expect(useUiStore.getState().selectedDifficulty).toBe("director");
   });
 });
+
+describe("uiStore showHelp", () => {
+  it("defaults to false", () => {
+    expect(useUiStore.getState().showHelp).toBe(false);
+  });
+  it("toggles", () => {
+    useUiStore.getState().toggleHelp();
+    expect(useUiStore.getState().showHelp).toBe(true);
+    useUiStore.getState().toggleHelp();
+    expect(useUiStore.getState().showHelp).toBe(false);
+  });
+});
+
+describe("uiStore buildTemplates", () => {
+  it("has default templates", () => {
+    const { buildTemplates } = useUiStore.getState();
+    expect(buildTemplates["Standard Mining Colony"]).toBeDefined();
+    expect(buildTemplates["Forward Fortress"]).toBeDefined();
+  });
+
+  it("saves and retrieves a template", () => {
+    useUiStore.getState().saveBuildTemplate("Test", ["airProcessor", "mineMk1"]);
+    expect(useUiStore.getState().buildTemplates["Test"]).toEqual(["airProcessor", "mineMk1"]);
+  });
+
+  it("deletes a template", () => {
+    useUiStore.getState().saveBuildTemplate("ToDelete", ["airProcessor"]);
+    useUiStore.getState().deleteBuildTemplate("ToDelete");
+    expect(useUiStore.getState().buildTemplates["ToDelete"]).toBeUndefined();
+  });
+});

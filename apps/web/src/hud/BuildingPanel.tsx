@@ -1,6 +1,7 @@
 import { getAllBuildingDefs } from "@fa/content";
 import type { Command } from "@fa/sim";
 import { useUiStore } from "../store/uiStore.ts";
+import { HelpTip } from "./HelpTip.tsx";
 
 const PHASE_1_BUILDINGS = [
   "airProcessor",
@@ -53,7 +54,7 @@ export function BuildingPanel({ onCommand }: BuildingPanelProps) {
         zIndex: 10,
       }}
     >
-      <strong style={{ color: "#ffffff" }}>Place Building</strong>
+      <strong style={{ color: "#ffffff" }}>Place Building<HelpTip text="Place buildings on your asteroid to generate income, defense, and production." /></strong>
       {defs.map((def) => {
         const locked = def.blueprintRequired !== undefined;
         return (

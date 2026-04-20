@@ -2,6 +2,7 @@ import { getRaceDef } from "@fa/content";
 import type { TreatyKind } from "@fa/domain";
 import type { Command, DiplomacyEntry, HudSnapshot } from "@fa/sim";
 import { useUiStore } from "../store/uiStore.ts";
+import { HelpTip } from "./HelpTip.tsx";
 
 const TREATY_LABELS: Record<TreatyKind, string> = {
   nonAggression: "Non-Aggression Pact",
@@ -113,7 +114,7 @@ export function DiplomacyPanel({ snapshot, onCommand }: Props) {
         fontSize: 13,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Diplomacy</div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Diplomacy<HelpTip text="Negotiate treaties with rival factions. Relations affect trade prices and aggression." /></div>
       {snapshot.diplomacy.length === 0 && <div style={{ color: "#667" }}>No AI factions</div>}
       {snapshot.diplomacy.map((entry) => (
         <DiplomacyRow key={entry.playerId} entry={entry} onCommand={onCommand} />
