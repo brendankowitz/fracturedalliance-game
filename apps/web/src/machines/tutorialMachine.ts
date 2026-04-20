@@ -61,13 +61,13 @@ export const TUTORIAL_STEPS: Record<string, StepConfig> = {
   },
   step4: {
     message:
-      "Launch a Scout ship to explore the belt. Open the Building panel and launch from a Ship Yard.",
+      "Visit the Blueprint Shop to unlock advanced technologies. Purchase your first blueprint to gain an edge.",
     position: { bottom: 120, left: 16 },
     predicate: (snap) => snap.blueprintsOwned.length > 0,
   },
   step5: {
     message:
-      "The Kryll Collective is watching you. Open Diplomacy to manage relations and propose a Non-Aggression Pact.",
+      "Launch a Scout ship to explore the belt. Open the Building panel and queue a Scout from a Ship Yard.",
     position: { top: 48, right: 16 },
     predicate: (snap) =>
       snap.ships.some((s) => s.ownerId === snap.humanPlayerId && s.defKind === "scout"),
