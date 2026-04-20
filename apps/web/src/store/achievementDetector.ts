@@ -1,5 +1,6 @@
 import type { HudSnapshot } from "@fa/sim";
 import { useAchievementStore } from "./achievementStore.ts";
+import { useMegacorpStore } from "./megacorpStore.ts";
 import { useUiStore } from "./uiStore.ts";
 
 const blackMarketCount = new Map<string, number>();
@@ -44,10 +45,11 @@ export function detectAchievements(snap: HudSnapshot): void {
     unlock("first_win");
     useUiStore.getState().unlockScenario("advanced-primer");
 
-    if (snap.gameEndState === "victory:independence") unlock("independence_win");
-    else if (snap.gameEndState === "victory:military") unlock("military_win");
-    else if (snap.gameEndState === "victory:economic") unlock("economic_win");
-    else if (snap.gameEndState === "victory:science") unlock("science_win");
+    if (snap.gameEndState === "victory:independence") { unlock("independence_win"); useMegacorpStore.getState().addRep(10); }
+    else if (snap.gameEndState === "victory:military") { unlock("military_win"); useMegacorpStore.getState().addRep(10); }
+    else if (snap.gameEndState === "victory:economic") { unlock("economic_win"); useMegacorpStore.getState().addRep(10); }
+    else if (snap.gameEndState === "victory:science") { unlock("science_win"); useMegacorpStore.getState().addRep(10); }
+    else if (snap.gameEndState === "defeat") { useMegacorpStore.getState().addRep(-5); }
 
     if (snap.tick <= 200) unlock("speed_run");
   }

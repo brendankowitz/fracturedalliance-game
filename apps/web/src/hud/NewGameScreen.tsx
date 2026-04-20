@@ -5,8 +5,18 @@ import { SCENARIOS } from "@fa/content";
 import { useState } from "react";
 import { DifficultySelector } from "./DifficultySelector.tsx";
 import { useUiStore } from "../store/uiStore.ts";
+import { useMegacorpStore, THEME_COLORS } from "../store/megacorpStore.ts";
+import type { HudTheme } from "../store/megacorpStore.ts";
+import { useAchievementStore } from "../store/achievementStore.ts";
 
 const REQUIRES_WIN = new Set(["advanced-primer"]);
+
+function getWeeklySeed(): number {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+  return now.getFullYear() * 100 + week;
+}
 
 interface NewGameScreenProps {
   onStart: (seed: number, difficulty: DifficultyLevel) => void;
@@ -19,6 +29,10 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
   const setDifficulty = useUiStore((s) => s.setDifficulty);
   const unlockedScenarios = useUiStore((s) => s.unlockedScenarios);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
+  const hudTheme = useMegacorpStore((s) => s.hudTheme);
+  const setHudTheme = useMegacorpStore((s) => s.setHudTheme);
+  const megacorpRep = useMegacorpStore((s) => s.megacorpRep);
+  const unlockedAchs = useAchievementStore((s) => s.unlocked);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/\D/g, "");
@@ -39,6 +53,13 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
 
   function handleDifficultyChange(level: DifficultyLevel) {
     setDifficulty(level);
+    setActiveScenario(null);
+  }
+
+  function handleWeeklySeed() {
+    const ws = getWeeklySeed();
+    setSeed(ws);
+    setInputValue(String(ws));
     setActiveScenario(null);
   }
 
@@ -66,6 +87,10 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
       }}
     >
       <h1 style={{ fontSize: 32, margin: 0, letterSpacing: 2 }}>FRACTURED ALLIANCE</h1>
+
+      <div style={{ fontSize: 11, color: "#556", marginTop: -16 }}>
+        Megacorp Rep: {megacorpRep}/100 · Achievements: {unlockedAchs.size}
+      </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Scenarios</span>
@@ -113,28 +138,74 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
         <label style={{ fontSize: 13, opacity: 0.7 }} htmlFor="seed-input">
           Seed
         </label>
-        <input
-          id="seed-input"
-          type="text"
-          inputMode="numeric"
-          value={inputValue}
-          onChange={handleInputChange}
-          style={{
-            background: "#0a1830",
-            border: "1px solid #446",
-            color: "#c8d8ff",
-            fontFamily: "monospace",
-            fontSize: 18,
-            padding: "6px 12px",
-            textAlign: "center",
-            width: 160,
-          }}
-        />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input
+            id="seed-input"
+            type="text"
+            inputMode="numeric"
+            value={inputValue}
+            onChange={handleInputChange}
+            style={{
+              background: "#0a1830",
+              border: "1px solid #446",
+              color: "#c8d8ff",
+              fontFamily: "monospace",
+              fontSize: 18,
+              padding: "6px 12px",
+              textAlign: "center",
+              width: 160,
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleWeeklySeed}
+            title="Use this week's community seed"
+            style={{
+              background: "#0a1830",
+              border: "1px solid #446",
+              color: "#7890b0",
+              fontFamily: "monospace",
+              fontSize: 11,
+              padding: "6px 10px",
+              cursor: "pointer",
+            }}
+          >
+            Weekly
+          </button>
+        </div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Difficulty</span>
         <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, opacity: 0.7 }}>HUD Theme</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          {(["default", "hacker", "amber"] as HudTheme[]).map((t) => {
+            const c = THEME_COLORS[t];
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setHudTheme(t)}
+                aria-pressed={hudTheme === t}
+                style={{
+                  background: c.bg,
+                  border: `2px solid ${hudTheme === t ? c.accent : c.border}`,
+                  color: c.text,
+                  fontFamily: "monospace",
+                  fontSize: 11,
+                  padding: "4px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                {t === "default" ? "Default" : t === "hacker" ? "Hacker" : "Amber"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <button

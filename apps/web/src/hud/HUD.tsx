@@ -2,6 +2,7 @@ import type { Command } from "@fa/sim";
 import { useEffect, useRef, useState } from "react";
 import { useKeybindStore } from "../store/keybindStore.ts";
 import { ACHIEVEMENTS, useAchievementStore } from "../store/achievementStore.ts";
+import { THEME_COLORS, useMegacorpStore } from "../store/megacorpStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { AchievementsPanel } from "./AchievementsPanel.tsx";
@@ -56,6 +57,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const toggleSlowSimMode = useUiStore((s) => s.toggleSlowSimMode);
   const triggerEndTurn = useUiStore((s) => s.triggerEndTurn);
   const keybinds = useKeybindStore((s) => s.keybinds);
+  const hudTheme = useMegacorpStore((s) => s.hudTheme);
+  const tc = THEME_COLORS[hudTheme];
   const [keybindingsOpen, setKeybindingsOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const unlockedAchs = useAchievementStore((s) => s.unlocked);
@@ -286,11 +289,13 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
           display: "flex",
           gap: 4,
           padding: "2px 8px",
-          background: "rgba(0,8,20,0.8)",
+          background: `${tc.bg}cc`,
+          borderBottom: `1px solid ${tc.border}`,
           zIndex: 11,
           fontSize: 10,
           fontFamily: "monospace",
           alignItems: "center",
+          color: tc.text,
         }}
         role="group"
         aria-label="Accessibility controls"
