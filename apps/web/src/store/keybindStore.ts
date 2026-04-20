@@ -23,17 +23,11 @@ interface KeybindState {
   keybinds: Record<KeybindAction, string>;
   setKeybind: (action: KeybindAction, key: string) => void;
   resetKeybinds: () => void;
-  hasDuplicate: (action: KeybindAction) => boolean;
 }
 
-export const useKeybindStore = create<KeybindState>((set, get) => ({
+export const useKeybindStore = create<KeybindState>((set) => ({
   keybinds: { ...DEFAULT_KEYBINDS },
   setKeybind: (action, key) =>
     set((s) => ({ keybinds: { ...s.keybinds, [action]: key } })),
   resetKeybinds: () => set({ keybinds: { ...DEFAULT_KEYBINDS } }),
-  hasDuplicate: (action) => {
-    const { keybinds } = get();
-    const val = keybinds[action];
-    return Object.entries(keybinds).filter(([k, v]) => v === val && k !== action).length > 0;
-  },
 }));

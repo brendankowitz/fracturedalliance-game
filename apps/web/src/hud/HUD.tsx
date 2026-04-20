@@ -62,7 +62,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       const s = useUiStore.getState();
       const key = e.key === " " ? " " : e.key.toLowerCase();
 
-      if (e.key === keybinds.pause) {
+      if (key === keybinds.pause) {
         s.setPaused(!s.paused);
         e.preventDefault();
       } else if (key === keybinds.openEspionage) {

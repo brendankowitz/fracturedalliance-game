@@ -27,4 +27,29 @@ describe("KeybindingsPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: /reset/i }));
     expect(useKeybindStore.getState().keybinds.pause).toBe(" ");
   });
+
+  it("clicking a bind enters listening mode then captures keydown on window", () => {
+    render(<KeybindingsPanel />);
+    fireEvent.click(screen.getByText("SPC"));
+    expect(screen.getByText("…")).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "p" });
+    expect(useKeybindStore.getState().keybinds.pause).toBe("p");
+    expect(screen.queryByText("…")).not.toBeInTheDocument();
+  });
+
+  it("Escape cancels listening without changing the bind", () => {
+    render(<KeybindingsPanel />);
+    fireEvent.click(screen.getByText("SPC"));
+    expect(screen.getByText("…")).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(useKeybindStore.getState().keybinds.pause).toBe(" ");
+    expect(screen.queryByText("…")).not.toBeInTheDocument();
+  });
+
+  it("shows duplicate warning when two actions share a key", () => {
+    useKeybindStore.getState().setKeybind("openEspionage", " ");
+    render(<KeybindingsPanel />);
+    const warnings = screen.getAllByText(/⚠/);
+    expect(warnings.length).toBeGreaterThanOrEqual(2);
+  });
 });

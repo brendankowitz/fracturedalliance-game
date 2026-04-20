@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DEFAULT_KEYBINDS, useKeybindStore } from "../store/keybindStore.ts";
 import type { KeybindAction } from "../store/keybindStore.ts";
 
@@ -16,8 +16,22 @@ export function KeybindingsPanel() {
   const keybinds = useKeybindStore((s) => s.keybinds);
   const setKeybind = useKeybindStore((s) => s.setKeybind);
   const resetKeybinds = useKeybindStore((s) => s.resetKeybinds);
-  const hasDuplicate = useKeybindStore((s) => s.hasDuplicate);
   const [listening, setListening] = useState<KeybindAction | null>(null);
+
+  useEffect(() => {
+    if (!listening) return;
+    const handler = (e: KeyboardEvent) => {
+      e.preventDefault();
+      if (e.key === "Escape") {
+        setListening(null);
+        return;
+      }
+      setKeybind(listening, e.key === " " ? " " : e.key.toLowerCase());
+      setListening(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [listening, setKeybind]);
 
   const actions = Object.keys(DEFAULT_KEYBINDS) as KeybindAction[];
 
@@ -51,7 +65,9 @@ export function KeybindingsPanel() {
         </button>
       </div>
       {actions.map((action) => {
-        const isDupe = hasDuplicate(action);
+        const isDupe = Object.entries(keybinds).some(
+          ([k, v]) => v === keybinds[action] && k !== action,
+        );
         const isListening = listening === action;
         return (
           <div
@@ -70,12 +86,6 @@ export function KeybindingsPanel() {
             </span>
             <button
               type="button"
-              onKeyDown={(e) => {
-                if (!isListening) return;
-                e.preventDefault();
-                setKeybind(action, e.key === " " ? " " : e.key.toLowerCase());
-                setListening(null);
-              }}
               onClick={() => setListening(isListening ? null : action)}
               style={{
                 background: isListening ? "#1a3860" : "#0a1420",
