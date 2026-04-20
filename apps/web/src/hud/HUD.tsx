@@ -1,8 +1,10 @@
 import type { Command } from "@fa/sim";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useKeybindStore } from "../store/keybindStore.ts";
+import { ACHIEVEMENTS, useAchievementStore } from "../store/achievementStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { AchievementsPanel } from "./AchievementsPanel.tsx";
 import { AsteroidInspector } from "./AsteroidInspector.tsx";
 import { BlackMarketPanel } from "./BlackMarketPanel.tsx";
 import { BlueprintShop } from "./BlueprintShop.tsx";
@@ -55,6 +57,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const triggerEndTurn = useUiStore((s) => s.triggerEndTurn);
   const keybinds = useKeybindStore((s) => s.keybinds);
   const [keybindingsOpen, setKeybindingsOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const unlockedAchs = useAchievementStore((s) => s.unlocked);
+  const [achToast, setAchToast] = useState<string | null>(null);
+  const prevUnlockedRef = useRef<Set<string>>(new Set(unlockedAchs));
+
+  useEffect(() => {
+    const prev = prevUnlockedRef.current;
+    for (const id of unlockedAchs) {
+      if (!prev.has(id)) {
+        const def = ACHIEVEMENTS.find((a) => a.id === id);
+        if (def) {
+          setAchToast(def.secret ? "Secret achievement unlocked!" : `Achievement: ${def.name}`);
+          setTimeout(() => setAchToast(null), 4000);
+        }
+      }
+    }
+    prevUnlockedRef.current = new Set(unlockedAchs);
+  }, [unlockedAchs]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -390,10 +410,51 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         >
           Keys
         </button>
+        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
+        <button
+          type="button"
+          onClick={() => setAchievementsOpen((v) => !v)}
+          aria-pressed={achievementsOpen}
+          aria-label="Achievements"
+          style={{
+            background: achievementsOpen ? "#201820" : "#0a1830",
+            border: `1px solid ${achievementsOpen ? "#cc8844" : "#224"}`,
+            color: achievementsOpen ? "#ffaa44" : "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 9,
+            padding: "2px 5px",
+            cursor: "pointer",
+          }}
+        >
+          ★ {unlockedAchs.size}/{ACHIEVEMENTS.length}
+        </button>
       </div>
       {keybindingsOpen && (
         <div style={{ position: "absolute", top: 72, left: 0, zIndex: 20, width: 220 }}>
           <KeybindingsPanel />
+        </div>
+      )}
+      {achievementsOpen && (
+        <AchievementsPanel onClose={() => setAchievementsOpen(false)} />
+      )}
+      {achToast && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 80,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#1a2820",
+            border: "1px solid #fa4",
+            color: "#fa4",
+            fontFamily: "monospace",
+            fontSize: 12,
+            padding: "8px 16px",
+            zIndex: 50,
+            pointerEvents: "none",
+          }}
+        >
+          ★ {achToast}
         </div>
       )}
       {slowSimMode && (

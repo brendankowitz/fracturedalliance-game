@@ -4,6 +4,7 @@ import type { Command, DifficultyLevel, SimApi } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
 import { SFX, musicPlayer, playSound } from "../audio.ts";
+import { detectAchievements } from "../store/achievementDetector.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { getPixiApp } from "./pixiApp.ts";
@@ -76,6 +77,7 @@ export function startRenderLoop(
           const snap = await instance.getSnapshot();
           useGameStore.getState().setSnapshot(snap);
           sectorView?.update(snap);
+          detectAchievements(snap);
           for (const ev of snap.events) {
             switch (ev.kind) {
               case "construction.done": playSound(SFX.buildComplete); break;
