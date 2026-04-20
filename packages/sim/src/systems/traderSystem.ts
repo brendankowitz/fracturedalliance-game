@@ -11,6 +11,10 @@ export function tickTrader(world: World): void {
   if (world.tick <= 0) return;
   if (world.tick % TICKS_PER_MONTH !== 0) return;
 
+  // Federation merchant traders refuse to deal with revoked operators.
+  const human = [...world.players.values()].find((p) => p.isHuman);
+  if (!human || human.licenseRevoked) return;
+
   // Trader arrives — emit event for each human-owned asteroid
   for (const asteroid of world.asteroids.values()) {
     if (!asteroid.ownerId) continue;

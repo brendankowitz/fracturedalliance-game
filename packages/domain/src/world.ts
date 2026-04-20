@@ -36,4 +36,9 @@ export interface World {
   nextTreatySeq: number;
   gameEndState: GameEndState | null;
   agents: Map<AgentId, Agent>;
+  expeditionFleet: {
+    active: boolean;
+    ticksRemaining: number;
+    fleetsLaunched: number;
+  };
 }

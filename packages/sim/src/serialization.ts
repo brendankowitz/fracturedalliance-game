@@ -56,6 +56,11 @@ export function serializeWorld(world: World): Record<string, unknown> {
       missionTarget: a.missionTarget ?? null,
       missionCompleteTick: a.missionCompleteTick ?? null,
     })),
+    expeditionFleet: {
+      active: world.expeditionFleet.active,
+      ticksRemaining: world.expeditionFleet.ticksRemaining,
+      fleetsLaunched: world.expeditionFleet.fleetsLaunched,
+    },
   };
 }
 
@@ -138,6 +143,7 @@ function serializePlayer(p: Player): Record<string, unknown> {
     credits: p.credits,
     federationStanding: p.federationStanding,
     suspicion: p.suspicion,
+    licenseRevoked: p.licenseRevoked,
     oreInventory: { ...p.oreInventory },
     reputation: [...p.reputation.entries()],
     blueprintsOwned: [...p.blueprintsOwned],
@@ -205,6 +211,10 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     }),
   );
 
+  const rawExpeditionFleet = snapshot["expeditionFleet"] as
+    | { active?: boolean; ticksRemaining?: number; fleetsLaunched?: number }
+    | undefined;
+
   return {
     tick: snapshot["tick"] as number,
     seed,
@@ -223,6 +233,11 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     players,
     eventQueue: [],
     agents,
+    expeditionFleet: {
+      active: rawExpeditionFleet?.active ?? false,
+      ticksRemaining: rawExpeditionFleet?.ticksRemaining ?? 0,
+      fleetsLaunched: rawExpeditionFleet?.fleetsLaunched ?? 0,
+    },
   };
 }
 
@@ -328,6 +343,7 @@ function deserializePlayer(raw: Record<string, unknown>): Player {
     credits: raw["credits"] as number,
     federationStanding: raw["federationStanding"] as number,
     suspicion: raw["suspicion"] as number,
+    licenseRevoked: (raw["licenseRevoked"] as boolean | undefined) ?? false,
     oreInventory: raw["oreInventory"] as Player["oreInventory"],
     reputation: new Map<PlayerId, number>(rawReputation.map(([id, val]) => [playerId(id), val])),
     blueprintsOwned: new Set<BlueprintId>(rawBlueprints.map((id) => blueprintId(id))),

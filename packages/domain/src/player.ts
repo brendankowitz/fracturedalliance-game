@@ -19,4 +19,5 @@ export interface Player {
   eventLog: AiEventRecord[];
   alive: boolean;
   suspicion: number;
+  licenseRevoked: boolean;
 }

@@ -102,5 +102,6 @@ export function createWorld(config: WorldConfig): World {
     nextTreatySeq: 0,
     gameEndState: null,
     agents,
+    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
   };
 }

@@ -96,6 +96,7 @@ function makeMinimalWorld(): World {
           eventLog: [],
           alive: true,
           suspicion: 0,
+          licenseRevoked: false,
         },
       ],
       [
@@ -112,6 +113,7 @@ function makeMinimalWorld(): World {
           eventLog: [],
           alive: true,
           suspicion: 0,
+          licenseRevoked: false,
         },
       ],
     ]),
@@ -136,6 +138,8 @@ function makeMinimalWorld(): World {
     nextTreatySeq: 0,
     gameEndState: null,
     agents: new Map([[agentId("agent-test"), agent]]),
+    difficulty: "manager" as const,
+    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
   };
 }
 

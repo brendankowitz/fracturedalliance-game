@@ -38,5 +38,8 @@ export type GameEvent =
   | { kind: "bribe.accepted"; priority: "green"; targetRaceId: string }
   | { kind: "bribe.rejected"; priority: "grey"; targetRaceId: string }
   | { kind: "federation.investigation_warning"; priority: "amber" }
+  | { kind: "federation.license_revoked"; priority: "red" }
+  | { kind: "expedition.enforcer_arrived"; priority: "red"; asteroidName: string }
+  | { kind: "victory.independence"; priority: "green" }
   | { kind: "asteroid.independence"; priority: "amber"; asteroidName: string }
   | { kind: "game.ended"; priority: "red"; state: GameEndState };

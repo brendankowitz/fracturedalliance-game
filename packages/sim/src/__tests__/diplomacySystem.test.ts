@@ -65,6 +65,7 @@ function makeMinimalWorld(): World {
     eventLog: [],
     alive: true,
     suspicion: 0,
+    licenseRevoked: false,
   };
 
   const aiPlayer = {
@@ -79,6 +80,7 @@ function makeMinimalWorld(): World {
     eventLog: [],
     alive: true,
     suspicion: 0,
+    licenseRevoked: false,
   };
 
   const cpu = {
@@ -126,6 +128,9 @@ function makeMinimalWorld(): World {
     nextShipSeq: 0,
     nextTreatySeq: 0,
     gameEndState: null,
+    difficulty: "manager" as const,
+    agents: new Map(),
+    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
   };
 }
 
