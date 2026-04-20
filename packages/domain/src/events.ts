@@ -42,4 +42,6 @@ export type GameEvent =
   | { kind: "expedition.enforcer_arrived"; priority: "red"; asteroidName: string }
   | { kind: "victory.independence"; priority: "green" }
   | { kind: "asteroid.independence"; priority: "amber"; asteroidName: string }
-  | { kind: "game.ended"; priority: "red"; state: GameEndState };
+  | { kind: "colony.seceded"; priority: "amber"; asteroidName: string }
+  | { kind: "game.ended"; priority: "red"; state: GameEndState }
+  | { kind: "asteroid.destroyed"; priority: "red"; asteroidName: string };

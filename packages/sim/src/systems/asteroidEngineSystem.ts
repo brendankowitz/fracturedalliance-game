@@ -1,4 +1,4 @@
-import type { AsteroidId, ShipId, World } from "@fa/domain";
+import type { Asteroid, AsteroidId, ShipId, World } from "@fa/domain";
 
 export const DESTROYED_SECTOR_COORD = -9999;
 
@@ -26,6 +26,14 @@ export function tickAsteroidEngines(world: World): void {
         asteroidName: asteroid.name,
         destinationName: destination.name,
       });
+
+      // Decay stability on engine fire (0.1 per fire on 0-100 scale → 1000 fires to destroy)
+      asteroid.stability = Math.max(0, asteroid.stability - 0.1);
+      if (asteroid.stability <= 0) {
+        destroyAsteroid(world, asteroid);
+        continue;
+      }
+
       continue;
     }
 
@@ -71,6 +79,26 @@ export function tickAsteroidEngines(world: World): void {
       resolveCollisions(world, asteroid.id, landX, landY);
     }
   }
+}
+
+function destroyAsteroid(world: World, asteroid: Asteroid): void {
+  for (const bid of [...asteroid.buildings]) {
+    world.buildings.delete(bid);
+  }
+  asteroid.buildings = [];
+  asteroid.buildQueue = [];
+  for (const sid of [...asteroid.inOrbit]) {
+    world.ships.delete(sid);
+  }
+  (asteroid as { inOrbit: typeof asteroid.inOrbit }).inOrbit = [] as ShipId[];
+  if (asteroid.ownerId) {
+    const owner = world.players.get(asteroid.ownerId);
+    if (owner?.isHuman) {
+      world.eventQueue.push({ kind: "asteroid.destroyed", priority: "red", asteroidName: asteroid.name });
+    }
+    asteroid.ownerId = null;
+  }
+  asteroid.engines = { count: 0, destinationId: null, etaTick: null, chargeTick: null };
 }
 
 function resolveCollisions(world: World, movedId: AsteroidId, landX: number, landY: number): void {
