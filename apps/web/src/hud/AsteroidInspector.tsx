@@ -2,6 +2,7 @@ import { findBuildingDef, getOreDef, getRaceDef } from "@fa/content";
 import { SIZE_CLASS_GRID, asteroidId as mkAsteroidId } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
+import { BuildTemplates } from "./BuildTemplates.tsx";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 
@@ -16,6 +17,9 @@ interface AsteroidInspectorProps {
 export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   const selectedId = useUiStore((s) => s.selectedAsteroidId);
   const selectAsteroid = useUiStore((s) => s.selectAsteroid);
+  const selectCell = useUiStore((s) => s.selectCell);
+  const toggleBuildingPanel = useUiStore((s) => s.toggleBuildingPanel);
+  const selectedCell = useUiStore((s) => s.selectedCell);
   const snapshot = useGameStore((s) => s.snapshot);
 
   if (!selectedId || !snapshot) return null;
@@ -38,9 +42,6 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   );
 
   const isOwnedByHuman = asteroid.ownerId === snapshot.humanPlayerId;
-  const selectCell = useUiStore((s) => s.selectCell);
-  const toggleBuildingPanel = useUiStore((s) => s.toggleBuildingPanel);
-  const selectedCell = useUiStore((s) => s.selectedCell);
 
   const gridDims =
     (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[asteroid.sizeClass] ??
@@ -249,6 +250,34 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
               </div>
             );
           })}
+        </section>
+      )}
+
+      {isOwnedByHuman && (
+        <section style={{ padding: "4px 8px", borderBottom: "1px solid #112" }}>
+          <BuildTemplates
+            currentQueue={asteroid.buildQueue.map((q) => q.buildingKind)}
+            onApplyTemplate={(buildings) => {
+              const occupied = new Set(
+                asteroid.buildingsGrid.map((b) => `${b.cell.x},${b.cell.y}`),
+              );
+              let placed = 0;
+              outer: for (const buildingKind of buildings) {
+                for (let y = 0; y < gridDims.height; y++) {
+                  for (let x = 0; x < gridDims.width; x++) {
+                    const key = `${x},${y}`;
+                    if (!occupied.has(key)) {
+                      occupied.add(key);
+                      onCommand({ kind: "placeBuilding", asteroidId: asteroid.id, buildingKind, cell: { x, y } });
+                      placed++;
+                      continue outer;
+                    }
+                  }
+                }
+                break;
+              }
+            }}
+          />
         </section>
       )}
 
