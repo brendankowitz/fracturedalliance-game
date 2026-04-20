@@ -57,7 +57,9 @@ export function startRenderLoop(
       if (instance !== null && timeScale > 0 && shouldTick) {
         accumulator += dt * timeScale;
         let ticked = false;
-        while (accumulator >= FIXED_STEP_MS) {
+        const maxTicks = uiState.slowSimMode ? 1 : Infinity;
+        let tickCount = 0;
+        while (accumulator >= FIXED_STEP_MS && tickCount < maxTicks) {
           for (const cmd of pendingCommands) {
             await instance.enqueueCommand(cmd);
           }
@@ -65,6 +67,7 @@ export function startRenderLoop(
           await instance.tick(FIXED_STEP_MS);
           accumulator -= FIXED_STEP_MS;
           ticked = true;
+          tickCount++;
         }
         if (ticked) {
           const snap = await instance.getSnapshot();
@@ -82,7 +85,7 @@ export function startRenderLoop(
               }
             })();
           }
-          if (uiState.slowSimMode) {
+          if (useUiStore.getState().slowSimMode) {
             useUiStore.getState().consumeEndTurn();
           }
         }

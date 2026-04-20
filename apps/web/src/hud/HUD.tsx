@@ -401,7 +401,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
           type="button"
           onClick={triggerEndTurn}
           style={{
-            position: "fixed",
+            position: "absolute",
             bottom: 20,
             right: 20,
             zIndex: 40,
