@@ -1,9 +1,10 @@
-import { DIFFICULTY_PRESETS, type DifficultyLevel } from "@fa/sim";
+import type { DifficultyLevel } from "@fa/sim";
+import { DIFFICULTY_PRESETS } from "@fa/sim";
 import type { Scenario } from "@fa/content";
 import { SCENARIOS } from "@fa/content";
 import { useState } from "react";
-
-const DIFFICULTY_LEVELS: DifficultyLevel[] = ["intern", "manager", "director", "ceo", "board"];
+import { DifficultySelector } from "./DifficultySelector.tsx";
+import { useUiStore } from "../store/uiStore.ts";
 
 interface NewGameScreenProps {
   onStart: (seed: number, difficulty: DifficultyLevel) => void;
@@ -12,7 +13,8 @@ interface NewGameScreenProps {
 export function NewGameScreen({ onStart }: NewGameScreenProps) {
   const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1_000_000));
   const [inputValue, setInputValue] = useState(() => String(seed));
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>("manager");
+  const difficulty = useUiStore((s) => s.selectedDifficulty);
+  const setDifficulty = useUiStore((s) => s.setDifficulty);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -124,28 +126,7 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
       {/* Difficulty selection */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Difficulty</span>
-        <div style={{ display: "flex", gap: 8 }}>
-          {DIFFICULTY_LEVELS.map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => handleDifficultyChange(level)}
-              aria-pressed={difficulty === level}
-              style={{
-                background: difficulty === level ? "#1a3860" : "#060f20",
-                border: `1px solid ${difficulty === level ? "#4488cc" : "#334"}`,
-                color: difficulty === level ? "#c8d8ff" : "#7890b0",
-                fontFamily: "monospace",
-                fontSize: 13,
-                padding: "6px 14px",
-                cursor: "pointer",
-                letterSpacing: 0.5,
-              }}
-            >
-              {DIFFICULTY_PRESETS[level]!.label}
-            </button>
-          ))}
-        </div>
+        <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
       </div>
 
       {/* Launch */}

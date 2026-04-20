@@ -1,6 +1,7 @@
 import type { HudSnapshot } from "@fa/sim";
 import { describe, expect, it } from "vitest";
 import { useGameStore } from "../store/gameStore.ts";
+import { useUiStore } from "../store/uiStore.ts";
 
 describe("gameStore", () => {
   it("starts with null snapshot", () => {
@@ -30,5 +31,15 @@ describe("gameStore", () => {
     };
     useGameStore.getState().setSnapshot(mockSnap);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);
+  });
+});
+
+describe("uiStore difficulty", () => {
+  it("defaults to manager difficulty", () => {
+    expect(useUiStore.getState().selectedDifficulty).toBe("manager");
+  });
+  it("sets difficulty", () => {
+    useUiStore.getState().setDifficulty("director");
+    expect(useUiStore.getState().selectedDifficulty).toBe("director");
   });
 });

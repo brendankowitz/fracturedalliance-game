@@ -1,4 +1,5 @@
 import type { AsteroidId } from "@fa/domain";
+import type { DifficultyLevel } from "@fa/sim";
 import { create } from "zustand";
 import type { ColorPalette } from "../game/views/sectorView.ts";
 
@@ -16,6 +17,7 @@ interface UiState {
   notificationFeedOpen: boolean;
   colorPalette: ColorPalette;
   fontScale: number;
+  selectedDifficulty: DifficultyLevel;
   selectAsteroid: (id: AsteroidId | null) => void;
   selectCell: (cell: { x: number; y: number } | null) => void;
   toggleBuildingPanel: () => void;
@@ -29,6 +31,7 @@ interface UiState {
   toggleNotificationFeed: () => void;
   setColorPalette: (p: ColorPalette) => void;
   setFontScale: (v: number) => void;
+  setDifficulty: (d: DifficultyLevel) => void;
   ecoMode: boolean;
   toggleEcoMode: () => void;
 }
@@ -47,6 +50,7 @@ export const useUiStore = create<UiState>((set) => ({
   notificationFeedOpen: false,
   colorPalette: "normal",
   fontScale: 100,
+  selectedDifficulty: "manager",
   selectAsteroid: (id) => set({ selectedAsteroidId: id }),
   selectCell: (cell) => set({ selectedCell: cell }),
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
@@ -60,6 +64,7 @@ export const useUiStore = create<UiState>((set) => ({
   toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
   setColorPalette: (p) => set({ colorPalette: p }),
   setFontScale: (v) => set({ fontScale: v }),
+  setDifficulty: (d) => set({ selectedDifficulty: d }),
   ecoMode: false,
   toggleEcoMode: () => set((s) => ({ ecoMode: !s.ecoMode })),
 }));
