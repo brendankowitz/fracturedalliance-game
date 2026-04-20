@@ -1,4 +1,6 @@
 import type { Command } from "@fa/sim";
+import { useEffect, useState } from "react";
+import { useKeybindStore } from "../store/keybindStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { AsteroidInspector } from "./AsteroidInspector.tsx";
@@ -8,6 +10,7 @@ import { BuildingPanel } from "./BuildingPanel.tsx";
 import { DiplomacyPanel } from "./DiplomacyPanel.tsx";
 import { EspionagePanel } from "./EspionagePanel.tsx";
 import { GameOverScreen } from "./GameOverScreen.tsx";
+import { KeybindingsPanel } from "./KeybindingsPanel.tsx";
 import { NotificationFeed } from "./NotificationFeed.tsx";
 import { OrePanel } from "./OrePanel.tsx";
 import { ResourceBar } from "./ResourceBar.tsx";
@@ -50,6 +53,35 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const slowSimMode = useUiStore((s) => s.slowSimMode);
   const toggleSlowSimMode = useUiStore((s) => s.toggleSlowSimMode);
   const triggerEndTurn = useUiStore((s) => s.triggerEndTurn);
+  const keybinds = useKeybindStore((s) => s.keybinds);
+  const [keybindingsOpen, setKeybindingsOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const s = useUiStore.getState();
+      const key = e.key === " " ? " " : e.key.toLowerCase();
+
+      if (e.key === keybinds.pause) {
+        s.setPaused(!s.paused);
+        e.preventDefault();
+      } else if (key === keybinds.openEspionage) {
+        s.toggleEspionagePanel();
+      } else if (key === keybinds.openDiplomacy) {
+        s.toggleDiplomacyPanel();
+      } else if (key === keybinds.openTrade) {
+        s.toggleTradePanel();
+      } else if (key === keybinds.openBlueprints) {
+        s.toggleBlueprintShop();
+      } else if (key === keybinds.openBlackMarket) {
+        s.toggleBlackMarket();
+      } else if (key === keybinds.openAlerts) {
+        s.toggleNotificationFeed();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [keybinds]);
 
   if (!snapshot) {
     return (
@@ -340,7 +372,30 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         >
           Turn
         </button>
+        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
+        <button
+          type="button"
+          onClick={() => setKeybindingsOpen((v) => !v)}
+          aria-pressed={keybindingsOpen}
+          aria-label="Keybindings"
+          style={{
+            background: keybindingsOpen ? "#1a1030" : "#0a1830",
+            border: `1px solid ${keybindingsOpen ? "#8844cc" : "#224"}`,
+            color: keybindingsOpen ? "#cc88ff" : "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 9,
+            padding: "2px 5px",
+            cursor: "pointer",
+          }}
+        >
+          Keys
+        </button>
       </div>
+      {keybindingsOpen && (
+        <div style={{ position: "absolute", top: 72, left: 0, zIndex: 20, width: 220 }}>
+          <KeybindingsPanel />
+        </div>
+      )}
       {slowSimMode && (
         <button
           type="button"
