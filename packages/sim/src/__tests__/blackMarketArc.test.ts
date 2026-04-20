@@ -3,6 +3,7 @@ import type { AsteroidId, BuildingId, PlayerId, World } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
 import { tickBlackMarket } from "../systems/blackMarketSystem.ts";
+import { tickTrader } from "../systems/traderSystem.ts";
 
 function makeWorld(): World {
   const humanId: PlayerId = playerId("player-human");
@@ -135,5 +136,18 @@ describe("Black Market Arc", () => {
     human.suspicion = 99;
     tickBlackMarket(world);
     expect(human.licenseRevoked).toBe(false);
+  });
+
+  it("blocks trader arrivals when licenseRevoked is true", () => {
+    const world = makeWorld();
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    human.licenseRevoked = true;
+    // Run ticks at multiples of TICKS_PER_MONTH (3000) to trigger trader arrival checks
+    // Set tick to 3000 and run tickTrader to trigger the condition
+    world.tick = 3_000;
+    world.eventQueue = [];
+    tickTrader(world);
+    // Check no trader arrived events were pushed
+    expect(world.eventQueue.some((e) => e.kind === "trader.arrived")).toBe(false);
   });
 });

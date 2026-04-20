@@ -25,8 +25,12 @@ export function tickBlackMarket(world: World): void {
     if (world.expeditionFleet.ticksRemaining <= 0) {
       world.expeditionFleet.active = false;
       world.eventQueue.push({ kind: "victory.independence", priority: "green" });
-    } else if (world.tick > 0 && world.tick % ENFORCER_CADENCE_TICKS === 0) {
-      spawnEnforcer(world, human);
+    } else {
+      // Use expedition-relative ticks: fire at relative ticks 200, 400, 600...
+      const elapsedTicks = EXPEDITION_DURATION_TICKS - world.expeditionFleet.ticksRemaining;
+      if (elapsedTicks > 0 && elapsedTicks % ENFORCER_CADENCE_TICKS === 0) {
+        spawnEnforcer(world, human);
+      }
     }
   }
 
