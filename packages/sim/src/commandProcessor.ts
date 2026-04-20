@@ -1,5 +1,5 @@
-import { findBlueprintDef, findBuildingDef, getRaceDef, getShipDef } from "@fa/content";
-import type { AgentMissionKind, BlackMarketItemKind, OreKind, Treaty, TreatyKind, World } from "@fa/domain";
+import { findBlueprintDef, findBuildingDef, getAllBlueprintDefs, getRaceDef, getShipDef } from "@fa/content";
+import type { AgentMissionKind, BlackMarketItemKind, BlueprintDef, OreKind, Player, Treaty, TreatyKind, World } from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { clampOrePrice } from "./systems/economySystem.ts";
@@ -18,6 +18,24 @@ const ITEM_SUSPICION: Record<BlackMarketItemKind, number> = {
   sabotageKit: 15,
   contraband: 20,
 };
+
+export function canPurchaseBlueprint(
+  _world: World,
+  player: Player,
+  blueprint: BlueprintDef,
+): boolean {
+  if (!blueprint.tier || blueprint.tier <= 1) return true;
+  if (!blueprint.discipline) return true;
+
+  const allBps = getAllBlueprintDefs();
+  const hasPrereq = allBps.some(
+    (bp) =>
+      bp.tier === 1 &&
+      bp.discipline === blueprint.discipline &&
+      player.blueprintsOwned.has(blueprintId(bp.id)),
+  );
+  return hasPrereq;
+}
 
 export function applyCommand(world: World, command: Command): void {
   switch (command.kind) {
@@ -169,6 +187,15 @@ export function applyCommand(world: World, command: Command): void {
       if (human.blueprintsOwned.has(bpId)) return;
       if (human.credits < def.costCredits) return;
       if (def.prerequisiteId !== null && !human.blueprintsOwned.has(def.prerequisiteId)) return;
+
+      if (!canPurchaseBlueprint(world, human, def)) {
+        world.eventQueue.push({
+          kind: "blueprint.prerequisite_missing",
+          priority: "grey",
+          blueprintId: bpId,
+        });
+        return;
+      }
 
       human.credits -= def.costCredits;
       human.blueprintsOwned.add(bpId);

@@ -44,4 +44,5 @@ export type GameEvent =
   | { kind: "asteroid.independence"; priority: "amber"; asteroidName: string }
   | { kind: "colony.seceded"; priority: "amber"; asteroidName: string }
   | { kind: "game.ended"; priority: "red"; state: GameEndState }
-  | { kind: "asteroid.destroyed"; priority: "red"; asteroidName: string };
+  | { kind: "asteroid.destroyed"; priority: "red"; asteroidName: string }
+  | { kind: "blueprint.prerequisite_missing"; priority: "grey"; blueprintId: BlueprintId };
