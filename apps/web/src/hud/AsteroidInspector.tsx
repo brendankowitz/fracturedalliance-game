@@ -261,7 +261,6 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
               const occupied = new Set(
                 asteroid.buildingsGrid.map((b) => `${b.cell.x},${b.cell.y}`),
               );
-              let placed = 0;
               outer: for (const buildingKind of buildings) {
                 for (let y = 0; y < gridDims.height; y++) {
                   for (let x = 0; x < gridDims.width; x++) {
@@ -269,7 +268,6 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
                     if (!occupied.has(key)) {
                       occupied.add(key);
                       onCommand({ kind: "placeBuilding", asteroidId: asteroid.id, buildingKind, cell: { x, y } });
-                      placed++;
                       continue outer;
                     }
                   }
