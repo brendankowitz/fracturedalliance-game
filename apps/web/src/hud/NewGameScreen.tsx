@@ -6,6 +6,8 @@ import { useState } from "react";
 import { DifficultySelector } from "./DifficultySelector.tsx";
 import { useUiStore } from "../store/uiStore.ts";
 
+const LOCKED_SCENARIOS = new Set(["advanced-primer"]);
+
 interface NewGameScreenProps {
   onStart: (seed: number, difficulty: DifficultyLevel) => void;
 }
@@ -67,34 +69,42 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Scenarios</span>
         <div style={{ display: "flex", gap: 12 }}>
-          {SCENARIOS.map((scenario) => (
-            <button
-              key={scenario.id}
-              type="button"
-              onClick={() => handleSelectScenario(scenario)}
-              aria-pressed={activeScenario === scenario.id}
-              style={{
-                background: activeScenario === scenario.id ? "#1a3860" : "#060f20",
-                border: `1px solid ${activeScenario === scenario.id ? "#4488cc" : "#334"}`,
-                color: activeScenario === scenario.id ? "#c8d8ff" : "#7890b0",
-                fontFamily: "monospace",
-                fontSize: 12,
-                padding: "10px 14px",
-                cursor: "pointer",
-                textAlign: "left",
-                maxWidth: 200,
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
-              }}
-            >
-              <span style={{ fontWeight: "bold", fontSize: 13 }}>{scenario.name}</span>
-              <span style={{ opacity: 0.8, fontSize: 11, lineHeight: 1.4 }}>{scenario.description}</span>
-              <span style={{ opacity: 0.6, fontSize: 10, marginTop: 4 }}>
-                {DIFFICULTY_PRESETS[scenario.difficulty]!.label} · Seed {scenario.seed}
-              </span>
-            </button>
-          ))}
+          {SCENARIOS.map((scenario) => {
+            const isLocked = LOCKED_SCENARIOS.has(scenario.id);
+            return (
+              <button
+                key={scenario.id}
+                type="button"
+                onClick={() => !isLocked && handleSelectScenario(scenario)}
+                disabled={isLocked}
+                aria-pressed={!isLocked && activeScenario === scenario.id}
+                style={{
+                  background: activeScenario === scenario.id ? "#1a3860" : "#060f20",
+                  border: `1px solid ${activeScenario === scenario.id ? "#4488cc" : "#334"}`,
+                  color: activeScenario === scenario.id ? "#c8d8ff" : "#7890b0",
+                  fontFamily: "monospace",
+                  fontSize: 12,
+                  padding: "10px 14px",
+                  cursor: isLocked ? "not-allowed" : "pointer",
+                  textAlign: "left",
+                  maxWidth: 200,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  opacity: isLocked ? 0.45 : 1,
+                }}
+              >
+                <span style={{ fontWeight: "bold", fontSize: 13 }}>{scenario.name}</span>
+                {isLocked && (
+                  <span style={{ fontSize: 10, opacity: 0.7 }}>Unlock: win once</span>
+                )}
+                <span style={{ opacity: 0.8, fontSize: 11, lineHeight: 1.4 }}>{scenario.description}</span>
+                <span style={{ opacity: 0.6, fontSize: 10, marginTop: 4 }}>
+                  {DIFFICULTY_PRESETS[scenario.difficulty]!.label} · Seed {scenario.seed}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

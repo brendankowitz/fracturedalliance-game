@@ -33,4 +33,11 @@ export const SCENARIOS: readonly Scenario[] = [
     seed: 999,
     difficulty: "ceo",
   },
+  {
+    id: "advanced-primer",
+    name: "Advanced Primer",
+    description: "Master espionage, asteroid engines, and blackmail.",
+    seed: 987654,
+    difficulty: "director",
+  },
 ] as const;
