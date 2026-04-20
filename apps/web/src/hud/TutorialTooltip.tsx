@@ -1,5 +1,5 @@
 import { useMachine } from "@xstate/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TUTORIAL_STEPS, tutorialMachine } from "../machines/tutorialMachine.ts";
 import { useGameStore } from "../store/gameStore.ts";
 
@@ -14,6 +14,7 @@ const STEP_NUMBERS: Record<string, number> = {
 export function TutorialTooltip() {
   const [state, send] = useMachine(tutorialMachine);
   const snapshot = useGameStore((s) => s.snapshot);
+  const [predicateMet, setPredicateMet] = useState(false);
 
   useEffect(() => {
     if (!snapshot) return;
@@ -21,29 +22,15 @@ export function TutorialTooltip() {
     const current = state.value as string;
     if (current === "done" || current === "dismissed") return;
 
-    if (current === "step1") {
-      const met = snapshot.asteroids.some(
-        (a) =>
-          a.ownerId === snapshot.humanPlayerId &&
-          (a.buildingKinds.includes("airProcessor") ||
-            a.buildQueue.some((q) => q.buildingKind === "airProcessor")),
-      );
-      if (met) send({ type: "ADVANCE" });
-    } else if (current === "step2") {
-      const met = snapshot.asteroids.some(
-        (a) =>
-          a.ownerId === snapshot.humanPlayerId &&
-          (a.buildingKinds.includes("mineMk1") ||
-            a.buildQueue.some((q) => q.buildingKind === "mineMk1")),
-      );
-      if (met) send({ type: "ADVANCE" });
-    } else if (current === "step3") {
-      if (snapshot.traderActive) send({ type: "ADVANCE" });
-    } else if (current === "step4") {
-      const met = snapshot.ships.some(
-        (s) => s.ownerId === snapshot.humanPlayerId && s.defKind === "scout",
-      );
-      if (met) send({ type: "ADVANCE" });
+    const stepConfig = TUTORIAL_STEPS[current];
+    if (!stepConfig) return;
+
+    const met = stepConfig.predicate(snapshot);
+    setPredicateMet(met);
+
+    // Steps 1-4 auto-advance; step5 requires manual "Got it"
+    if (met && current !== "step5") {
+      send({ type: "ADVANCE" });
     }
   }, [snapshot, state.value, send]);
 
@@ -70,10 +57,29 @@ export function TutorialTooltip() {
         ...stepConfig.position,
       }}
     >
+      {/* Progress dots */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+        {Array.from({ length: 5 }, (_, i) => (
+          <div
+            key={i}
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: i < stepNumber ? "#4488cc" : "#224",
+            }}
+          />
+        ))}
+      </div>
       <div style={{ fontWeight: "bold", marginBottom: 4 }}>Tutorial — Step {stepNumber} of 5</div>
       <div style={{ fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>{stepConfig.message}</div>
+      {!predicateMet && (
+        <div style={{ fontSize: 11, color: "#667", fontStyle: "italic", marginBottom: 6 }}>
+          Waiting for objective...
+        </div>
+      )}
       <div style={{ display: "flex", gap: 8 }}>
-        {isStep5 && (
+        {isStep5 && predicateMet && (
           <button
             type="button"
             onClick={() => send({ type: "ADVANCE" })}
