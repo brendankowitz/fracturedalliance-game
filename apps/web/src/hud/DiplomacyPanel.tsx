@@ -4,6 +4,12 @@ import type { Command, DiplomacyEntry, HudSnapshot } from "@fa/sim";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
 
+const PORTRAIT_MAP: Record<string, string> = {
+  kryllCollective: "civpro",
+  mauna: "matreKhan",
+  motkaj: "terran",
+};
+
 const TREATY_LABELS: Record<TreatyKind, string> = {
   nonAggression: "Non-Aggression Pact",
   peace: "Peace Treaty",
@@ -41,9 +47,24 @@ function DiplomacyRow({
   const raceName = raceDef?.name ?? entry.raceId;
   const activeKinds = new Set(entry.activeTreaties.map((t) => t.kind));
 
+  const portraitBase = PORTRAIT_MAP[entry.raceId];
+  const portraitState = entry.reputation <= -20 ? "hostile" : "neutral";
+  const portraitSrc = portraitBase
+    ? `/assets/portraits/${portraitBase}-${portraitState}.png`
+    : null;
+
   return (
     <div style={{ marginBottom: 10, borderBottom: "1px solid #224", paddingBottom: 8 }}>
-      <div style={{ fontWeight: "bold" }}>{raceName}</div>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
+        {portraitSrc && (
+          <img
+            src={portraitSrc}
+            alt={raceName}
+            style={{ width: 40, height: 40, objectFit: "cover", border: "1px solid #224", flexShrink: 0 }}
+          />
+        )}
+        <div style={{ fontWeight: "bold" }}>{raceName}</div>
+      </div>
       <div style={{ fontSize: 11, color: "#8af" }}>
         Rep: {repLabel(entry.reputation)} ({entry.reputation > 0 ? "+" : ""}
         {entry.reputation})

@@ -1,5 +1,6 @@
 import type { Command, DifficultyLevel } from "@fa/sim";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { musicPlayer } from "./audio.ts";
 import { initPixi } from "./game/pixiApp.ts";
 import type { RenderLoopHandle } from "./game/renderLoop.ts";
 import { startRenderLoop } from "./game/renderLoop.ts";
@@ -28,6 +29,10 @@ export function App() {
   useEffect(() => {
     document.documentElement.style.fontSize = fontScale + "%";
   }, [fontScale]);
+
+  useEffect(() => {
+    if (gameParams === null) musicPlayer.play("menu");
+  }, [gameParams]);
 
   useEffect(() => {
     if (gameParams === null || !canvasRef.current) return;
@@ -60,6 +65,7 @@ export function App() {
   }, []);
 
   function handleStart(seed: number, difficulty: DifficultyLevel) {
+    musicPlayer.play("exploration");
     setGameParams({ seed, difficulty });
   }
 
