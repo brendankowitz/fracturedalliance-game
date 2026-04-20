@@ -1,5 +1,6 @@
 import { getBuildingDef } from "@fa/content";
 import type { OreKind, World } from "@fa/domain";
+import { getHappinessMultiplier } from "./happinessSystem.ts";
 
 export function tickMining(world: World): void {
   for (const asteroid of world.asteroids.values()) {
@@ -7,6 +8,8 @@ export function tickMining(world: World): void {
 
     const player = world.players.get(asteroid.ownerId);
     if (!player) continue;
+
+    const happinessMultiplier = getHappinessMultiplier(asteroid.happiness);
 
     for (const buildingId of asteroid.buildings) {
       const building = world.buildings.get(buildingId);
@@ -19,7 +22,7 @@ export function tickMining(world: World): void {
         const available = asteroid.deposits[ore as keyof typeof asteroid.deposits] ?? 0;
         if (available <= 0) continue;
 
-        const extracted = Math.min(ratePerTick, available);
+        const extracted = Math.min(ratePerTick * happinessMultiplier, available);
         (asteroid.deposits as Partial<Record<OreKind, number>>)[ore as OreKind] = Math.max(
           0,
           available - extracted,
