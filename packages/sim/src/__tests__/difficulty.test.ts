@@ -1,40 +1,44 @@
 import { describe, it, expect } from "vitest";
 import { DIFFICULTY_PRESETS } from "../difficulty.ts";
+import type { DifficultyLevel } from "@fa/domain";
+
+const ORDERED: DifficultyLevel[] = ["intern", "manager", "director", "ceo", "board"];
 
 describe("DIFFICULTY_PRESETS", () => {
-  it("should have intern/manager/director/ceo/board levels", () => {
-    const levels = Object.keys(DIFFICULTY_PRESETS);
-    expect(levels).toContain("intern");
-    expect(levels).toContain("manager");
-    expect(levels).toContain("director");
-    expect(levels).toContain("ceo");
-    expect(levels).toContain("board");
+  it("should have all 5 difficulty levels", () => {
+    expect(Object.keys(DIFFICULTY_PRESETS)).toEqual(expect.arrayContaining(ORDERED));
+    expect(Object.keys(DIFFICULTY_PRESETS)).toHaveLength(5);
   });
 
-  it("should have traderGenerosity field on each preset", () => {
-    for (const preset of Object.values(DIFFICULTY_PRESETS)) {
-      expect(typeof preset.traderGenerosity).toBe("number");
+  it("humanStartCredits decreases as difficulty increases", () => {
+    for (let i = 1; i < ORDERED.length; i++) {
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].humanStartCredits)
+        .toBeLessThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].humanStartCredits);
     }
   });
 
-  it("should have federationGracePeriod field on each preset", () => {
-    for (const preset of Object.values(DIFFICULTY_PRESETS)) {
-      expect(typeof preset.federationGracePeriod).toBe("number");
+  it("aiCreditMultiplier increases as difficulty increases", () => {
+    for (let i = 1; i < ORDERED.length; i++) {
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].aiCreditMultiplier)
+        .toBeGreaterThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].aiCreditMultiplier);
     }
   });
 
-  it("should have maunaActive field on each preset", () => {
-    for (const preset of Object.values(DIFFICULTY_PRESETS)) {
-      expect(typeof preset.maunaActive).toBe("boolean");
+  it("traderGenerosity decreases as difficulty increases", () => {
+    for (let i = 1; i < ORDERED.length; i++) {
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].traderGenerosity)
+        .toBeLessThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].traderGenerosity);
     }
   });
 
-  it("board should be harder than ceo", () => {
-    expect(DIFFICULTY_PRESETS.board.humanStartCredits).toBeLessThan(DIFFICULTY_PRESETS.ceo.humanStartCredits);
-    expect(DIFFICULTY_PRESETS.board.aiCreditMultiplier).toBeGreaterThan(DIFFICULTY_PRESETS.ceo.aiCreditMultiplier);
+  it("federationGracePeriod decreases as difficulty increases", () => {
+    for (let i = 1; i < ORDERED.length; i++) {
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].federationGracePeriod)
+        .toBeLessThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].federationGracePeriod);
+    }
   });
 
-  it("maunaActive should be true only for ceo and board", () => {
+  it("maunaActive is false for intern/manager/director and true for ceo/board", () => {
     expect(DIFFICULTY_PRESETS.intern.maunaActive).toBe(false);
     expect(DIFFICULTY_PRESETS.manager.maunaActive).toBe(false);
     expect(DIFFICULTY_PRESETS.director.maunaActive).toBe(false);

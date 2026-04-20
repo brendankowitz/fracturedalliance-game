@@ -1,4 +1,6 @@
-export type DifficultyLevel = "intern" | "manager" | "director" | "ceo" | "board";
+import type { DifficultyLevel } from "@fa/domain";
+
+export type { DifficultyLevel };
 
 export interface DifficultyPreset {
   readonly label: string;
