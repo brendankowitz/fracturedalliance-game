@@ -51,7 +51,10 @@ export function startRenderLoop(
       const dt = now - lastFrame;
       lastFrame = now;
 
-      if (instance !== null && timeScale > 0 && !useUiStore.getState().paused) {
+      const uiState = useUiStore.getState();
+      const shouldTick = !uiState.paused && (!uiState.slowSimMode || uiState.pendingEndTurn);
+
+      if (instance !== null && timeScale > 0 && shouldTick) {
         accumulator += dt * timeScale;
         let ticked = false;
         while (accumulator >= FIXED_STEP_MS) {
@@ -78,6 +81,9 @@ export function startRenderLoop(
                 console.warn("[autosave] failed:", err);
               }
             })();
+          }
+          if (uiState.slowSimMode) {
+            useUiStore.getState().consumeEndTurn();
           }
         }
       }

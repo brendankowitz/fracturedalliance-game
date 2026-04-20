@@ -96,3 +96,19 @@ describe("uiStore pauseOnPriority", () => {
     expect(useUiStore.getState().pauseOnPriority.amber).toBe(true);
   });
 });
+
+describe("uiStore slowSimMode", () => {
+  it("defaults to false", () => {
+    expect(useUiStore.getState().slowSimMode).toBe(false);
+  });
+  it("toggles", () => {
+    useUiStore.getState().toggleSlowSimMode();
+    expect(useUiStore.getState().slowSimMode).toBe(true);
+  });
+  it("triggerEndTurn sets pendingEndTurn", () => {
+    useUiStore.getState().triggerEndTurn();
+    expect(useUiStore.getState().pendingEndTurn).toBe(true);
+    useUiStore.getState().consumeEndTurn();
+    expect(useUiStore.getState().pendingEndTurn).toBe(false);
+  });
+});

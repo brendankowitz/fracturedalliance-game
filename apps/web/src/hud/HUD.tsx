@@ -47,6 +47,9 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   const toggleEcoMode = useUiStore((s) => s.toggleEcoMode);
   const showHelp = useUiStore((s) => s.showHelp);
   const toggleHelp = useUiStore((s) => s.toggleHelp);
+  const slowSimMode = useUiStore((s) => s.slowSimMode);
+  const toggleSlowSimMode = useUiStore((s) => s.toggleSlowSimMode);
+  const triggerEndTurn = useUiStore((s) => s.triggerEndTurn);
 
   if (!snapshot) {
     return (
@@ -319,7 +322,48 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         >
           Help
         </button>
+        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
+        <button
+          type="button"
+          onClick={toggleSlowSimMode}
+          aria-pressed={slowSimMode}
+          aria-label="Slow simulation mode"
+          style={{
+            background: slowSimMode ? "#0a2010" : "#0a1830",
+            border: `1px solid ${slowSimMode ? "#44aa44" : "#224"}`,
+            color: slowSimMode ? "#88cc88" : "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 9,
+            padding: "2px 5px",
+            cursor: "pointer",
+          }}
+        >
+          Turn
+        </button>
       </div>
+      {slowSimMode && (
+        <button
+          type="button"
+          onClick={triggerEndTurn}
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            zIndex: 40,
+            background: "#1a3860",
+            border: "2px solid #4488cc",
+            color: "#c8d8ff",
+            fontFamily: "monospace",
+            fontSize: 14,
+            fontWeight: "bold",
+            padding: "10px 24px",
+            cursor: "pointer",
+            letterSpacing: 1,
+          }}
+        >
+          END TURN
+        </button>
+      )}
       <BlackMarketPanel onCommand={onCommand} />
       <TradePanel onCommand={onCommand} />
       <BuildingPanel onCommand={onCommand} />
