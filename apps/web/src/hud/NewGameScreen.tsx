@@ -6,7 +6,7 @@ import { useState } from "react";
 import { DifficultySelector } from "./DifficultySelector.tsx";
 import { useUiStore } from "../store/uiStore.ts";
 
-const LOCKED_SCENARIOS = new Set(["advanced-primer"]);
+const REQUIRES_WIN = new Set(["advanced-primer"]);
 
 interface NewGameScreenProps {
   onStart: (seed: number, difficulty: DifficultyLevel) => void;
@@ -17,6 +17,7 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
   const [inputValue, setInputValue] = useState(() => String(seed));
   const difficulty = useUiStore((s) => s.selectedDifficulty);
   const setDifficulty = useUiStore((s) => s.setDifficulty);
+  const unlockedScenarios = useUiStore((s) => s.unlockedScenarios);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -70,7 +71,7 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
         <span style={{ fontSize: 13, opacity: 0.7 }}>Scenarios</span>
         <div style={{ display: "flex", gap: 12 }}>
           {SCENARIOS.map((scenario) => {
-            const isLocked = LOCKED_SCENARIOS.has(scenario.id);
+            const isLocked = REQUIRES_WIN.has(scenario.id) && !unlockedScenarios.has(scenario.id);
             return (
               <button
                 key={scenario.id}

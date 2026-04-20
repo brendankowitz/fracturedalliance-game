@@ -39,6 +39,8 @@ interface UiState {
   toggleEcoMode: () => void;
   showHelp: boolean;
   toggleHelp: () => void;
+  unlockedScenarios: Set<string>;
+  unlockScenario: (id: string) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -86,4 +88,6 @@ export const useUiStore = create<UiState>((set) => ({
   toggleEcoMode: () => set((s) => ({ ecoMode: !s.ecoMode })),
   showHelp: false,
   toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
+  unlockedScenarios: new Set<string>(),
+  unlockScenario: (id) => set((s) => ({ unlockedScenarios: new Set([...s.unlockedScenarios, id]) })),
 }));
