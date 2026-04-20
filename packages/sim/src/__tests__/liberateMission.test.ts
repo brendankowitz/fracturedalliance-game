@@ -184,55 +184,24 @@ describe("liberate mission — preconditions", () => {
 
 describe("liberate mission — failure happiness spike", () => {
   it("spikes target happiness +0.1 on failed outcome (dice roll)", () => {
-    // Use stealth=1 to force failure/capture, seed that gives failure not capture
-    // With stealth=1, security=0: threshold=1, roll 1 = success, roll 2..41 = failed, roll 42+ = captured
-    // Use seed that produces a roll in the failed range (2-41)
-    // We'll find a seed where the first PRNG value * 100 + 1 falls in 2-41
-    // Seed 1: first value from makePrng(1).next()
-    // Let's just use stealth=40 and happiness=0.1 (passes precondition) but force failure
-    // Actually, with stealth=40 and security=0: threshold=40, roll 1-40=success, 41-80=failed, 81+=captured
-    // We need to test the FAILED path where the roll itself fails (not precondition)
-    // The precondition (happiness check) in applyMissionEffect only fires on "success" outcome
-    // So for the failure happiness spike we need the dice to fail on a VALID liberate target
-    // Setup: happiness=0.1 (valid precondition), stealth=40, need roll 41-80
-
-    // Find a seed that produces failure: try seed=5
-    // Just test multiple ticks until we get a failure event
-    // Alternative: use a world where happiness=0.5 triggers precondition fail (which also pushes mission_failed)
-    // But for the dice-failure happiness spike, we need happiness < 0.2 AND dice fails
-
-    // Use stealth=1: threshold=1. Roll 1=success (precondition then checked), roll 2-41=failed, 42+=captured
-    // We need roll in 2-41. Seed 99 might work. Let's just verify the spike using a world
-    // where we directly trigger the else branch by using low stealth.
-    // For robustness, we'll just check that IF mission_failed is emitted AND the target had happiness < 0.2,
-    // happiness was spiked.
-
-    // Setup world with happiness=0.1 and stealth=40
-    const humanId = playerId("player-human");
-    const aiId = playerId("player-ai");
+    // Setup: happiness=0.1 (passes precondition), stealth=40, security=0
+    // With these values: threshold = 40 - 0 = 40
+    // resolveOutcome logic: roll <= 40 → success, roll > 80 → captured, 41-80 → failed
+    // Seed 1 produces roll=63, which is in the failed range (41-80)
     const targetId = asteroidId("asteroid-target");
 
-    // Try multiple seeds to find one that produces "failed" outcome with stealth=40
-    for (let seed = 1; seed <= 50; seed++) {
-      const world = makeWorld({ happiness: 0.1 });
-      world.prng = makePrng(seed);
-      const agent = world.agents.get(agentId("agent-spy"))!;
-      agent.stealth = 40; // threshold=40, roll 41-80 = failed
-      const target = world.asteroids.get(targetId)!;
-      const happinessBefore = target.happiness;
+    const world = makeWorld({ happiness: 0.1 });
+    world.prng = makePrng(1); // seed 1 produces roll=63, outcome="failed"
+    const agent = world.agents.get(agentId("agent-spy"))!;
+    agent.stealth = 40; // threshold=40: roll 41-80 = failed
+    const target = world.asteroids.get(targetId)!;
+    const happinessBefore = target.happiness;
 
-      tickAgents(world);
+    tickAgents(world);
 
-      const failed = world.eventQueue.some((e) => e.kind === "agent.mission_failed");
-      if (failed) {
-        expect(target.happiness).toBeCloseTo(Math.min(1.0, happinessBefore + 0.1), 5);
-        return; // test passed
-      }
-    }
-
-    // If we never found a failed outcome (all were success or captured), skip gracefully
-    // This is unlikely but we handle it
-    expect(true).toBe(true);
+    // Verify the dice failure happened and happiness spiked
+    expect(world.eventQueue.some((e) => e.kind === "agent.mission_failed")).toBe(true);
+    expect(target.happiness).toBeCloseTo(Math.min(1.0, happinessBefore + 0.1), 5);
   });
 
   it("does not spike happiness on precondition failure (happiness >= 0.2 case)", () => {
