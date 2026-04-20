@@ -20,4 +20,8 @@ export interface Player {
   alive: boolean;
   suspicion: number;
   licenseRevoked: boolean;
+  /** Kryll Collective: set to true after a successful accusation; cleared after next combat attack grants +25% damage */
+  accusationBonusActive?: boolean;
+  /** Achar Gatherings: world tick before which Achar will not initiate attacks */
+  gracePeriodUntil?: number;
 }

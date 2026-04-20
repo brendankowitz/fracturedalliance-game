@@ -102,6 +102,49 @@ export function tickAI(world: World): void {
   const start = performance.now();
   const aggressionBonus = DIFFICULTY_PRESETS[world.difficulty].aiAggressionBonus;
 
+  // Mauna: on Board difficulty, spawn assault fleet at tick 1
+  if (world.tick === 1 && world.difficulty === "board") {
+    const human = [...world.players.values()].find((p) => p.isHuman);
+    if (human) {
+      // Find the nearest human asteroid to target
+      let closestHumanAsteroidId: import("@fa/domain").AsteroidId | undefined;
+      let closestDist = Infinity;
+      for (const ast of world.asteroids.values()) {
+        if (ast.ownerId !== human.id) continue;
+        const dx = ast.sector.x;
+        const dy = ast.sector.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < closestDist) {
+          closestDist = d;
+          closestHumanAsteroidId = ast.id;
+        }
+      }
+
+      for (const player of world.players.values()) {
+        if (player.isHuman || !player.alive || player.raceId !== "mauna") continue;
+
+        if (closestHumanAsteroidId) {
+          world.eventQueue.push({
+            kind: "mauna.assault_fleet",
+            priority: "red",
+            targetAsteroidId: closestHumanAsteroidId,
+          });
+        }
+
+        // Order all existing idle Mauna ships to attack
+        for (const ship of world.ships.values()) {
+          if (ship.ownerId !== player.id || ship.order.kind !== "idle") continue;
+          if (!closestHumanAsteroidId) continue;
+          applyCommand(world, {
+            kind: "orderShip",
+            shipId: ship.id,
+            order: { kind: "attackAsteroid", target: closestHumanAsteroidId },
+          });
+        }
+      }
+    }
+  }
+
   for (const player of world.players.values()) {
     if (player.isHuman || !player.alive) continue;
     if (performance.now() - start > AI_BUDGET_MS) break;

@@ -3,7 +3,10 @@ import type { AgentMissionKind, BlackMarketItemKind, BlueprintDef, OreKind, Play
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { clampOrePrice } from "./systems/economySystem.ts";
+import { applyTreatySignedTraits } from "./systems/diplomacySystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
+
+const RIGAL_TECH_STEAL_MULTIPLIER = 0.5;
 
 const ITEM_COSTS: Record<BlackMarketItemKind, number> = {
   oreCache: 800,
@@ -174,6 +177,9 @@ export function applyCommand(world: World, command: Command): void {
       if (!human.reputation.has(command.targetPlayerId)) {
         human.reputation.set(command.targetPlayerId, 0);
       }
+
+      // Achar Gatherings: after signing any treaty, Achar will not attack for 500 ticks
+      applyTreatySignedTraits(world, human, target);
       break;
     }
     case "buyBlueprint": {
@@ -248,9 +254,15 @@ export function applyCommand(world: World, command: Command): void {
         liberate: 500,
       };
 
+      let duration = MISSION_DURATIONS[command.missionKind];
+      // Rigal Conclave: tech-steal mission duration halved
+      if (command.missionKind === "techSteal" && human.raceId === "rigal") {
+        duration = Math.floor(duration * RIGAL_TECH_STEAL_MULTIPLIER);
+      }
+
       agent.missionKind = command.missionKind;
       agent.missionTarget = command.targetAsteroidId;
-      agent.missionCompleteTick = world.tick + MISSION_DURATIONS[command.missionKind];
+      agent.missionCompleteTick = world.tick + duration;
       break;
     }
     case "setAsteroidDestination": {
