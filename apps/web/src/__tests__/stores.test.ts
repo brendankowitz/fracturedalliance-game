@@ -84,3 +84,15 @@ describe("uiStore autoHire", () => {
     expect(useUiStore.getState().autoHireBudgets["nonexistent"]).toBeUndefined();
   });
 });
+
+describe("uiStore pauseOnPriority", () => {
+  it("defaults red=true amber=false", () => {
+    const { pauseOnPriority } = useUiStore.getState();
+    expect(pauseOnPriority.red).toBe(true);
+    expect(pauseOnPriority.amber).toBe(false);
+  });
+  it("sets amber to true", () => {
+    useUiStore.getState().setPauseOnPriority("amber", true);
+    expect(useUiStore.getState().pauseOnPriority.amber).toBe(true);
+  });
+});

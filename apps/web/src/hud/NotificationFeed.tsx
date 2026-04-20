@@ -50,8 +50,9 @@ export function NotificationFeed() {
   const paused = useUiStore((s) => s.paused);
   const setPaused = useUiStore((s) => s.setPaused);
   const snapshot = useGameStore((s) => s.snapshot);
+  const pauseOnPriority = useUiStore((s) => s.pauseOnPriority);
+  const setPauseOnPriority = useUiStore((s) => s.setPauseOnPriority);
   const [entries, setEntries] = useState<NotificationEntry[]>([]);
-  const [autoPause, setAutoPause] = useState({ red: true, amber: false });
   const [ariaAnnounce, setAriaAnnounce] = useState("");
   const idRef = useRef(0);
   const lastTickRef = useRef(-1);
@@ -70,7 +71,7 @@ export function NotificationFeed() {
     }));
 
     const shouldPause = newEntries.some(
-      (e) => (e.priority === "red" && autoPause.red) || (e.priority === "amber" && autoPause.amber),
+      (e) => (e.priority === "red" && pauseOnPriority.red) || (e.priority === "amber" && pauseOnPriority.amber),
     );
     if (shouldPause && !paused) {
       setPaused(true);
@@ -80,7 +81,7 @@ export function NotificationFeed() {
     if (latestRed) setAriaAnnounce(latestRed.label);
 
     setEntries((prev) => [...newEntries, ...prev].slice(0, MAX_ENTRIES));
-  }, [snapshot, autoPause, paused, setPaused]);
+  }, [snapshot, pauseOnPriority, paused, setPaused]);
 
   return (
     <>
@@ -179,11 +180,11 @@ export function NotificationFeed() {
           >
             <button
               type="button"
-              onClick={() => setAutoPause((p) => ({ ...p, red: !p.red }))}
+              onClick={() => setPauseOnPriority("red", !pauseOnPriority.red)}
               style={{
-                background: autoPause.red ? "#2a0a0a" : "#1a2840",
-                border: `1px solid ${autoPause.red ? "#f44" : "#449"}`,
-                color: autoPause.red ? "#f44" : "#c8d8ff",
+                background: pauseOnPriority.red ? "#2a0a0a" : "#1a2840",
+                border: `1px solid ${pauseOnPriority.red ? "#f44" : "#449"}`,
+                color: pauseOnPriority.red ? "#f44" : "#c8d8ff",
                 fontFamily: "monospace",
                 fontSize: 10,
                 padding: "2px 5px",
@@ -194,11 +195,11 @@ export function NotificationFeed() {
             </button>
             <button
               type="button"
-              onClick={() => setAutoPause((p) => ({ ...p, amber: !p.amber }))}
+              onClick={() => setPauseOnPriority("amber", !pauseOnPriority.amber)}
               style={{
-                background: autoPause.amber ? "#1a1200" : "#1a2840",
-                border: `1px solid ${autoPause.amber ? "#fa4" : "#449"}`,
-                color: autoPause.amber ? "#fa4" : "#c8d8ff",
+                background: pauseOnPriority.amber ? "#1a1200" : "#1a2840",
+                border: `1px solid ${pauseOnPriority.amber ? "#fa4" : "#449"}`,
+                color: pauseOnPriority.amber ? "#fa4" : "#c8d8ff",
                 fontFamily: "monospace",
                 fontSize: 10,
                 padding: "2px 5px",

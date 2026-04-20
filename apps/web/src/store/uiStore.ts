@@ -105,4 +105,9 @@ export const useUiStore = create<UiState>((set) => ({
   pauseOnPriority: { red: true, amber: false },
   setPauseOnPriority: (priority, enabled) =>
     set((s) => ({ pauseOnPriority: { ...s.pauseOnPriority, [priority]: enabled } })),
+  slowSimMode: false,
+  toggleSlowSimMode: () => set((s) => ({ slowSimMode: !s.slowSimMode })),
+  pendingEndTurn: false,
+  triggerEndTurn: () => set({ pendingEndTurn: true }),
+  consumeEndTurn: () => set({ pendingEndTurn: false }),
 }));
