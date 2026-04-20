@@ -1,6 +1,8 @@
 import type { Asteroid, AsteroidId, ShipId, World } from "@fa/domain";
 
 export const DESTROYED_SECTOR_COORD = -9999;
+const STABILITY_DECAY_PER_FIRE = 0.1;
+const NULLIFIER_DEFLECT_OFFSET = 1; // sector-unit X-axis deflection to avoid gravity well
 
 export function tickAsteroidEngines(world: World): void {
   for (const asteroid of world.asteroids.values()) {
@@ -28,7 +30,7 @@ export function tickAsteroidEngines(world: World): void {
       });
 
       // Decay stability on engine fire (0.1 per fire on 0-100 scale → 1000 fires to destroy)
-      asteroid.stability = Math.max(0, asteroid.stability - 0.1);
+      asteroid.stability = Math.max(0, asteroid.stability - STABILITY_DECAY_PER_FIRE);
       if (asteroid.stability <= 0) {
         destroyAsteroid(world, asteroid);
         continue;
@@ -62,7 +64,7 @@ export function tickAsteroidEngines(world: World): void {
       let landY = destination.sector.y;
 
       if (hasNullifier) {
-        landX += 1;
+        landX += NULLIFIER_DEFLECT_OFFSET;
         world.eventQueue.push({
           kind: "asteroid.deflected",
           priority: "amber",
@@ -99,6 +101,7 @@ function destroyAsteroid(world: World, asteroid: Asteroid): void {
     asteroid.ownerId = null;
   }
   asteroid.engines = { count: 0, destinationId: null, etaTick: null, chargeTick: null };
+  asteroid.sector = { x: DESTROYED_SECTOR_COORD, y: DESTROYED_SECTOR_COORD };
 }
 
 function resolveCollisions(world: World, movedId: AsteroidId, landX: number, landY: number): void {

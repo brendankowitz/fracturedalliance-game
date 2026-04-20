@@ -29,7 +29,7 @@ describe("Race demand modifiers", () => {
     expect(price).toBeCloseTo(845); // 650 * 1.3
   });
 
-  it("getSellPrice returns base price when no modifier", () => {
+  it("getSellPrice applies modifier for helionCorp selenium", () => {
     const price = getSellPrice("selenium", 100, "helionCorp");
     // helionCorp has selenium modifier 1.2 in their demandModifiers
     expect(price).toBeCloseTo(120);
