@@ -64,7 +64,6 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
     >
       <h1 style={{ fontSize: 32, margin: 0, letterSpacing: 2 }}>FRACTURED ALLIANCE</h1>
 
-      {/* Scenario selection */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Scenarios</span>
         <div style={{ display: "flex", gap: 12 }}>
@@ -99,7 +98,6 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
         </div>
       </div>
 
-      {/* Seed input */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <label style={{ fontSize: 13, opacity: 0.7 }} htmlFor="seed-input">
           Seed
@@ -123,13 +121,11 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
         />
       </div>
 
-      {/* Difficulty selection */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: 13, opacity: 0.7 }}>Difficulty</span>
         <DifficultySelector value={difficulty} onChange={handleDifficultyChange} />
       </div>
 
-      {/* Launch */}
       <button
         type="button"
         onClick={handleStart}
