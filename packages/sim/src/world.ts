@@ -47,7 +47,7 @@ function makeCpuBuilding(bid: BuildingId, aid: AsteroidId): Building {
 }
 
 export function createWorld(config: WorldConfig): World {
-  const difficulty: DifficultyLevel = config.difficulty ?? "normal";
+  const difficulty: DifficultyLevel = config.difficulty ?? "manager";
   const { asteroids: beltAsteroids, players: beltPlayers, prng } = generateBelt(
     config.seed,
     config.humanPlayerRaceId,

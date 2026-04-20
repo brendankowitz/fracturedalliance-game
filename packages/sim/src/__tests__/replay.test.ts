@@ -28,13 +28,13 @@ function hashSnapshot(snap: HudSnapshot): string {
 
 describe("deterministic replay", () => {
   it("save/restore preserves PRNG state across 300 ticks", () => {
-    const apiA = new SimApi({ seed: 42, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
+    const apiA = new SimApi({ seed: 42, humanPlayerRaceId: "helionCorp", difficulty: "manager" });
     for (let i = 0; i < 200; i++) apiA.tick(50);
     apiA.restore(apiA.getSaveBlob());
     for (let i = 0; i < 100; i++) apiA.tick(50);
     const snapA = apiA.getSnapshot();
 
-    const apiB = new SimApi({ seed: 42, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
+    const apiB = new SimApi({ seed: 42, humanPlayerRaceId: "helionCorp", difficulty: "manager" });
     for (let i = 0; i < 300; i++) apiB.tick(50);
     const snapB = apiB.getSnapshot();
 
@@ -47,7 +47,7 @@ describe("deterministic replay", () => {
   });
 
   it("command replay across save/restore boundary is deterministic", () => {
-    const apiA = new SimApi({ seed: 123, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
+    const apiA = new SimApi({ seed: 123, humanPlayerRaceId: "helionCorp", difficulty: "manager" });
     for (let i = 0; i < 50; i++) apiA.tick(50);
 
     const snapAfter50A = apiA.getSnapshot();
@@ -68,7 +68,7 @@ describe("deterministic replay", () => {
     for (let i = 0; i < 100; i++) apiA.tick(50);
     const snapA = apiA.getSnapshot();
 
-    const apiB = new SimApi({ seed: 123, humanPlayerRaceId: "helionCorp", difficulty: "normal" });
+    const apiB = new SimApi({ seed: 123, humanPlayerRaceId: "helionCorp", difficulty: "manager" });
     for (let i = 0; i < 50; i++) apiB.tick(50);
 
     const snapAfter50B = apiB.getSnapshot();

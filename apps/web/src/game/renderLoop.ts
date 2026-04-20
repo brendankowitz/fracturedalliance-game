@@ -23,7 +23,7 @@ export interface RenderLoopHandle {
 export function startRenderLoop(
   WorkerClass: new () => Worker,
   seed: number,
-  difficulty: DifficultyLevel = "normal",
+  difficulty: DifficultyLevel = "manager",
 ): RenderLoopHandle {
   const rawWorker = new WorkerClass();
   const RemoteSimApi = Comlink.wrap<typeof SimApi>(rawWorker);

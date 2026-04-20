@@ -3,7 +3,7 @@ import type { Scenario } from "@fa/content";
 import { SCENARIOS } from "@fa/content";
 import { useState } from "react";
 
-const DIFFICULTY_LEVELS: DifficultyLevel[] = ["easy", "normal", "hard", "brutal", "nightmare"];
+const DIFFICULTY_LEVELS: DifficultyLevel[] = ["intern", "manager", "director", "ceo", "board"];
 
 interface NewGameScreenProps {
   onStart: (seed: number, difficulty: DifficultyLevel) => void;
@@ -12,7 +12,7 @@ interface NewGameScreenProps {
 export function NewGameScreen({ onStart }: NewGameScreenProps) {
   const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1_000_000));
   const [inputValue, setInputValue] = useState(() => String(seed));
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>("normal");
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>("manager");
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {

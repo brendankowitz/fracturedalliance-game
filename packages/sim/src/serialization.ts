@@ -208,7 +208,7 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
   return {
     tick: snapshot["tick"] as number,
     seed,
-    difficulty: (snapshot["difficulty"] as DifficultyLevel | undefined) ?? "normal",
+    difficulty: (snapshot["difficulty"] as DifficultyLevel | undefined) ?? "manager",
     prng,
     schemaVersion: snapshot["schemaVersion"] as number,
     nextBuildingSeq: snapshot["nextBuildingSeq"] as number,

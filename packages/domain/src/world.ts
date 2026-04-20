@@ -16,7 +16,7 @@ export interface Prng {
   restore(state: number): void;
 }
 
-export type DifficultyLevel = "easy" | "normal" | "hard" | "brutal" | "nightmare";
+export type DifficultyLevel = "intern" | "manager" | "director" | "ceo" | "board";
 
 export interface World {
   tick: number;

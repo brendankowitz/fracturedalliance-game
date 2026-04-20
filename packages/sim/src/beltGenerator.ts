@@ -202,7 +202,7 @@ function assignStartingAsteroids(
 export function generateBelt(
   seed: number,
   humanRaceId = "helionCorp",
-  difficulty: DifficultyLevel = "normal",
+  difficulty: DifficultyLevel = "manager",
 ): GeneratedBelt {
   const prng = makePrng(seed);
   const asteroids = generateAsteroids(prng);

@@ -15,7 +15,7 @@ export const SCENARIOS: readonly Scenario[] = [
     description:
       "A balanced opening with contested mid-field asteroids. Standard resources, three rival factions. Best introduction to the game.",
     seed: 42,
-    difficulty: "normal",
+    difficulty: "manager",
   },
   {
     id: "iron-fist",
@@ -23,7 +23,7 @@ export const SCENARIOS: readonly Scenario[] = [
     description:
       "Two powerful AI warlords dominate the belt. Human resources are tight and early aggression is likely. Recommended for veterans.",
     seed: 7331,
-    difficulty: "hard",
+    difficulty: "director",
   },
   {
     id: "last-stand",
@@ -31,6 +31,6 @@ export const SCENARIOS: readonly Scenario[] = [
     description:
       "The human colony is cornered and outnumbered from the start. Survive long enough to turn the tide. Merciless.",
     seed: 999,
-    difficulty: "brutal",
+    difficulty: "ceo",
   },
 ] as const;
