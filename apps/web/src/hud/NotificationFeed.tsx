@@ -21,6 +21,9 @@ export const EVENT_LABELS: Partial<Record<string, string>> = {
   "construction.done": "Construction complete",
   "treaty.broken": "Treaty broken",
   "blueprint.purchased": "Blueprint acquired",
+  "missile.launched": "Missile launched",
+  "missile.impact": "Missile impact!",
+  "asteroid.settled": "Asteroid settled",
 };
 
 const PRIORITY_COLORS: Record<EventPriority, string> = {
