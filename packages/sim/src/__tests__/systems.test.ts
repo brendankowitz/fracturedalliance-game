@@ -778,6 +778,37 @@ describe("settlement", () => {
   });
 });
 
+describe("aiSystem — expansion", () => {
+  it("AI settles a nearby unclaimed asteroid when scout is in orbit", () => {
+    const world = createWorld({ seed: 200, humanPlayerRaceId: "helionCorp" });
+    const aiPlayer = [...world.players.values()].find((p) => !p.isHuman)!;
+    aiPlayer.credits = 20000;
+
+    const unclaimedAsteroid = [...world.asteroids.values()].find((a) => !a.ownerId);
+    if (!unclaimedAsteroid) throw new Error("need unclaimed asteroid");
+
+    // Spawn an AI scout at the unclaimed asteroid's position
+    const sId = shipId("ai-scout");
+    world.ships.set(sId, {
+      id: sId, defKind: "scout", ownerId: aiPlayer.id,
+      hullHp: 20, shieldHp: 5,
+      position: { x: unclaimedAsteroid.sector.x, y: unclaimedAsteroid.sector.y },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "idle" },
+      cargo: {},
+    });
+
+    // Run AI for enough ticks to trigger settlement logic (every 30 ticks)
+    for (let i = 0; i < 60; i++) {
+      world.tick += 1;
+      world.eventQueue = [];
+      tickAI(world);
+    }
+
+    expect(unclaimedAsteroid.ownerId).toBe(aiPlayer.id);
+  });
+});
+
 describe("missileSystem", () => {
   it("missile arrives and damages target stability", () => {
     const world = createWorld({ seed: 7, humanPlayerRaceId: "helionCorp" });

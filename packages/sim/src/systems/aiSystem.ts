@@ -1,8 +1,10 @@
-import { findBuildingDef, getBuildingDef, getRaceDef } from "@fa/content";
+import { findBuildingDef, getBuildingDef, getRaceDef, getShipDef } from "@fa/content";
 import type { Asteroid, Player, RacePersonality, World } from "@fa/domain";
+import { shipId } from "@fa/domain";
 import { applyCommand } from "../commandProcessor.ts";
 import { DIFFICULTY_PRESETS } from "../difficulty.ts";
 import { computeGrudgeScore } from "./diplomacySystem.ts";
+import { ARRIVAL_RADIUS } from "./shipSystem.ts";
 
 const AI_BUDGET_MS = 10;
 const DEFENSE_BUILDING = "securityCentre";
@@ -208,6 +210,84 @@ export function tickAI(world: World): void {
         cell,
       });
       if (performance.now() - start > AI_BUDGET_MS) break;
+    }
+
+    // Every 30 ticks: settle unclaimed asteroids when AI scout is in orbit
+    if (world.tick % 30 === 0) {
+      const SETTLE_COST = 3000;
+      if (player.credits >= SETTLE_COST) {
+        for (const ship of world.ships.values()) {
+          if (ship.ownerId !== player.id) continue;
+          if (ship.defKind !== "scout") continue;
+
+          for (const asteroid of world.asteroids.values()) {
+            if (asteroid.ownerId !== null) continue;
+            const dx = ship.position.x - asteroid.sector.x;
+            const dy = ship.position.y - asteroid.sector.y;
+            if (Math.sqrt(dx * dx + dy * dy) <= ARRIVAL_RADIUS) {
+              asteroid.ownerId = player.id;
+              player.credits -= SETTLE_COST;
+              world.eventQueue.push({
+                kind: "asteroid.settled",
+                priority: "green",
+                asteroidName: asteroid.name,
+              });
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Every 50 ticks: launch scout if none; send idle scouts toward unclaimed asteroids
+    if (world.tick % 50 === 0) {
+      const aiScouts = [...world.ships.values()].filter(
+        (s) => s.ownerId === player.id && s.defKind === "scout",
+      );
+
+      if (aiScouts.length === 0) {
+        for (const asteroid of world.asteroids.values()) {
+          if (asteroid.ownerId !== player.id) continue;
+          const hasYard = asteroid.buildings.some((bid) => {
+            const b = world.buildings.get(bid);
+            return b?.defKind === "shipYard" && b.constructionProgress >= 1;
+          });
+          if (!hasYard) continue;
+          const scoutDef = getShipDef("scout");
+          if (!scoutDef || player.credits < scoutDef.costCredits) continue;
+          player.credits -= scoutDef.costCredits;
+          const id = shipId(`ship-${world.nextShipSeq++}`);
+          world.ships.set(id, {
+            id,
+            defKind: "scout",
+            ownerId: player.id,
+            hullHp: scoutDef.hullHp,
+            shieldHp: scoutDef.shieldHp,
+            position: { x: asteroid.sector.x, y: asteroid.sector.y },
+            velocity: { x: 0, y: 0 },
+            order: { kind: "idle" },
+            cargo: {},
+          });
+          break;
+        }
+      }
+
+      // Send idle scouts to nearest unclaimed asteroid
+      const idleScouts = [...world.ships.values()].filter(
+        (s) => s.ownerId === player.id && s.defKind === "scout" && s.order.kind === "idle",
+      );
+      for (const scout of idleScouts) {
+        const nearest = [...world.asteroids.values()]
+          .filter((a) => !a.ownerId)
+          .sort((a, b) => {
+            const da = Math.hypot(a.sector.x - scout.position.x, a.sector.y - scout.position.y);
+            const db = Math.hypot(b.sector.x - scout.position.x, b.sector.y - scout.position.y);
+            return da - db;
+          })[0];
+        if (nearest) {
+          scout.order = { kind: "scout", target: nearest.sector };
+        }
+      }
     }
   }
 
