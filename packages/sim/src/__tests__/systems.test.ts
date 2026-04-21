@@ -602,6 +602,44 @@ describe("combatSystem", () => {
   });
 });
 
+describe("combatSystem — defense buildings", () => {
+  it("turret battery damages attacking ship each tick", () => {
+    const world = createWorld({ seed: 42, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    const ai = [...world.players.values()].find((p) => !p.isHuman)!;
+
+    const [targetAsteroid] = world.asteroids.values();
+    if (!targetAsteroid) throw new Error("no asteroid");
+    targetAsteroid.ownerId = human.id;
+
+    // Place a completed turretBattery on target
+    const tId = buildingId("turret-1");
+    world.buildings.set(tId, {
+      id: tId, defKind: "turretBattery", asteroidId: targetAsteroid.id,
+      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
+      constructionProgress: 1, active: true, damage: 0,
+    });
+    targetAsteroid.buildings.push(tId);
+
+    // Spawn an attacking ship at the asteroid's position
+    const sId = shipId("attacker-1");
+    world.ships.set(sId, {
+      id: sId, defKind: "assaultCraft", ownerId: ai.id,
+      hullHp: 80, shieldHp: 40,
+      position: { x: targetAsteroid.sector.x, y: targetAsteroid.sector.y },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "attackAsteroid", target: targetAsteroid.id },
+      cargo: {},
+    });
+
+    const beforeHp = 80 + 40; // hull + shield
+    tickCombat(world);
+    const ship = world.ships.get(sId);
+    const afterHp = ship ? (ship.hullHp + ship.shieldHp) : 0;
+    expect(afterHp).toBeLessThan(beforeHp);
+  });
+});
+
 describe("aiSystem", () => {
   it("Kryll AI places a mine when it has credits and ore deposits", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });

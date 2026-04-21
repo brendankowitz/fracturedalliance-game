@@ -1,5 +1,5 @@
-import { getShipDef } from "@fa/content";
-import type { ShipId, World } from "@fa/domain";
+import { findBuildingDef, getShipDef } from "@fa/content";
+import type { Ship, ShipId, World } from "@fa/domain";
 
 export const COMBAT_RADIUS = 0.5; // sector units — ship must be this close to attack
 const DAMAGE_PER_HARDPOINT = 5; // HP per tick per hardpoint
@@ -152,6 +152,40 @@ export function tickCombat(world: World): void {
       if (ship.order.kind !== "idle") continue;
       ship.order = { kind: "attackAsteroid", target: retaliationTarget };
       retaliationsOrdered++;
+    }
+  }
+
+  // Defense buildings auto-fire at attackers in range
+  for (const asteroid of world.asteroids.values()) {
+    if (!asteroid.ownerId) continue;
+
+    const attackersInRange: Ship[] = [];
+    for (const ship of world.ships.values()) {
+      if (ship.order.kind !== "attackAsteroid") continue;
+      if (ship.order.target !== asteroid.id) continue;
+      if (ship.ownerId === asteroid.ownerId) continue;
+      const dx = asteroid.sector.x - ship.position.x;
+      const dy = asteroid.sector.y - ship.position.y;
+      if (Math.sqrt(dx * dx + dy * dy) > COMBAT_RADIUS) continue;
+      attackersInRange.push(ship);
+    }
+    if (attackersInRange.length === 0) continue;
+
+    let totalDps = 0;
+    for (const bId of asteroid.buildings) {
+      const b = world.buildings.get(bId);
+      if (!b?.active || b.constructionProgress < 1) continue;
+      const def = findBuildingDef(b.defKind);
+      if (def?.defenseDps) totalDps += def.defenseDps;
+    }
+    if (totalDps === 0) continue;
+
+    const dpsEach = totalDps / attackersInRange.length;
+    for (const attacker of attackersInRange) {
+      const shieldAbsorb = Math.min(attacker.shieldHp, dpsEach);
+      attacker.shieldHp -= shieldAbsorb;
+      const hullDmg = dpsEach - shieldAbsorb;
+      attacker.hullHp = Math.max(0, attacker.hullHp - hullDmg);
     }
   }
 }

@@ -407,6 +407,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 8,
     "blueprintRequired": "blueprint.turretBattery"
   },
   {
@@ -419,6 +420,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 12,
     "blueprintRequired": "blueprint.shieldGenerator"
   },
   {
@@ -431,6 +433,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 18,
     "blueprintRequired": "blueprint.missileSilo"
   },
   {
@@ -443,6 +446,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 10,
     "blueprintRequired": "blueprint.commandCentre"
   },
   {
@@ -455,6 +459,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 30,
     "blueprintRequired": "blueprint.ionCannon"
   },
   {
@@ -467,6 +472,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 40,
     "blueprintRequired": "blueprint.antimatterMine"
   },
   {
@@ -479,6 +485,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
+    "defenseDps": 20,
     "blueprintRequired": "blueprint.fortressWall"
   },
   {

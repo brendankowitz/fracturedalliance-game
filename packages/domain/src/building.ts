@@ -17,6 +17,8 @@ export interface BuildingDef {
   readonly radiationReduction?: number;
   readonly repairRate?: number;
   readonly unique?: boolean;
+  readonly defenseDps?: number;       // damage per tick auto-fired at attacking ships in range
+  readonly oreMiningMultiplier?: number; // multiplier added to all mine output on this asteroid
 }
 
 export interface Building {
