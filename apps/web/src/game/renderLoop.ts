@@ -3,13 +3,14 @@ import type { SaveV1 } from "@fa/persistence";
 import type { Command, DifficultyLevel, SimApi } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
+import { Assets } from "pixi.js";
 import { SFX, musicPlayer, playSound } from "../audio.ts";
 import { detectAchievements } from "../store/achievementDetector.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { getPixiApp } from "./pixiApp.ts";
 import type { ColorPalette } from "./views/sectorView.ts";
-import { SectorView } from "./views/sectorView.ts";
+import { SECTOR_ASSET_URLS, SectorView } from "./views/sectorView.ts";
 
 const FIXED_STEP_MS = 50;
 
@@ -44,11 +45,17 @@ export function startRenderLoop(
   void (async () => {
     instance = await new RemoteSimApi({ seed, humanPlayerRaceId: "helionCorp", difficulty });
 
+    await Assets.load(SECTOR_ASSET_URLS);
+
     const pixiApp = getPixiApp();
     sectorView = new SectorView(pixiApp, (id: AsteroidId) => {
       useUiStore.getState().selectAsteroid(id);
     });
     sectorView.setColorPalette(useUiStore.getState().colorPalette);
+    if (import.meta.env.DEV) {
+      (window as unknown as Record<string, unknown>)["__faSelectAsteroid"] = (id: string) =>
+        useUiStore.getState().selectAsteroid(id as AsteroidId);
+    }
 
     const frame = async (now: number) => {
       if (!running) return;
@@ -78,6 +85,11 @@ export function startRenderLoop(
           useGameStore.getState().setSnapshot(snap);
           sectorView?.update(snap);
           detectAchievements(snap);
+          // Auto-select human colony on first tick so inspector is immediately visible
+          if (snap.tick === 1 && useUiStore.getState().selectedAsteroidId === null) {
+            const colony = snap.asteroids.find((a) => a.ownerId === snap.humanPlayerId);
+            if (colony) useUiStore.getState().selectAsteroid(colony.id);
+          }
           for (const ev of snap.events) {
             switch (ev.kind) {
               case "construction.done": playSound(SFX.buildComplete); break;

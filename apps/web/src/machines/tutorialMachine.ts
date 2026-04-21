@@ -33,7 +33,7 @@ interface StepConfig {
 export const TUTORIAL_STEPS: Record<string, StepConfig> = {
   step1: {
     message:
-      "Build an Air Processor to give your colony breathable air. Open the Building panel and select Air Processor.",
+      "Click your colony ★ on the map to open its surface. Then click any empty cell and place an Air Processor — your colony needs breathable air.",
     position: { bottom: 120, left: 16 },
     predicate: (snap) =>
       snap.asteroids.some(
@@ -44,7 +44,8 @@ export const TUTORIAL_STEPS: Record<string, StepConfig> = {
       ),
   },
   step2: {
-    message: "Build a Mine to extract ore from the asteroid. More mines means more income.",
+    message:
+      "Good. Now click your colony again, select an empty cell, and build a Mine to extract ore. More mines = more income.",
     position: { bottom: 120, left: 16 },
     predicate: (snap) =>
       snap.asteroids.some(
@@ -55,8 +56,9 @@ export const TUTORIAL_STEPS: Record<string, StepConfig> = {
       ),
   },
   step3: {
-    message: "The Federal Transporter arrives monthly. When it docks, sell your ore for credits.",
-    position: { top: 60, left: "calc(50% - 140px)" },
+    message:
+      "A Federal Transporter docks periodically. When it arrives, sell your ore for credits via the Trade panel.",
+    position: { top: 80, left: "calc(50% - 160px)" },
     predicate: (snap) => snap.credits > 15000,
   },
   step4: {

@@ -1,7 +1,8 @@
 import type { BlackMarketItemKind } from "@fa/domain";
 import { playerId } from "@fa/domain";
 import type { Command } from "@fa/sim";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { playSound } from "../audio.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
@@ -25,6 +26,10 @@ export function BlackMarketPanel({ onCommand }: Props) {
   const [selectedBribeTarget, setSelectedBribeTarget] = useState("");
   const [bribeAmount, setBribeAmount] = useState<500 | 1000 | 2000>(500);
 
+  useEffect(() => {
+    if (open) playSound("/audio/sfx/black_market_visit.wav", 0.4);
+  }, [open]);
+
   if (!open || !snapshot) return null;
 
   const maunaAlive = snapshot.players.some((p) => p.raceId === "mauna" && p.alive);
@@ -38,15 +43,15 @@ export function BlackMarketPanel({ onCommand }: Props) {
     <div
       style={{
         position: "absolute",
-        top: 48,
+        top: 72,
         right: 16,
         width: 280,
         maxHeight: "75vh",
         overflowY: "auto",
-        background: "#0a1830",
-        border: "1px solid #224",
-        color: "#c8d8ff",
-        fontFamily: "monospace",
+        background: "var(--bg-raised)",
+        border: "1px solid var(--border)",
+        color: "var(--text)",
+        fontFamily: "var(--font-data)",
         fontSize: 13,
         zIndex: 20,
         padding: 12,

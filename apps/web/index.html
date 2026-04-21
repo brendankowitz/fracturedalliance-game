@@ -5,30 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fractured Alliance</title>
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#0a1830" />
+    <meta name="theme-color" content="#020810" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-      *,
-      *::before,
-      *::after {
+      /* ── Design tokens ──────────────────────────────────── */
+      :root {
+        --bg-void:    #020810;
+        --bg-panel:   #060e1a;
+        --bg-raised:  #0a1628;
+        --bg-input:   #0d1c30;
+        --border:     #162433;
+        --border-dim: #0e1a26;
+        --border-act: #00b8d4;
+        --text:       #b8d4e8;
+        --text-hi:    #ddeeff;
+        --text-lo:    #4a6a7a;
+        --accent:     #00c4e0;
+        --amber:      #ff9200;
+        --green:      #00cc66;
+        --red:        #ff3322;
+        --glow-blue:  0 0 10px rgba(0, 196, 224, 0.25);
+        --glow-amber: 0 0 10px rgba(255, 146, 0, 0.25);
+        --font-ui:    'Rajdhani', sans-serif;
+        --font-data:  'Share Tech Mono', monospace;
+        --font-head:  'Orbitron', sans-serif;
+      }
+
+      /* ── Reset ──────────────────────────────────────────── */
+      *, *::before, *::after {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
-      html,
-      body,
-      #root {
+
+      html, body, #root {
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background: #000;
+        background: var(--bg-void);
       }
+
+      /* ── Scanlines ──────────────────────────────────────── */
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0, 0, 0, 0.06) 3px,
+          rgba(0, 0, 0, 0.06) 4px
+        );
+        pointer-events: none;
+        z-index: 9998;
+      }
+
+      /* ── Typography defaults ────────────────────────────── */
+      body {
+        font-family: var(--font-data);
+        color: var(--text);
+      }
+
+      button {
+        font-family: var(--font-data);
+      }
+
+      /* ── Focus rings ────────────────────────────────────── */
       :focus-visible {
-        outline: 2px solid #4488cc;
+        outline: 1px solid var(--accent);
         outline-offset: 2px;
       }
-      button {
-        font-family: monospace;
+
+      /* ── Scrollbar styling ──────────────────────────────── */
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: var(--bg-panel); }
+      ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--border-act); }
+
+      /* ── Shared panel animations ────────────────────────── */
+      @keyframes fa-slide-in {
+        from { transform: translateX(20px); opacity: 0; }
+        to   { transform: translateX(0);    opacity: 1; }
+      }
+
+      @keyframes fa-pulse-ring {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50%       { opacity: 0.9; transform: scale(1.08); }
+      }
+
+      @keyframes fa-glow-on {
+        from { box-shadow: none; }
+        to   { box-shadow: var(--glow-blue); }
+      }
+
+      /* ── HUD panel base ─────────────────────────────────── */
+      .fa-panel {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: var(--font-data);
+      }
+
+      .fa-panel-slide {
+        animation: fa-slide-in 0.18s ease-out;
+      }
+
+      /* ── Nav button ─────────────────────────────────────── */
+      .fa-nav-btn {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--text-lo);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 0 14px;
+        height: 100%;
+        cursor: pointer;
+        transition: color 0.12s, border-color 0.12s;
+        white-space: nowrap;
+      }
+
+      .fa-nav-btn:hover {
+        color: var(--text);
+        border-bottom-color: var(--border);
+      }
+
+      .fa-nav-btn[aria-pressed="true"],
+      .fa-nav-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        text-shadow: 0 0 8px rgba(0, 196, 224, 0.5);
+      }
+
+      /* ── Action button ──────────────────────────────────── */
+      .fa-btn {
+        background: var(--bg-raised);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: var(--font-data);
+        font-size: 12px;
+        padding: 5px 12px;
+        cursor: pointer;
+        transition: border-color 0.12s, box-shadow 0.12s;
+      }
+
+      .fa-btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        box-shadow: var(--glow-blue);
+      }
+
+      .fa-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .fa-btn-primary {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .fa-btn-primary:hover:not(:disabled) {
+        background: rgba(0, 196, 224, 0.1);
+        box-shadow: 0 0 16px rgba(0, 196, 224, 0.4);
+      }
+
+      /* ── Surface reopen button ─────────────────────────── */
+      .fa-surface-btn:hover {
+        background: rgba(255,146,0,0.15);
+        box-shadow: 0 0 12px rgba(255,146,0,0.3);
+      }
+
+      /* ── Tutorial pulse ─────────────────────────────────── */
+      .fa-tutorial-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 0 0 rgba(255, 146, 0, 0.6);
+        animation: fa-tutorial-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+        flex-shrink: 0;
+      }
+
+      @keyframes fa-tutorial-ping {
+        0%   { box-shadow: 0 0 0 0 rgba(255, 146, 0, 0.6); }
+        70%  { box-shadow: 0 0 0 8px rgba(255, 146, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 146, 0, 0); }
       }
     </style>
   </head>

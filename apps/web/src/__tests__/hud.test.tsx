@@ -27,6 +27,7 @@ describe("ResourceBar", () => {
 
 const mockSnap: HudSnapshot = {
   tick: 1,
+  seed: 42,
   credits: 0,
   federationStanding: 50,
   suspicion: 0,
@@ -43,6 +44,7 @@ const mockSnap: HudSnapshot = {
   gameEndState: null,
   blueprintsOwned: [],
   agents: [],
+  difficulty: "manager",
 };
 
 describe("HUD slowSimMode", () => {

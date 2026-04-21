@@ -5,6 +5,7 @@ import type { ColorPalette } from "../game/views/sectorView.ts";
 
 interface UiState {
   selectedAsteroidId: AsteroidId | null;
+  lastSelectedAsteroidId: AsteroidId | null;
   selectedCell: { x: number; y: number } | null;
   buildingPanelOpen: boolean;
   saveLoadPanelOpen: boolean;
@@ -54,6 +55,7 @@ interface UiState {
 
 export const useUiStore = create<UiState>((set) => ({
   selectedAsteroidId: null,
+  lastSelectedAsteroidId: null,
   selectedCell: null,
   buildingPanelOpen: false,
   saveLoadPanelOpen: false,
@@ -71,7 +73,11 @@ export const useUiStore = create<UiState>((set) => ({
     "Standard Mining Colony": ["airProcessor", "waterPurifier", "mineMk1", "mineMk1", "mineMk1"],
     "Forward Fortress": ["airProcessor", "securityCentre", "securityCentre", "shipyard"],
   },
-  selectAsteroid: (id) => set({ selectedAsteroidId: id }),
+  selectAsteroid: (id) =>
+    set((s) => ({
+      selectedAsteroidId: id,
+      lastSelectedAsteroidId: id ?? s.lastSelectedAsteroidId,
+    })),
   selectCell: (cell) => set({ selectedCell: cell }),
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
   toggleSaveLoadPanel: () => set((s) => ({ saveLoadPanelOpen: !s.saveLoadPanelOpen })),

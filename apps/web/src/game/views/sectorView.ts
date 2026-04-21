@@ -1,13 +1,42 @@
 import type { AsteroidId, ShipId } from "@fa/domain";
 import type { HudSnapshot } from "@fa/sim";
-import type { Application } from "pixi.js";
-import { Container, Graphics, Text } from "pixi.js";
+import type { Application, Texture } from "pixi.js";
+import { Assets, Circle, Container, Graphics, Sprite, Text } from "pixi.js";
 
 const SIZE_RADIUS: Record<string, number> = {
   small: 8,
   medium: 12,
   large: 18,
 };
+
+// Deterministic variant selection per asteroid (0–3 index into big/med/small variants)
+const VARIANT_COUNT = 2;
+
+const METEOR_URLS = {
+  small: ["/assets/meteors/meteorBrown_small1.png", "/assets/meteors/meteorBrown_small2.png"],
+  medium: ["/assets/meteors/meteorBrown_med1.png", "/assets/meteors/meteorGrey_med1.png"],
+  large: ["/assets/meteors/meteorBrown_big1.png", "/assets/meteors/meteorBrown_big2.png"],
+};
+
+export const SECTOR_ASSET_URLS: string[] = [
+  ...METEOR_URLS.small,
+  ...METEOR_URLS.medium,
+  ...METEOR_URLS.large,
+  "/assets/ships/player.png",
+  "/assets/ships/ai.png",
+];
+
+function hashId(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (Math.imul(31, h) + id.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function getMeteorTexture(sizeClass: string, id: string): Texture {
+  const variants = METEOR_URLS[sizeClass as keyof typeof METEOR_URLS] ?? METEOR_URLS.medium;
+  const url = variants[hashId(id) % VARIANT_COUNT] ?? (variants[0] as string);
+  return Assets.get<Texture>(url) as Texture;
+}
 
 export type ColorPalette = "normal" | "deuteranopia" | "protanopia";
 
@@ -18,6 +47,14 @@ export const PALETTES: Record<ColorPalette, { human: number; ai: number; neutral
 };
 
 const SECTOR_SCALE = 80; // pixels per sector unit — 7×80=560px fits a typical 768px-tall screen
+
+interface AsteroidEntry {
+  container: Container;
+  ring: Graphics;
+  pulseRing: Graphics;
+  sprite: Sprite;
+  label: Text;
+}
 
 export class SectorView {
   readonly container: Container;
@@ -38,8 +75,8 @@ export class SectorView {
   }
 
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
-  private readonly _asteroidGraphics: Map<AsteroidId, { gfx: Graphics; label: Text }> = new Map();
-  private readonly _shipGraphics: Map<ShipId, Graphics> = new Map();
+  private readonly _asteroidGraphics: Map<AsteroidId, AsteroidEntry> = new Map();
+  private readonly _shipGraphics: Map<ShipId, Sprite> = new Map();
   private _laserGfx: Graphics;
 
   constructor(app: Application, onSelectAsteroid: (id: AsteroidId) => void) {
@@ -117,10 +154,18 @@ export class SectorView {
 
     app.canvas.addEventListener("wheel", (e: WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      this._scale = Math.max(0.3, Math.min(3.0, this._scale * delta));
+      const factor = e.deltaY > 0 ? 0.9 : 1.1;
+      const oldScale = this._scale;
+      const newScale = Math.max(0.25, Math.min(4.0, oldScale * factor));
+      // Zoom toward the mouse cursor position
+      const rect = app.canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      this._offsetX = mx - (mx - this._offsetX) * (newScale / oldScale);
+      this._offsetY = my - (my - this._offsetY) * (newScale / oldScale);
+      this._scale = newScale;
       this._applyTransform();
-    });
+    }, { passive: false });
   }
 
   private _applyTransform(): void {
@@ -132,7 +177,6 @@ export class SectorView {
   update(snapshot: HudSnapshot): void {
     const { humanPlayerId, asteroids } = snapshot;
 
-    // Build a set of AI player ids (non-human, non-neutral)
     const aiPlayerIds = new Set(snapshot.players.filter((p) => !p.isHuman).map((p) => p.id));
 
     const seenIds = new Set<AsteroidId>();
@@ -142,16 +186,22 @@ export class SectorView {
 
       let entry = this._asteroidGraphics.get(asteroid.id);
       if (!entry) {
-        const gfx = new Graphics();
-        gfx.eventMode = "static";
-        gfx.cursor = "pointer";
-        gfx.on("pointerup", (e) => {
+        const container = new Container();
+        container.eventMode = "static";
+        container.cursor = "pointer";
+        container.on("pointerup", (e) => {
           const moved = Math.hypot(e.globalX - this._dragStartX, e.globalY - this._dragStartY);
           if (moved < 4) {
             this._onSelectAsteroid(asteroid.id);
             e.stopPropagation();
           }
         });
+
+        const pulseRing = new Graphics();
+        const ring = new Graphics();
+        const sprite = new Sprite(getMeteorTexture(asteroid.sizeClass, asteroid.id));
+        sprite.anchor.set(0.5, 0.5);
+        sprite.eventMode = "none";
 
         const label = new Text({
           text: asteroid.name,
@@ -162,17 +212,20 @@ export class SectorView {
           },
         });
         label.anchor.set(0.5, 0);
+        label.eventMode = "none";
 
-        this._worldLayer.addChild(gfx, label);
-        entry = { gfx, label };
+        container.addChild(pulseRing, ring, sprite);
+        this._worldLayer.addChild(container, label);
+        entry = { container, pulseRing, ring, sprite, label };
         this._asteroidGraphics.set(asteroid.id, entry);
       }
 
-      const { gfx, label } = entry;
+      const { container, pulseRing, ring, sprite, label } = entry;
       const radius = SIZE_RADIUS[asteroid.sizeClass] ?? 10;
 
+      const isHuman = asteroid.ownerId === humanPlayerId;
       let colour: number;
-      if (asteroid.ownerId === humanPlayerId) {
+      if (isHuman) {
         colour = PALETTES[this._palette].human;
       } else if (asteroid.ownerId !== null && aiPlayerIds.has(asteroid.ownerId)) {
         colour = PALETTES[this._palette].ai;
@@ -180,29 +233,47 @@ export class SectorView {
         colour = PALETTES[this._palette].neutral;
       }
 
-      const sx = asteroid.sector.x * SECTOR_SCALE;
-      const sy = asteroid.sector.y * SECTOR_SCALE;
+      const wx = asteroid.sector.x * SECTOR_SCALE;
+      const wy = asteroid.sector.y * SECTOR_SCALE;
 
-      gfx.clear();
-      // Outer glow ring (ownership indicator)
-      gfx.circle(sx, sy, radius + 3).fill({ color: colour, alpha: 0.12 });
-      // Main body — slightly darker fill with lighter core
-      gfx.circle(sx, sy, radius).fill({ color: colour, alpha: 0.9 });
-      // Highlight (top-left crescent)
-      gfx.circle(sx - radius * 0.25, sy - radius * 0.25, radius * 0.45).fill({ color: 0xffffff, alpha: 0.12 });
-      // Crisp border
-      gfx.circle(sx, sy, radius).stroke({ color: colour, alpha: 0.7, width: 1.5 });
+      container.x = wx;
+      container.y = wy;
+      // Explicit hit area so PixiJS v8 can hit-test the container
+      container.hitArea = new Circle(0, 0, radius + 6);
 
-      label.x = sx;
-      label.y = sy + radius + 2;
-      label.text = asteroid.name;
+      // Pulsing beacon ring for the human colony (helps discoverability)
+      pulseRing.clear();
+      if (isHuman) {
+        const pulse = 0.45 + Math.sin(Date.now() / 500) * 0.25;
+        pulseRing
+          .circle(0, 0, radius + 10)
+          .stroke({ color: colour, alpha: pulse, width: 2 });
+      }
+
+      // Ownership ring (drawn in local space around origin)
+      ring.clear();
+      ring.circle(0, 0, radius + 4).fill({ color: colour, alpha: 0.12 });
+      ring.circle(0, 0, radius + 4).stroke({ color: colour, alpha: 0.75, width: 1.5 });
+
+      // Meteor sprite sized to match radius
+      sprite.texture = getMeteorTexture(asteroid.sizeClass, asteroid.id);
+      sprite.width = radius * 2.2;
+      sprite.height = radius * 2.2;
+      sprite.x = 0;
+      sprite.y = 0;
+
+      label.x = wx;
+      label.y = wy + radius + 6;
+      label.text = isHuman ? `★ ${asteroid.name}` : asteroid.name;
+      label.style.fill = isHuman ? colour : 0xaabbcc;
+      label.style.fontSize = isHuman ? 10 : 9;
     }
 
     // Remove graphics for asteroids no longer in snapshot
     const toRemove = [...this._asteroidGraphics.keys()].filter((id) => !seenIds.has(id));
     for (const id of toRemove) {
       const entry = this._asteroidGraphics.get(id)!;
-      entry.gfx.destroy();
+      entry.container.destroy({ children: true });
       entry.label.destroy();
       this._asteroidGraphics.delete(id);
     }
@@ -213,28 +284,26 @@ export class SectorView {
     for (const ship of snapshot.ships) {
       seenShipIds.add(ship.id);
 
-      let gfx = this._shipGraphics.get(ship.id);
-      if (!gfx) {
-        gfx = new Graphics();
-        this._worldLayer.addChild(gfx);
-        this._shipGraphics.set(ship.id, gfx);
+      let sprite = this._shipGraphics.get(ship.id);
+      if (!sprite) {
+        const isHuman = ship.ownerId === snapshot.humanPlayerId;
+        const tex = Assets.get<Texture>(isHuman ? "/assets/ships/player.png" : "/assets/ships/ai.png") as Texture;
+        sprite = new Sprite(tex);
+        sprite.anchor.set(0.5, 0.5);
+        this._worldLayer.addChild(sprite);
+        this._shipGraphics.set(ship.id, sprite);
       }
 
-      const sx = ship.position.x * SECTOR_SCALE;
-      const sy = ship.position.y * SECTOR_SCALE;
+      const wx = ship.position.x * SECTOR_SCALE;
+      const wy = ship.position.y * SECTOR_SCALE;
       const isHuman = ship.ownerId === snapshot.humanPlayerId;
       const colour = isHuman ? PALETTES[this._palette].human : PALETTES[this._palette].ai;
-      const r = 3;
 
-      gfx.clear();
-      // Diamond shape (rotated square)
-      gfx
-        .moveTo(sx, sy - r)
-        .lineTo(sx + r, sy)
-        .lineTo(sx, sy + r)
-        .lineTo(sx - r, sy)
-        .closePath()
-        .fill({ color: colour, alpha: 0.95 });
+      sprite.x = wx;
+      sprite.y = wy;
+      sprite.width = 14;
+      sprite.height = 14;
+      sprite.tint = colour;
     }
 
     // Remove stale ship graphics
@@ -259,13 +328,13 @@ export class SectorView {
   }
 
   destroy(): void {
-    for (const { gfx, label } of this._asteroidGraphics.values()) {
-      gfx.destroy();
+    for (const { container, label } of this._asteroidGraphics.values()) {
+      container.destroy({ children: true }); // pulseRing and ring are children
       label.destroy();
     }
     this._asteroidGraphics.clear();
-    for (const gfx of this._shipGraphics.values()) {
-      gfx.destroy();
+    for (const sprite of this._shipGraphics.values()) {
+      sprite.destroy();
     }
     this._shipGraphics.clear();
     this._laserGfx.destroy();

@@ -40,7 +40,7 @@ export function BuildingPanel({ onCommand }: BuildingPanelProps) {
       style={{
         position: "absolute",
         right: 0,
-        top: 40,
+        top: 72,
         bottom: 0,
         width: 220,
         background: "rgba(0,8,20,0.9)",

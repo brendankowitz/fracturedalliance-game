@@ -4,14 +4,14 @@ import type { Command, DiplomacyEntry, HudSnapshot } from "@fa/sim";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
 
-const PORTRAIT_MAP: Record<string, string> = {
-  kryllCollective: "civpro",
-  mauna: "matreKhan",
-  motkaj: "terran",
-};
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
 
 const TREATY_LABELS: Record<TreatyKind, string> = {
-  nonAggression: "Non-Aggression Pact",
+  nonAggression: "Non-Aggression",
   peace: "Peace Treaty",
   trade: "Trade Agreement",
   noCovert: "No-Covert Pact",
@@ -30,10 +30,34 @@ const ALL_PROPOSABLE: ReadonlyArray<TreatyKind> = [
   "jointWar",
 ];
 
-function repLabel(reputation: number): string {
-  if (reputation >= 20) return "Friendly";
-  if (reputation <= -20) return "Hostile";
-  return "Neutral";
+function repColor(reputation: number): string {
+  if (reputation >= 20) return "var(--green)";
+  if (reputation <= -20) return "var(--red)";
+  return "var(--amber)";
+}
+
+function repBarColor(reputation: number): string {
+  if (reputation >= 20) return "var(--green)";
+  if (reputation <= -20) return "var(--red)";
+  return "var(--amber)";
+}
+
+function repBorderColor(reputation: number): string {
+  if (reputation >= 20) return "2px solid var(--green)";
+  if (reputation <= -20) return "2px solid var(--red)";
+  return "2px solid var(--amber)";
+}
+
+const PORTRAIT_SETS = ["civpro", "matreKhan", "terran"] as const;
+
+function getPortrait(raceId: string, reputation: number): string {
+  const set = PORTRAIT_SETS[Math.abs(hashStr(raceId)) % 3];
+  const mood = reputation <= -10 ? "hostile" : "neutral";
+  return `/assets/portraits/${set}-${mood}.png`;
+}
+
+function repSign(reputation: number): string {
+  return reputation > 0 ? `+${reputation}` : `${reputation}`;
 }
 
 function DiplomacyRow({
@@ -47,58 +71,142 @@ function DiplomacyRow({
   const raceName = raceDef?.name ?? entry.raceId;
   const activeKinds = new Set(entry.activeTreaties.map((t) => t.kind));
 
-  const portraitBase = PORTRAIT_MAP[entry.raceId];
-  const portraitState = entry.reputation <= -20 ? "hostile" : "neutral";
-  const portraitSrc = portraitBase
-    ? `/assets/portraits/${portraitBase}-${portraitState}.png`
-    : null;
+  const portraitImg = getPortrait(entry.raceId, entry.reputation);
+
+  // Map reputation -100..+100 to 0..100%
+  const barPct = Math.round(((entry.reputation + 100) / 200) * 100);
 
   return (
-    <div style={{ marginBottom: 10, borderBottom: "1px solid #224", paddingBottom: 8 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
-        {portraitSrc && (
-          <img
-            src={portraitSrc}
-            alt={raceName}
-            style={{ width: 40, height: 40, objectFit: "cover", border: "1px solid #224", flexShrink: 0 }}
-          />
-        )}
-        <div style={{ fontWeight: "bold" }}>{raceName}</div>
+    <div
+      style={{
+        marginBottom: 2,
+        borderBottom: "1px solid var(--border)",
+        paddingBottom: 10,
+        paddingTop: 10,
+      }}
+    >
+      {/* Header row: planet + names + rep label */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+        <img
+          src={portraitImg}
+          alt={raceName}
+          width={40}
+          height={40}
+          style={{
+            borderRadius: "50%",
+            border: repBorderColor(entry.reputation),
+            flexShrink: 0,
+            objectFit: "cover",
+          }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-head)",
+              fontSize: 12,
+              color: "var(--text-hi)",
+              letterSpacing: 0.5,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {raceName}
+          </div>
+          <div
+            style={{
+              fontSize: 10,
+              color: "var(--text-lo)",
+              marginTop: 2,
+            }}
+          >
+            {raceName}
+          </div>
+        </div>
+        <div
+          style={{
+            fontFamily: "var(--font-data)",
+            fontSize: 11,
+            color: repColor(entry.reputation),
+            flexShrink: 0,
+            letterSpacing: 0.5,
+          }}
+        >
+          REP {repSign(entry.reputation)}
+        </div>
       </div>
-      <div style={{ fontSize: 11, color: "#8af" }}>
-        Rep: {repLabel(entry.reputation)} ({entry.reputation > 0 ? "+" : ""}
-        {entry.reputation})
-        {entry.grudgeScore > 0 && (
-          <span style={{ color: "#f88", marginLeft: 8 }}>Grudge: {entry.grudgeScore}</span>
-        )}
+
+      {/* Reputation bar */}
+      <div
+        style={{
+          height: 4,
+          background: "var(--bg-input)",
+          borderRadius: 2,
+          marginBottom: 6,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${barPct}%`,
+            background: repBarColor(entry.reputation),
+            borderRadius: 2,
+            transition: "width 0.3s ease",
+          }}
+        />
       </div>
+
+      {/* Grudge score */}
+      {entry.grudgeScore > 0 && (
+        <div
+          style={{
+            fontSize: 10,
+            color: "var(--red)",
+            fontFamily: "var(--font-data)",
+            marginBottom: 6,
+            letterSpacing: 0.5,
+          }}
+        >
+          GRUDGE {entry.grudgeScore}
+        </div>
+      )}
+
+      {/* Active treaties */}
       {entry.activeTreaties.length > 0 && (
-        <div style={{ marginTop: 4 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
           {entry.activeTreaties.map((t) => (
-            <div key={t.kind} style={{ fontSize: 11, color: "#4f8" }}>
+            <span
+              key={t.kind}
+              style={{
+                fontSize: 10,
+                color: "var(--green)",
+                background: "rgba(0,204,102,0.12)",
+                border: "1px solid var(--green)",
+                padding: "2px 6px",
+                borderRadius: 2,
+                fontFamily: "var(--font-data)",
+                letterSpacing: 0.3,
+              }}
+              title={t.expiresTick !== null ? `Expires T${t.expiresTick}` : "Permanent"}
+            >
               ✓ {TREATY_LABELS[t.kind]}
-              {t.expiresTick !== null ? ` (exp. ${t.expiresTick})` : " (permanent)"}
-            </div>
+            </span>
           ))}
         </div>
       )}
-      <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 4 }}>
+
+      {/* Treaty proposal buttons */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
         {ALL_PROPOSABLE.filter((k) => !activeKinds.has(k)).map((k) => (
           <button
             key={k}
             type="button"
+            className="fa-btn"
             onClick={() =>
               onCommand({ kind: "proposeTreaty", targetPlayerId: entry.playerId, treatyKind: k })
             }
-            style={{
-              background: "#1a2840",
-              border: "1px solid #449",
-              color: "#c8d8ff",
-              fontFamily: "monospace",
-              padding: "2px 6px",
-              cursor: "pointer",
-              fontSize: 10,
-            }}
+            style={{ fontSize: 10, padding: "2px 7px" }}
           >
             + {TREATY_LABELS[k]}
           </button>
@@ -115,31 +223,82 @@ interface Props {
 
 export function DiplomacyPanel({ snapshot, onCommand }: Props) {
   const open = useUiStore((s) => s.diplomacyPanelOpen);
+  const toggleDiplomacyPanel = useUiStore((s) => s.toggleDiplomacyPanel);
+
   if (!open) return null;
 
   return (
     <div
+      className="fa-panel fa-panel-slide"
       style={{
         position: "absolute",
-        bottom: 60,
-        right: 16,
-        width: 300,
-        maxHeight: "60vh",
-        overflowY: "auto",
-        background: "#0a1830",
-        border: "1px solid #224",
-        color: "#c8d8ff",
-        fontFamily: "monospace",
-        padding: 12,
-        zIndex: 12,
-        fontSize: 13,
+        top: 72,
+        left: 0,
+        bottom: 0,
+        width: 320,
+        zIndex: 18,
+        display: "flex",
+        flexDirection: "column",
+        borderTop: "2px solid var(--accent)",
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Diplomacy<HelpTip text="Negotiate treaties with rival factions. Relations affect trade prices and aggression." /></div>
-      {snapshot.diplomacy.length === 0 && <div style={{ color: "#667" }}>No AI factions</div>}
-      {snapshot.diplomacy.map((entry) => (
-        <DiplomacyRow key={entry.playerId} entry={entry} onCommand={onCommand} />
-      ))}
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 14px",
+          borderBottom: "1px solid var(--border)",
+          flexShrink: 0,
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-head)",
+            fontSize: 13,
+            color: "var(--accent)",
+            letterSpacing: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          DIPLOMACY
+          <HelpTip text="Negotiate treaties with rival factions. Relations affect trade prices and aggression." />
+        </span>
+        <button
+          type="button"
+          className="fa-btn"
+          onClick={toggleDiplomacyPanel}
+          aria-label="Close diplomacy panel"
+          style={{ padding: "2px 8px", fontSize: 12 }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Entries */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 14px" }}>
+        {snapshot.diplomacy.length === 0 ? (
+          <div
+            style={{
+              padding: "24px 0",
+              textAlign: "center",
+              color: "var(--text-lo)",
+              fontFamily: "var(--font-data)",
+              fontSize: 12,
+              letterSpacing: 0.5,
+            }}
+          >
+            No rival factions detected
+          </div>
+        ) : (
+          snapshot.diplomacy.map((entry) => (
+            <DiplomacyRow key={entry.playerId} entry={entry} onCommand={onCommand} />
+          ))
+        )}
+      </div>
     </div>
   );
 }
