@@ -7,28 +7,44 @@ import {
 } from "../blueprints.ts";
 
 describe("blueprint loader", () => {
-  it("loads exactly 40 blueprints", () => {
-    expect(getAllBlueprintDefs()).toHaveLength(40);
+  it("loads exactly 44 blueprints", () => {
+    expect(getAllBlueprintDefs()).toHaveLength(44);
   });
 
   it("all ids are unique", () => {
     const ids = getAllBlueprintDefs().map((b) => b.id);
-    expect(new Set(ids).size).toBe(40);
+    expect(new Set(ids).size).toBe(44);
   });
 
-  it("each discipline has exactly 8 blueprints", () => {
-    const disciplines = ["mining", "infrastructure", "military", "science", "commerce"] as const;
+  it("each discipline has the correct number of blueprints", () => {
+    const expectations: Record<string, number> = {
+      mining: 8,
+      infrastructure: 8,
+      military: 12,
+      science: 8,
+      commerce: 8,
+    };
+    const disciplines = Object.keys(expectations) as const;
     for (const d of disciplines) {
-      expect(getBlueprintsByDiscipline(d)).toHaveLength(8);
+      expect(getBlueprintsByDiscipline(d as any)).toHaveLength(expectations[d]);
     }
   });
 
-  it("tiers within each discipline are 1-8 exactly once", () => {
-    const disciplines = ["mining", "infrastructure", "military", "science", "commerce"] as const;
-    for (const d of disciplines) {
-      const tiers = getBlueprintsByDiscipline(d).map((b) => b.tier);
-      expect(tiers).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    }
+  it("tiers within each discipline match expected structure", () => {
+    const miningTiers = getBlueprintsByDiscipline("mining").map((b) => b.tier);
+    expect(miningTiers).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+
+    const militaryTiers = getBlueprintsByDiscipline("military").map((b) => b.tier);
+    expect(militaryTiers).toEqual([1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8]);
+
+    const scienceTiers = getBlueprintsByDiscipline("science").map((b) => b.tier);
+    expect(scienceTiers).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+
+    const commerceTiers = getBlueprintsByDiscipline("commerce").map((b) => b.tier);
+    expect(commerceTiers).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+
+    const infrastructureTiers = getBlueprintsByDiscipline("infrastructure").map((b) => b.tier);
+    expect(infrastructureTiers).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it("tier 1 blueprints have null prerequisiteId", () => {

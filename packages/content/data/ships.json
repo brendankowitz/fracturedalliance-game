@@ -22,5 +22,57 @@
     "fuelRange": 999,
     "costCredits": 1500,
     "buildTimeTicks": 200
+  },
+  {
+    "kind": "combatEagle",
+    "label": "Combat Eagle",
+    "hullHp": 160,
+    "shieldHp": 80,
+    "speed": 0.09,
+    "hardpoints": 3,
+    "cargoCap": 0,
+    "fuelRange": 999,
+    "costCredits": 3000,
+    "buildTimeTicks": 300,
+    "blueprintRequired": "blueprint.combatEagle"
+  },
+  {
+    "kind": "fleetBattleship",
+    "label": "Fleet Battleship",
+    "hullHp": 320,
+    "shieldHp": 160,
+    "speed": 0.06,
+    "hardpoints": 5,
+    "cargoCap": 0,
+    "fuelRange": 999,
+    "costCredits": 6000,
+    "buildTimeTicks": 500,
+    "blueprintRequired": "blueprint.fleetBattleship"
+  },
+  {
+    "kind": "destructor",
+    "label": "Destructor",
+    "hullHp": 500,
+    "shieldHp": 260,
+    "speed": 0.05,
+    "hardpoints": 8,
+    "cargoCap": 0,
+    "fuelRange": 999,
+    "costCredits": 10000,
+    "buildTimeTicks": 700,
+    "blueprintRequired": "blueprint.destructor"
+  },
+  {
+    "kind": "commandCruiser",
+    "label": "Command Cruiser",
+    "hullHp": 800,
+    "shieldHp": 400,
+    "speed": 0.04,
+    "hardpoints": 12,
+    "cargoCap": 0,
+    "fuelRange": 999,
+    "costCredits": 18000,
+    "buildTimeTicks": 1000,
+    "blueprintRequired": "blueprint.commandCruiser"
   }
 ]

@@ -358,5 +358,41 @@
     "tier": 8,
     "costCredits": 210000,
     "prerequisiteId": "blueprint.monopolyOffice"
+  },
+  {
+    "id": "blueprint.combatEagle",
+    "label": "Combat Eagle",
+    "description": "Fast interceptor with triple hardpoints.",
+    "discipline": "military",
+    "tier": 2,
+    "costCredits": 8000,
+    "prerequisiteId": "blueprint.turretBattery"
+  },
+  {
+    "id": "blueprint.fleetBattleship",
+    "label": "Fleet Battleship",
+    "description": "Heavy warship with reinforced hull and five hardpoints.",
+    "discipline": "military",
+    "tier": 3,
+    "costCredits": 18000,
+    "prerequisiteId": "blueprint.combatEagle"
+  },
+  {
+    "id": "blueprint.destructor",
+    "label": "Destructor",
+    "description": "Capital-class destroyer with eight hardpoints.",
+    "discipline": "military",
+    "tier": 4,
+    "costCredits": 35000,
+    "prerequisiteId": "blueprint.fleetBattleship"
+  },
+  {
+    "id": "blueprint.commandCruiser",
+    "label": "Command Cruiser",
+    "description": "Flagship vessel. Twelve hardpoints. Nothing survives.",
+    "discipline": "military",
+    "tier": 5,
+    "costCredits": 70000,
+    "prerequisiteId": "blueprint.destructor"
   }
 ]
