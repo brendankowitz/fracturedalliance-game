@@ -4,6 +4,7 @@ import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
 import { clampOrePrice } from "./systems/economySystem.ts";
 import { applyTreatySignedTraits } from "./systems/diplomacySystem.ts";
+import { ARRIVAL_RADIUS } from "./systems/shipSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
 
 const RIGAL_TECH_STEAL_MULTIPLIER = 0.5;
@@ -420,6 +421,36 @@ export function applyCommand(world: World, command: Command): void {
       world.marketPrices[oreKind as OreKind] = Math.round(
         clampOrePrice(oreKind, raised) * 100,
       ) / 100;
+      break;
+    }
+    case "settleAsteroid": {
+      const target = world.asteroids.get(command.asteroidId);
+      if (!target) return;
+      if (target.ownerId !== null) return;
+
+      const human = [...world.players.values()].find((p) => p.isHuman);
+      if (!human) return;
+
+      const SETTLE_COST = 3000;
+      if (human.credits < SETTLE_COST) return;
+
+      const scoutPresent = [...world.ships.values()].some((s) => {
+        if (s.ownerId !== human.id) return false;
+        if (s.defKind !== "scout") return false;
+        const dx = s.position.x - target.sector.x;
+        const dy = s.position.y - target.sector.y;
+        return Math.sqrt(dx * dx + dy * dy) <= ARRIVAL_RADIUS;
+      });
+      if (!scoutPresent) return;
+
+      human.credits -= SETTLE_COST;
+      target.ownerId = human.id;
+
+      world.eventQueue.push({
+        kind: "asteroid.settled",
+        priority: "green",
+        asteroidName: target.name,
+      });
       break;
     }
     case "fireMissile": {

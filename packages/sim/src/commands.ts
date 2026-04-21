@@ -31,4 +31,5 @@ export type Command =
   | { kind: "bribeOfficial"; targetPlayerId: PlayerId; credits: number }
   | { kind: "sellOre"; oreKind: string; quantity: number }
   | { kind: "buyOre"; oreKind: string; quantity: number }
-  | { kind: "fireMissile"; sourceAsteroidId: AsteroidId; targetAsteroidId: AsteroidId };
+  | { kind: "fireMissile"; sourceAsteroidId: AsteroidId; targetAsteroidId: AsteroidId }
+  | { kind: "settleAsteroid"; asteroidId: AsteroidId };

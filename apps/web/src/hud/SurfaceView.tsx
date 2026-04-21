@@ -1526,6 +1526,36 @@ function AsteroidIntelPanel({
             </div>
           )}
 
+          {/* Settle button — unclaimed + human scout in orbit */}
+          {(() => {
+            const humanScoutHere = shipsHere.some(
+              (s) => s.ownerId === humanPlayerId && s.defKind === "scout"
+            );
+            if (!isUnclaimed || !humanScoutHere) return null;
+            return (
+              <div style={{ marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => onCommand({ kind: "settleAsteroid", asteroidId: mkAsteroidId(asteroidId) })}
+                  style={{
+                    width: "100%",
+                    background: "rgba(0,204,102,0.12)",
+                    border: "2px solid var(--green)",
+                    color: "var(--green)",
+                    fontFamily: "var(--font-head)",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    letterSpacing: 1.5,
+                    cursor: "pointer",
+                    padding: "8px 16px",
+                  }}
+                >
+                  ESTABLISH COLONY — 3,000¢
+                </button>
+              </div>
+            );
+          })()}
+
           {/* Claim hint for unclaimed */}
           {isUnclaimed && (
             <div style={{ fontSize: 10, color: "var(--text-lo)", fontStyle: "italic", lineHeight: 1.5 }}>

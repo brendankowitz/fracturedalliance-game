@@ -92,6 +92,7 @@ export function startRenderLoop(
           }
           for (const ev of snap.events) {
             switch (ev.kind) {
+              case "asteroid.settled": playSound(SFX.treatySigned); break;
               case "construction.done": playSound(SFX.buildComplete); break;
               case "blackmarket.purchase": playSound(SFX.blackMarket); break;
               case "asteroid.engine_charging": playSound(SFX.engineCharging); break;

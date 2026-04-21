@@ -737,6 +737,47 @@ describe("aiSystem", () => {
   });
 });
 
+describe("settlement", () => {
+  it("human with scout in orbit can settle unclaimed asteroid", () => {
+    const world = createWorld({ seed: 99, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    human.credits = 10000;
+
+    const unclaimedAsteroid = [...world.asteroids.values()].find((a) => !a.ownerId);
+    if (!unclaimedAsteroid) throw new Error("need unclaimed asteroid");
+
+    const sId = shipId("settle-scout");
+    world.ships.set(sId, {
+      id: sId, defKind: "scout", ownerId: human.id,
+      hullHp: 20, shieldHp: 5,
+      position: { x: unclaimedAsteroid.sector.x, y: unclaimedAsteroid.sector.y },
+      velocity: { x: 0, y: 0 },
+      order: { kind: "idle" },
+      cargo: {},
+    });
+
+    const creditsBefore = human.credits;
+    applyCommand(world, { kind: "settleAsteroid", asteroidId: unclaimedAsteroid.id });
+
+    expect(unclaimedAsteroid.ownerId).toBe(human.id);
+    expect(human.credits).toBe(creditsBefore - 3000);
+    expect(world.eventQueue.some((e) => e.kind === "asteroid.settled")).toBe(true);
+  });
+
+  it("cannot settle asteroid without a scout in orbit", () => {
+    const world = createWorld({ seed: 99, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    human.credits = 10000;
+
+    const unclaimedAsteroid = [...world.asteroids.values()].find((a) => !a.ownerId);
+    if (!unclaimedAsteroid) throw new Error("need unclaimed asteroid");
+
+    applyCommand(world, { kind: "settleAsteroid", asteroidId: unclaimedAsteroid.id });
+
+    expect(unclaimedAsteroid.ownerId).toBeNull();
+  });
+});
+
 describe("missileSystem", () => {
   it("missile arrives and damages target stability", () => {
     const world = createWorld({ seed: 7, humanPlayerRaceId: "helionCorp" });
