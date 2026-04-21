@@ -1,7 +1,7 @@
 import type { AsteroidId, ShipId } from "@fa/domain";
 import type { HudSnapshot } from "@fa/sim";
 import type { Application, Texture } from "pixi.js";
-import { Assets, Circle, Container, Graphics, Sprite, Text } from "pixi.js";
+import { Assets, BlurFilter, Circle, Container, Graphics, Sprite, Text, TilingSprite } from "pixi.js";
 
 const SIZE_RADIUS: Record<string, number> = {
   small: 8,
@@ -60,6 +60,7 @@ export class SectorView {
   readonly container: Container;
 
   private readonly _worldLayer: Container;
+  private readonly _glowContainer: Container;
   private _scale = 1;
   private _offsetX = 0;
   private _offsetY = 0;
@@ -70,6 +71,16 @@ export class SectorView {
   private _dragOffsetStartY = 0;
   private _palette: ColorPalette = "normal";
 
+  // Feature 1: 3-layer parallax starfield
+  private _starLayers: Array<{ sprite: TilingSprite; speed: number }> = [];
+
+  // Feature 2: pan inertia
+  private _velX = 0;
+  private _velY = 0;
+  private _lastPtrX = 0;
+  private _lastPtrY = 0;
+  private _lastPtrTime = 0;
+
   setColorPalette(p: ColorPalette): void {
     this._palette = p;
   }
@@ -77,6 +88,10 @@ export class SectorView {
   private readonly _onSelectAsteroid: (id: AsteroidId) => void;
   private readonly _asteroidGraphics: Map<AsteroidId, AsteroidEntry> = new Map();
   private readonly _shipGraphics: Map<ShipId, Sprite> = new Map();
+
+  // Feature 3: ship engine glow
+  private readonly _shipGlowGraphics: Map<ShipId, Graphics> = new Map();
+
   private _laserGfx: Graphics;
 
   constructor(app: Application, onSelectAsteroid: (id: AsteroidId) => void) {
@@ -85,22 +100,39 @@ export class SectorView {
     this.container = new Container();
     this._worldLayer = new Container();
 
-    // Static starfield background (deterministic via LCG)
-    const starfield = new Graphics();
-    let sx = 12345;
-    const rand = () => {
-      sx = (sx * 1664525 + 1013904223) & 0xffffffff;
-      return (sx >>> 0) / 0xffffffff;
-    };
-    for (let i = 0; i < 200; i++) {
-      const x = rand() * 1400;
-      const y = rand() * 900;
-      const size = rand() < 0.8 ? 0.8 : 1.5;
-      const alpha = 0.2 + rand() * 0.5;
-      starfield.circle(x, y, size).fill({ color: 0xffffff, alpha });
+    // Feature 1: 3-layer parallax starfield (added before _worldLayer so they render behind)
+    const starLayerDefs = [
+      { count: 400, color: 0x334455, speed: 0.04 }, // distant, barely moves
+      { count: 200, color: 0x6688aa, speed: 0.10 }, // mid
+      { count: 100, color: 0xaaccee, speed: 0.20 }, // near, moves noticeably
+    ];
+
+    for (const def of starLayerDefs) {
+      let seed = 12345 + def.count;
+      const rand = () => {
+        seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+        return (seed >>> 0) / 0xffffffff;
+      };
+      const g = new Graphics();
+      for (let i = 0; i < def.count; i++) {
+        const x = rand() * 1024;
+        const y = rand() * 1024;
+        const size = 0.5 + rand() * 1.5;
+        const alpha = 0.3 + rand() * 0.5;
+        g.circle(x, y, size).fill({ color: def.color, alpha });
+      }
+      const tex = app.renderer.generateTexture(g);
+      g.destroy();
+      const ts = new TilingSprite({ texture: tex, width: app.screen.width, height: app.screen.height });
+      this.container.addChild(ts);
+      this._starLayers.push({ sprite: ts, speed: def.speed });
     }
-    this.container.addChild(starfield);
+
     this.container.addChild(this._worldLayer);
+
+    // Feature 3: glow container lives inside _worldLayer, below everything else
+    this._glowContainer = new Container();
+    this._worldLayer.addChild(this._glowContainer);
 
     // Faint coordinate grid in world space (pans/zooms with map)
     const gridLayer = new Graphics();
@@ -135,10 +167,25 @@ export class SectorView {
       this._dragStartY = e.globalY;
       this._dragOffsetStartX = this._offsetX;
       this._dragOffsetStartY = this._offsetY;
+      // Reset velocity on new drag so old inertia doesn't interfere
+      this._velX = 0;
+      this._velY = 0;
+      this._lastPtrX = e.globalX;
+      this._lastPtrY = e.globalY;
+      this._lastPtrTime = performance.now();
     });
 
     app.stage.on("pointermove", (e) => {
       if (!this._dragging) return;
+      const now = performance.now();
+      const dt = now - this._lastPtrTime;
+      if (dt > 0 && dt < 100) {
+        this._velX = (e.globalX - this._lastPtrX) * (16 / dt);
+        this._velY = (e.globalY - this._lastPtrY) * (16 / dt);
+      }
+      this._lastPtrX = e.globalX;
+      this._lastPtrY = e.globalY;
+      this._lastPtrTime = now;
       this._offsetX = this._dragOffsetStartX + (e.globalX - this._dragStartX);
       this._offsetY = this._dragOffsetStartY + (e.globalY - this._dragStartY);
       this._applyTransform();
@@ -146,6 +193,7 @@ export class SectorView {
 
     app.stage.on("pointerup", () => {
       this._dragging = false;
+      // velocity preserved — inertia applied in update()
     });
 
     app.stage.on("pointerupoutside", () => {
@@ -164,6 +212,9 @@ export class SectorView {
       this._offsetX = mx - (mx - this._offsetX) * (newScale / oldScale);
       this._offsetY = my - (my - this._offsetY) * (newScale / oldScale);
       this._scale = newScale;
+      // Zero inertia so zooming doesn't fight ongoing momentum
+      this._velX = 0;
+      this._velY = 0;
       this._applyTransform();
     }, { passive: false });
   }
@@ -172,9 +223,27 @@ export class SectorView {
     this._worldLayer.x = this._offsetX;
     this._worldLayer.y = this._offsetY;
     this._worldLayer.scale.set(this._scale);
+    for (const { sprite, speed } of this._starLayers) {
+      sprite.tilePosition.x = this._offsetX * speed;
+      sprite.tilePosition.y = this._offsetY * speed;
+    }
   }
 
   update(snapshot: HudSnapshot): void {
+    // Feature 2: apply inertia decay when not actively dragging
+    if (!this._dragging) {
+      if (Math.abs(this._velX) > 0.05 || Math.abs(this._velY) > 0.05) {
+        this._offsetX += this._velX;
+        this._offsetY += this._velY;
+        this._velX *= 0.88;
+        this._velY *= 0.88;
+        this._applyTransform();
+      } else {
+        this._velX = 0;
+        this._velY = 0;
+      }
+    }
+
     const { humanPlayerId, asteroids } = snapshot;
 
     const aiPlayerIds = new Set(snapshot.players.filter((p) => !p.isHuman).map((p) => p.id));
@@ -292,6 +361,12 @@ export class SectorView {
         sprite.anchor.set(0.5, 0.5);
         this._worldLayer.addChild(sprite);
         this._shipGraphics.set(ship.id, sprite);
+
+        // Feature 3: engine glow created alongside ship sprite
+        const glow = new Graphics();
+        glow.filters = [new BlurFilter({ strength: 8 })];
+        this._glowContainer.addChild(glow);
+        this._shipGlowGraphics.set(ship.id, glow);
       }
 
       const wx = ship.position.x * SECTOR_SCALE;
@@ -304,6 +379,12 @@ export class SectorView {
       sprite.width = 14;
       sprite.height = 14;
       sprite.tint = colour;
+
+      // Feature 3: update pulsing engine glow
+      const glow = this._shipGlowGraphics.get(ship.id)!;
+      const pulse = 0.3 + Math.sin(Date.now() / 400 + ship.id.length) * 0.15;
+      glow.clear();
+      glow.circle(wx, wy, 9).fill({ color: colour, alpha: pulse });
     }
 
     // Remove stale ship graphics
@@ -311,6 +392,8 @@ export class SectorView {
     for (const id of toRemoveShips) {
       this._shipGraphics.get(id)!.destroy();
       this._shipGraphics.delete(id);
+      this._shipGlowGraphics.get(id)?.destroy();
+      this._shipGlowGraphics.delete(id);
     }
 
     // Redraw combat laser lines
@@ -337,6 +420,11 @@ export class SectorView {
       sprite.destroy();
     }
     this._shipGraphics.clear();
+    for (const glow of this._shipGlowGraphics.values()) {
+      glow.destroy();
+    }
+    this._shipGlowGraphics.clear();
+    this._glowContainer.destroy({ children: true });
     this._laserGfx.destroy();
     this.container.destroy({ children: true });
   }
