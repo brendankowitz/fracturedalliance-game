@@ -1,7 +1,8 @@
 import type { Command } from "@fa/sim";
+import { useEffect } from "react";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
-import { AsteroidInspector } from "./AsteroidInspector.tsx";
+import { SurfaceView } from "./SurfaceView.tsx";
 import { BlackMarketPanel } from "./BlackMarketPanel.tsx";
 import { BlueprintShop } from "./BlueprintShop.tsx";
 import { BuildingPanel } from "./BuildingPanel.tsx";
@@ -23,54 +24,232 @@ interface HUDProps {
   onCommand: (cmd: Command) => void;
 }
 
+// ── Keyboard shortcut hook ───────────────────────────────────────────────────
+function useHotkeys() {
+  const {
+    selectedAsteroidId, selectAsteroid,
+    paused, setPaused,
+    toggleTradePanel, toggleBlackMarket, toggleBlueprintShop,
+    toggleEspionagePanel, toggleNotificationFeed, toggleDiplomacyPanel,
+    toggleSaveLoadPanel,
+  } = useUiStore.getState();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      const s = useUiStore.getState();
+      switch (e.key) {
+        case "Escape":
+          if (s.selectedAsteroidId) { s.selectAsteroid(null); e.preventDefault(); }
+          break;
+        case " ":
+          s.setPaused(!s.paused); e.preventDefault();
+          break;
+        case "t": case "T":
+          s.toggleTradePanel(); break;
+        case "m": case "M":
+          s.toggleBlackMarket(); break;
+        case "r": case "R":
+          s.toggleBlueprintShop(); break;
+        case "e": case "E":
+          s.toggleEspionagePanel(); break;
+        case "a": case "A":
+          s.toggleNotificationFeed(); break;
+        case "d": case "D":
+          s.toggleDiplomacyPanel(); break;
+        case "s": case "S":
+          if (e.ctrlKey || e.metaKey) { s.toggleSaveLoadPanel(); e.preventDefault(); }
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+}
+
+// ── NavBar ───────────────────────────────────────────────────────────────────
+interface NavBarProps {
+  tradePanelOpen: boolean;
+  blackMarketOpen: boolean;
+  blueprintShopOpen: boolean;
+  espionageOpen: boolean;
+  alertsOpen: boolean;
+  diplomacyOpen: boolean;
+  saveLoadOpen: boolean;
+  surfaceOpen: boolean;
+  colonyName: string | null;
+  toggleTradePanel: () => void;
+  toggleBlackMarket: () => void;
+  toggleBlueprintShop: () => void;
+  toggleEspionage: () => void;
+  toggleAlerts: () => void;
+  toggleDiplomacy: () => void;
+  toggleSaveLoad: () => void;
+  toggleSurface: () => void;
+  paused: boolean;
+  setPaused: (v: boolean) => void;
+  colorPalette: "normal" | "deuteranopia" | "protanopia";
+  setColorPalette: (p: "normal" | "deuteranopia" | "protanopia") => void;
+}
+
+function NavBar({
+  tradePanelOpen, blackMarketOpen, blueprintShopOpen, espionageOpen,
+  alertsOpen, diplomacyOpen, saveLoadOpen, surfaceOpen, colonyName,
+  toggleTradePanel, toggleBlackMarket, toggleBlueprintShop,
+  toggleEspionage, toggleAlerts, toggleDiplomacy, toggleSaveLoad, toggleSurface,
+  paused, setPaused, colorPalette, setColorPalette,
+}: NavBarProps) {
+  const navItems = [
+    { label: colonyName ? `★ ${colonyName}` : "★ Surface", key: "—", open: surfaceOpen, toggle: toggleSurface, accent: true },
+    { label: "Trade",      key: "T", open: tradePanelOpen,     toggle: toggleTradePanel },
+    { label: "Market",     key: "M", open: blackMarketOpen,     toggle: toggleBlackMarket },
+    { label: "Espionage",  key: "E", open: espionageOpen,       toggle: toggleEspionage },
+    { label: "Research",   key: "R", open: blueprintShopOpen,   toggle: toggleBlueprintShop },
+    { label: "Alerts",     key: "A", open: alertsOpen,          toggle: toggleAlerts },
+    { label: "Diplomacy",  key: "D", open: diplomacyOpen,       toggle: toggleDiplomacy },
+    { label: "Save/Load",  key: "⌘S", open: saveLoadOpen,       toggle: toggleSaveLoad },
+  ];
+
+  return (
+    <nav
+      style={{
+        position: "absolute",
+        top: 40,
+        left: 0,
+        right: 0,
+        height: 32,
+        display: "flex",
+        alignItems: "stretch",
+        background: "var(--bg-panel)",
+        borderBottom: "1px solid var(--border)",
+        zIndex: 29,
+      }}
+    >
+      {/* Pause button */}
+      <button
+        type="button"
+        onClick={() => setPaused(!paused)}
+        title="Space — pause/unpause"
+        style={{
+          background: paused ? "rgba(255,146,0,0.12)" : "transparent",
+          border: "none",
+          borderRight: "1px solid var(--border)",
+          color: paused ? "var(--amber)" : "var(--text-lo)",
+          fontFamily: "var(--font-data)",
+          fontSize: 13,
+          padding: "0 14px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          transition: "color 0.12s",
+        }}
+      >
+        {paused ? "▶" : "⏸"}
+        <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>
+          {paused ? "PAUSED" : "LIVE"}
+        </span>
+      </button>
+
+      {/* Separator */}
+      <div style={{ width: 1, background: "var(--border)", margin: "6px 0" }} />
+
+      {/* Panel nav buttons */}
+      {navItems.map(({ label, key, open, toggle, accent }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={toggle}
+          aria-pressed={open}
+          aria-label={`${label} panel`}
+          className="fa-nav-btn"
+          title={`${key} — toggle ${label}`}
+          style={accent ? {
+            color: open ? "var(--amber)" : "rgba(255,146,0,0.7)",
+            borderBottomColor: open ? "var(--amber)" : "transparent",
+          } : undefined}
+        >
+          {label}
+          {key !== "—" && <span style={{ marginLeft: 5, fontSize: 9, opacity: 0.4 }}>[{key}]</span>}
+        </button>
+      ))}
+
+      {/* Right side: accessibility */}
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", borderLeft: "1px solid var(--border)", padding: "0 10px", gap: 4 }}>
+        <span style={{ fontFamily: "var(--font-ui)", fontSize: 9, color: "var(--text-lo)", letterSpacing: 1, marginRight: 4 }}>COLOUR</span>
+        {(["normal", "deuteranopia", "protanopia"] as const).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setColorPalette(p)}
+            aria-pressed={colorPalette === p}
+            style={{
+              background: colorPalette === p ? "rgba(0,196,224,0.12)" : "transparent",
+              border: `1px solid ${colorPalette === p ? "var(--accent)" : "var(--border)"}`,
+              color: colorPalette === p ? "var(--accent)" : "var(--text-lo)",
+              fontFamily: "var(--font-data)",
+              fontSize: 9,
+              padding: "2px 6px",
+              cursor: "pointer",
+            }}
+          >
+            {p === "normal" ? "STD" : p === "deuteranopia" ? "DEU" : "PRO"}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ── HUD ──────────────────────────────────────────────────────────────────────
 export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
-  const snapshot = useGameStore((s) => s.snapshot);
-  const toggleSaveLoad = useUiStore((s) => s.toggleSaveLoadPanel);
-  const toggleDiplomacy = useUiStore((s) => s.toggleDiplomacyPanel);
-  const toggleAlerts = useUiStore((s) => s.toggleNotificationFeed);
-  const toggleBlueprintShop = useUiStore((s) => s.toggleBlueprintShop);
-  const toggleEspionage = useUiStore((s) => s.toggleEspionagePanel);
-  const toggleBlackMarket = useUiStore((s) => s.toggleBlackMarket);
-  const toggleTradePanel = useUiStore((s) => s.toggleTradePanel);
-  const alertsOpen = useUiStore((s) => s.notificationFeedOpen);
+  useHotkeys();
+
+  const snapshot    = useGameStore((s) => s.snapshot);
+  const paused      = useUiStore((s) => s.paused);
+  const setPaused   = useUiStore((s) => s.setPaused);
+  const selectedAsteroidId     = useUiStore((s) => s.selectedAsteroidId);
+  const lastSelectedAsteroidId = useUiStore((s) => s.lastSelectedAsteroidId);
+  const selectAsteroid         = useUiStore((s) => s.selectAsteroid);
+
+  // Colony quick-access: find the player's own colony from snapshot
+  const playerColony = snapshot?.asteroids.find((a) => a.ownerId === snapshot.humanPlayerId) ?? null;
+  const surfaceOpen = selectedAsteroidId !== null;
+  const toggleSurface = () => {
+    if (surfaceOpen) {
+      selectAsteroid(null);
+    } else {
+      const target = lastSelectedAsteroidId ?? playerColony?.id ?? null;
+      if (target) selectAsteroid(target);
+    }
+  };
+  const alertsOpen  = useUiStore((s) => s.notificationFeedOpen);
   const blueprintShopOpen = useUiStore((s) => s.blueprintShopOpen);
-  const espionageOpen = useUiStore((s) => s.espionagePanelOpen);
-  const blackMarketOpen = useUiStore((s) => s.blackMarketOpen);
-  const tradePanelOpen = useUiStore((s) => s.tradePanelOpen);
-  const saveLoadOpen = useUiStore((s) => s.saveLoadPanelOpen);
-  const diplomacyOpen = useUiStore((s) => s.diplomacyPanelOpen);
-  const colorPalette = useUiStore((s) => s.colorPalette);
-  const setColorPalette = useUiStore((s) => s.setColorPalette);
-  const fontScale = useUiStore((s) => s.fontScale);
-  const setFontScale = useUiStore((s) => s.setFontScale);
-  const ecoMode = useUiStore((s) => s.ecoMode);
-  const toggleEcoMode = useUiStore((s) => s.toggleEcoMode);
+  const espionageOpen     = useUiStore((s) => s.espionagePanelOpen);
+  const blackMarketOpen   = useUiStore((s) => s.blackMarketOpen);
+  const tradePanelOpen    = useUiStore((s) => s.tradePanelOpen);
+  const saveLoadOpen      = useUiStore((s) => s.saveLoadPanelOpen);
+  const diplomacyOpen     = useUiStore((s) => s.diplomacyPanelOpen);
+  const colorPalette      = useUiStore((s) => s.colorPalette);
+  const setColorPalette   = useUiStore((s) => s.setColorPalette);
+  const toggleSaveLoad    = useUiStore((s) => s.toggleSaveLoadPanel);
+  const toggleDiplomacy   = useUiStore((s) => s.toggleDiplomacyPanel);
+  const toggleAlerts      = useUiStore((s) => s.toggleNotificationFeed);
+  const toggleBlueprintShop = useUiStore((s) => s.toggleBlueprintShop);
+  const toggleEspionage   = useUiStore((s) => s.toggleEspionagePanel);
+  const toggleBlackMarket = useUiStore((s) => s.toggleBlackMarket);
+  const toggleTradePanel  = useUiStore((s) => s.toggleTradePanel);
 
   if (!snapshot) {
     return (
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-        }}
-      >
-        Loading…
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text)", fontFamily: "var(--font-head)", fontSize: 13, letterSpacing: 2 }}>
+        INITIALIZING…
       </div>
     );
   }
 
-  if (snapshot.gameEndState === "defeat") {
-    return <GameOverScreen />;
-  }
-
-  if (snapshot.gameEndState !== null) {
-    return <VictoryScreen condition={snapshot.gameEndState} />;
-  }
+  if (snapshot.gameEndState === "defeat") return <GameOverScreen />;
+  if (snapshot.gameEndState !== null) return <VictoryScreen condition={snapshot.gameEndState} />;
 
   return (
     <>
@@ -81,225 +260,31 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         seed={snapshot.seed}
         difficulty={snapshot.difficulty}
       />
-      <button
-        type="button"
-        onClick={toggleBlackMarket}
-        aria-label="Market panel"
-        aria-pressed={blackMarketOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 572,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${blackMarketOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Market
-      </button>
-      <button
-        type="button"
-        onClick={toggleTradePanel}
-        aria-label="Trade panel"
-        aria-pressed={tradePanelOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 686,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${tradePanelOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Trade
-      </button>
-      <button
-        type="button"
-        onClick={toggleEspionage}
-        aria-label="Espionage panel"
-        aria-pressed={espionageOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 458,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${espionageOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Espionage
-      </button>
-      <button
-        type="button"
-        onClick={toggleBlueprintShop}
-        aria-label="Research panel"
-        aria-pressed={blueprintShopOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 344,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${blueprintShopOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Research
-      </button>
-      <button
-        type="button"
-        onClick={toggleAlerts}
-        aria-label="Alerts panel"
-        aria-pressed={alertsOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 230,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${alertsOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Alerts
-      </button>
-      <button
-        type="button"
-        onClick={toggleDiplomacy}
-        aria-label="Diplomacy panel"
-        aria-pressed={diplomacyOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 120,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${diplomacyOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Diplomacy
-      </button>
-      <button
-        type="button"
-        onClick={toggleSaveLoad}
-        aria-label="Save/Load panel"
-        aria-pressed={saveLoadOpen}
-        style={{
-          position: "absolute",
-          top: 8,
-          right: 16,
-          zIndex: 11,
-          background: "#0a1830",
-          border: `1px solid ${saveLoadOpen ? "#c8d8ff" : "#224"}`,
-          color: "#c8d8ff",
-          fontFamily: "monospace",
-          padding: "4px 10px",
-          cursor: "pointer",
-        }}
-      >
-        ☰ Save/Load
-      </button>
-      <div
-        style={{
-          position: "absolute",
-          top: 44,
-          left: 0,
-          display: "flex",
-          gap: 4,
-          padding: "2px 8px",
-          background: "rgba(0,8,20,0.8)",
-          zIndex: 11,
-          fontSize: 10,
-          fontFamily: "monospace",
-          alignItems: "center",
-        }}
-        role="group"
-        aria-label="Accessibility controls"
-      >
-        <span style={{ color: "#446", marginRight: 4 }}>A11y:</span>
-        {(["normal", "deuteranopia", "protanopia"] as const).map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => { setColorPalette(p); }}
-            aria-pressed={colorPalette === p}
-            aria-label={`Colour palette: ${p}`}
-            style={{
-              background: colorPalette === p ? "#1a3860" : "#0a1830",
-              border: `1px solid ${colorPalette === p ? "#4488cc" : "#224"}`,
-              color: "#c8d8ff",
-              fontFamily: "monospace",
-              fontSize: 9,
-              padding: "2px 5px",
-              cursor: "pointer",
-            }}
-          >
-            {p === "normal" ? "Normal" : p === "deuteranopia" ? "Deut" : "Prot"}
-          </button>
-        ))}
-        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
-        <span style={{ color: "#667" }}>Text:</span>
-        {([100, 125, 150, 175, 200] as const).map((scale) => (
-          <button
-            key={scale}
-            type="button"
-            onClick={() => { setFontScale(scale); }}
-            aria-pressed={fontScale === scale}
-            aria-label={`Font size ${scale}%`}
-            style={{
-              background: fontScale === scale ? "#1a3860" : "#0a1830",
-              border: `1px solid ${fontScale === scale ? "#4488cc" : "#224"}`,
-              color: "#c8d8ff",
-              fontFamily: "monospace",
-              fontSize: 9,
-              padding: "2px 5px",
-              cursor: "pointer",
-            }}
-          >
-            {scale}%
-          </button>
-        ))}
-        <span style={{ color: "#446", margin: "0 4px" }}>|</span>
-        <button
-          type="button"
-          onClick={toggleEcoMode}
-          aria-pressed={ecoMode}
-          aria-label="Eco mode — reduces visual effects for performance"
-          style={{
-            background: ecoMode ? "#0a200a" : "#0a1830",
-            border: `1px solid ${ecoMode ? "#44aa44" : "#224"}`,
-            color: ecoMode ? "#88cc88" : "#c8d8ff",
-            fontFamily: "monospace",
-            fontSize: 9,
-            padding: "2px 5px",
-            cursor: "pointer",
-          }}
-        >
-          Eco
-        </button>
-      </div>
+
+      <NavBar
+        tradePanelOpen={tradePanelOpen}
+        blackMarketOpen={blackMarketOpen}
+        blueprintShopOpen={blueprintShopOpen}
+        espionageOpen={espionageOpen}
+        alertsOpen={alertsOpen}
+        diplomacyOpen={diplomacyOpen}
+        saveLoadOpen={saveLoadOpen}
+        surfaceOpen={surfaceOpen}
+        colonyName={playerColony?.name ?? null}
+        toggleTradePanel={toggleTradePanel}
+        toggleBlackMarket={toggleBlackMarket}
+        toggleBlueprintShop={toggleBlueprintShop}
+        toggleEspionage={toggleEspionage}
+        toggleAlerts={toggleAlerts}
+        toggleDiplomacy={toggleDiplomacy}
+        toggleSaveLoad={toggleSaveLoad}
+        toggleSurface={toggleSurface}
+        paused={paused}
+        setPaused={setPaused}
+        colorPalette={colorPalette}
+        setColorPalette={setColorPalette}
+      />
+
       <BlackMarketPanel onCommand={onCommand} />
       <TradePanel onCommand={onCommand} />
       <BuildingPanel onCommand={onCommand} />
@@ -310,8 +295,9 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <BlueprintShop onCommand={onCommand} />
       <EspionagePanel onCommand={onCommand} />
       <NotificationFeed />
-      <AsteroidInspector onCommand={onCommand} />
+      <SurfaceView onCommand={onCommand} />
       <TutorialTooltip />
+
     </>
   );
 }

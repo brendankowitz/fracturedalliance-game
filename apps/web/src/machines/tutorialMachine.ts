@@ -31,25 +31,27 @@ interface StepConfig {
 export const TUTORIAL_STEPS: Record<string, StepConfig> = {
   step1: {
     message:
-      "Build an Air Processor to give your colony breathable air. Open the Building panel and select Air Processor.",
+      "Click your colony ★ on the map to open its surface. Then click any empty cell and place an Air Processor — your colony needs breathable air.",
     position: { bottom: 120, left: 16 },
   },
   step2: {
-    message: "Build a Mine to extract ore from the asteroid. More mines means more income.",
+    message:
+      "Good. Now click your colony again, select an empty cell, and build a Mine to extract ore. More mines = more income.",
     position: { bottom: 120, left: 16 },
   },
   step3: {
-    message: "The Federal Transporter arrives monthly. When it docks, sell your ore for credits.",
-    position: { top: 60, left: "calc(50% - 140px)" },
+    message:
+      "A Federal Transporter docks periodically. Open Trade (top bar) when it arrives to sell your ore for credits.",
+    position: { top: 80, left: "calc(50% - 160px)" },
   },
   step4: {
     message:
-      "Launch a Scout ship to explore the belt. Open the Building panel and launch from a Ship Yard.",
+      "Build a Ship Yard on your colony, then commission a Scout to explore the belt and find unclaimed asteroids.",
     position: { bottom: 120, left: 16 },
   },
   step5: {
     message:
-      "The Kryll Collective is watching you. Open Diplomacy to manage relations and propose a Non-Aggression Pact.",
-    position: { top: 48, right: 16 },
+      "Rival factions are watching. Open Diplomacy (top bar) to propose a Non-Aggression Pact before they attack.",
+    position: { top: 80, right: 16 },
   },
 };

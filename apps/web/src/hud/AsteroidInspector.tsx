@@ -16,6 +16,9 @@ interface AsteroidInspectorProps {
 export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   const selectedId = useUiStore((s) => s.selectedAsteroidId);
   const selectAsteroid = useUiStore((s) => s.selectAsteroid);
+  const selectCell = useUiStore((s) => s.selectCell);
+  const toggleBuildingPanel = useUiStore((s) => s.toggleBuildingPanel);
+  const selectedCell = useUiStore((s) => s.selectedCell);
   const snapshot = useGameStore((s) => s.snapshot);
 
   if (!selectedId || !snapshot) return null;
@@ -38,9 +41,6 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
   );
 
   const isOwnedByHuman = asteroid.ownerId === snapshot.humanPlayerId;
-  const selectCell = useUiStore((s) => s.selectCell);
-  const toggleBuildingPanel = useUiStore((s) => s.toggleBuildingPanel);
-  const selectedCell = useUiStore((s) => s.selectedCell);
 
   const gridDims =
     (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[asteroid.sizeClass] ??

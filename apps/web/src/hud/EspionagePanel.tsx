@@ -143,7 +143,7 @@ export function EspionagePanel({ onCommand }: Props) {
     <div
       style={{
         position: "absolute",
-        top: 48,
+        top: 72,
         right: 360,
         width: 300,
         maxHeight: "75vh",
