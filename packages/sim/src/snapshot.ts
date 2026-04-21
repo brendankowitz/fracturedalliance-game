@@ -120,7 +120,9 @@ export function takeSnapshot(world: World): HudSnapshot {
     }),
     buildingsGrid: a.buildings.flatMap((bid) => {
       const b = world.buildings.get(bid);
-      return b ? [{ kind: b.defKind, cell: { x: b.cell.x, y: b.cell.y } }] : [];
+      return b && b.constructionProgress >= 1
+        ? [{ kind: b.defKind, cell: { x: b.cell.x, y: b.cell.y } }]
+        : [];
     }),
     buildQueue: a.buildQueue.map((q) => ({
       buildingKind: q.buildingKind,
