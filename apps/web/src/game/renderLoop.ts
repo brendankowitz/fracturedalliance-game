@@ -96,6 +96,8 @@ export function startRenderLoop(
               case "blackmarket.purchase": playSound(SFX.blackMarket); break;
               case "asteroid.engine_charging": playSound(SFX.engineCharging); break;
               case "asteroid.destroyed": playSound(SFX.attack); break;
+              case "missile.launched": playSound(SFX.engineCharging); break;
+              case "missile.impact": playSound(SFX.attack); break;
               case "expedition.enforcer_arrived": playSound(SFX.attack); break;
               case "agent.mission_failed": playSound(SFX.espionage); break;
               case "bribe.accepted": playSound(SFX.treatySigned); break;

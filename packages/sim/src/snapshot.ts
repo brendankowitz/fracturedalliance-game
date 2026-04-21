@@ -50,6 +50,7 @@ export interface AsteroidSnapshot {
     etaTick: number | null;
     chargeTick: number | null;
   };
+  incomingMissile: { arrivalTick: number } | null;
 }
 
 export interface ShipSnapshot {
@@ -134,6 +135,10 @@ export function takeSnapshot(world: World): HudSnapshot {
       etaTick: a.engines.etaTick,
       chargeTick: a.engines.chargeTick,
     },
+    incomingMissile: (() => {
+      const m = world.missiles.find((m) => m.targetId === a.id);
+      return m ? { arrivalTick: m.arrivalTick } : null;
+    })(),
   }));
 
   return {

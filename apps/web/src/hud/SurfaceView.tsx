@@ -269,6 +269,7 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
   const [orderingShipId, setOrderingShipId] = useState<string | null>(null);
   const [shipOrderTarget, setShipOrderTarget] = useState<string>("");
+  const [missileTarget, setMissileTarget] = useState<string>("");
 
   if (!selectedId || !snapshot) return null;
 
@@ -328,6 +329,7 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         buildingsGrid={asteroid.buildingsGrid}
         humanPlayerId={snapshot.humanPlayerId}
         humanShips={humanShips}
+        incomingMissile={asteroid.incomingMissile}
         onCommand={onCommand}
         onClose={() => { selectAsteroid(null); }}
       />
@@ -404,6 +406,22 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           </div>
         )}
       </div>
+
+      {/* ── Incoming missile warning ── */}
+      {asteroid.incomingMissile !== null && (
+        <div style={{
+          padding: "8px 12px",
+          background: "rgba(200,40,20,0.15)",
+          border: "1px solid #cc3322",
+          color: "#ff6655",
+          fontFamily: "var(--font-data)",
+          fontSize: 11,
+          flexShrink: 0,
+          letterSpacing: 0.5,
+        }}>
+          ⚠ INCOMING MISSILE — ETA tick {asteroid.incomingMissile.arrivalTick}
+        </div>
+      )}
 
       {/* ── Stats row ── */}
       <div
@@ -789,6 +807,48 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
             );
           })()}
 
+          {/* Missile Bay (human-owned only, silo present) */}
+          {isOwnedByHuman && asteroid.buildingsGrid.some((b) => b.kind === "missileSilo") && (
+            <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                Missile Bay
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <select
+                  value={missileTarget}
+                  onChange={(e) => setMissileTarget(e.target.value)}
+                  style={{ background: "#0a1428", border: "1px solid #224", color: "#c8d8ff", fontFamily: "monospace", fontSize: 11, flex: 1, padding: "2px 4px" }}
+                >
+                  <option value="" disabled>Select target...</option>
+                  {otherAsteroids.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={!missileTarget}
+                  onClick={() => {
+                    if (!missileTarget) return;
+                    onCommand({ kind: "fireMissile", sourceAsteroidId: mkAsteroidId(asteroid.id), targetAsteroidId: mkAsteroidId(missileTarget) });
+                    setMissileTarget("");
+                  }}
+                  style={{
+                    background: missileTarget ? "#200a0a" : "#0a0a14",
+                    border: `1px solid ${missileTarget ? "#662222" : "#222"}`,
+                    color: missileTarget ? "#ff6655" : "#334",
+                    fontFamily: "monospace",
+                    fontSize: 11,
+                    cursor: missileTarget ? "pointer" : "default",
+                    padding: "4px 12px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  🚀 Fire (2,000¢)
+                </button>
+              </div>
+            </section>
+          )}
+
           {/* Engines (human-owned only) */}
           {isOwnedByHuman && asteroid.engines.count > 0 && (
             <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
@@ -1072,6 +1132,7 @@ interface AsteroidIntelPanelProps {
   buildingsGrid: Array<{ kind: string; cell: { x: number; y: number } }>;
   humanPlayerId: string;
   humanShips: Array<{ id: string; defKind: string; orderKind: string }>;
+  incomingMissile: { arrivalTick: number } | null;
   onCommand: (cmd: Command) => void;
   onClose: () => void;
 }
@@ -1090,6 +1151,7 @@ function AsteroidIntelPanel({
   buildingsGrid,
   humanPlayerId,
   humanShips,
+  incomingMissile,
   onCommand,
   onClose,
 }: AsteroidIntelPanelProps) {
@@ -1200,6 +1262,22 @@ function AsteroidIntelPanel({
           <div style={{ color: "var(--text-lo)", fontSize: 11, flexShrink: 0 }}>Unclaimed</div>
         )}
       </div>
+
+      {/* ── Incoming missile warning ── */}
+      {incomingMissile !== null && (
+        <div style={{
+          padding: "8px 12px",
+          background: "rgba(200,40,20,0.15)",
+          border: "1px solid #cc3322",
+          color: "#ff6655",
+          fontFamily: "var(--font-data)",
+          fontSize: 11,
+          flexShrink: 0,
+          letterSpacing: 0.5,
+        }}>
+          ⚠ INCOMING MISSILE — ETA tick {incomingMissile.arrivalTick}
+        </div>
+      )}
 
       {/* ── Reputation row ── */}
       {ownerReputation !== null && (

@@ -9,6 +9,7 @@ import { tickDiplomacy } from "./systems/diplomacySystem.ts";
 import { tickEconomy } from "./systems/economySystem.ts";
 import { tickHappiness } from "./systems/happinessSystem.ts";
 import { tickMining } from "./systems/miningSystem.ts";
+import { tickMissiles } from "./systems/missileSystem.ts";
 import { tickResources } from "./systems/resourceSystem.ts";
 import { tickShips } from "./systems/shipSystem.ts";
 import { tickTrader } from "./systems/traderSystem.ts";
@@ -25,6 +26,7 @@ export function tick(world: World): void {
   tickHappiness(world);
   tickShips(world);
   tickCombat(world);
+  tickMissiles(world);
   tickAgents(world);
   tickAsteroidEngines(world);
   tickBlackMarket(world);

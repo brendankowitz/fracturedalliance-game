@@ -30,4 +30,5 @@ export type Command =
   | { kind: "blackMarketBuy"; itemKind: BlackMarketItemKind }
   | { kind: "bribeOfficial"; targetPlayerId: PlayerId; credits: number }
   | { kind: "sellOre"; oreKind: string; quantity: number }
-  | { kind: "buyOre"; oreKind: string; quantity: number };
+  | { kind: "buyOre"; oreKind: string; quantity: number }
+  | { kind: "fireMissile"; sourceAsteroidId: AsteroidId; targetAsteroidId: AsteroidId };

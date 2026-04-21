@@ -5,6 +5,7 @@ import { tickAI } from "../systems/aiSystem.ts";
 import { tickCombat } from "../systems/combatSystem.ts";
 import { tickConstruction } from "../systems/constructionSystem.ts";
 import { tickMining } from "../systems/miningSystem.ts";
+import { tickMissiles } from "../systems/missileSystem.ts";
 import { computePowerBalance, tickResources } from "../systems/resourceSystem.ts";
 import { tickShips } from "../systems/shipSystem.ts";
 import { isTraderActive, TICKS_PER_MONTH, TRADER_WINDOW_TICKS } from "../systems/traderSystem.ts";
@@ -733,5 +734,52 @@ describe("aiSystem", () => {
     tickAI(world);
 
     expect(kryllAsteroid.buildQueue.length).toBe(buildQueueBefore);
+  });
+});
+
+describe("missileSystem", () => {
+  it("missile arrives and damages target stability", () => {
+    const world = createWorld({ seed: 7, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    const asteroids = [...world.asteroids.values()];
+    const sourceAsteroid = asteroids[0]!;
+    const targetAsteroid = asteroids[1]!;
+    if (!targetAsteroid) throw new Error("need 2 asteroids");
+
+    sourceAsteroid.ownerId = human.id;
+    human.credits = 99999;
+
+    // Give source a completed missile silo
+    const siloId = buildingId("missile-silo-1");
+    world.buildings.set(siloId, {
+      id: siloId, defKind: "missileSilo", asteroidId: sourceAsteroid.id,
+      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
+      constructionProgress: 1, active: true, damage: 0,
+    });
+    sourceAsteroid.buildings.push(siloId);
+
+    // Give target a building to potentially destroy
+    const targetBId = buildingId("target-building-1");
+    world.buildings.set(targetBId, {
+      id: targetBId, defKind: "mineMk1", asteroidId: targetAsteroid.id,
+      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
+      constructionProgress: 1, active: true, damage: 0,
+    });
+    targetAsteroid.buildings.push(targetBId);
+    const stabilityBefore = targetAsteroid.stability;
+
+    applyCommand(world, { kind: "fireMissile", sourceAsteroidId: sourceAsteroid.id, targetAsteroidId: targetAsteroid.id });
+    expect(world.missiles).toHaveLength(1);
+
+    // Advance to arrival tick
+    const arrivalTick = world.missiles[0]!.arrivalTick;
+    while (world.tick < arrivalTick) {
+      world.tick += 1;
+      world.eventQueue = [];
+      tickMissiles(world);
+    }
+
+    expect(targetAsteroid.stability).toBeLessThan(stabilityBefore);
+    expect(world.missiles).toHaveLength(0);
   });
 });

@@ -18,6 +18,14 @@ export interface Prng {
 
 export type DifficultyLevel = "intern" | "manager" | "director" | "ceo" | "board";
 
+export interface PendingMissile {
+  readonly id: string;
+  readonly ownerId: PlayerId;
+  readonly sourceId: AsteroidId;
+  readonly targetId: AsteroidId;
+  readonly arrivalTick: number;
+}
+
 export interface World {
   tick: number;
   readonly seed: number;
@@ -34,6 +42,8 @@ export interface World {
   nextBuildingSeq: number;
   nextShipSeq: number;
   nextTreatySeq: number;
+  nextMissileSeq: number;
+  missiles: PendingMissile[];
   gameEndState: GameEndState | null;
   agents: Map<AgentId, Agent>;
   expeditionFleet: {

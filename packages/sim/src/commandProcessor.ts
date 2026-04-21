@@ -422,5 +422,50 @@ export function applyCommand(world: World, command: Command): void {
       ) / 100;
       break;
     }
+    case "fireMissile": {
+      const source = world.asteroids.get(command.sourceAsteroidId);
+      if (!source?.ownerId) return;
+
+      const player = world.players.get(source.ownerId);
+      if (!player?.isHuman) return;
+
+      const hasSilo = source.buildings.some((bid) => {
+        const b = world.buildings.get(bid);
+        return b?.defKind === "missileSilo" && b.constructionProgress >= 1;
+      });
+      if (!hasSilo) return;
+
+      const alreadyFiring = world.missiles.some((m) => m.sourceId === command.sourceAsteroidId);
+      if (alreadyFiring) return;
+
+      const MISSILE_COST = 2000;
+      if (player.credits < MISSILE_COST) return;
+
+      const target = world.asteroids.get(command.targetAsteroidId);
+      if (!target) return;
+
+      player.credits -= MISSILE_COST;
+
+      const dx = target.sector.x - source.sector.x;
+      const dy = target.sector.y - source.sector.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const travelTicks = Math.max(40, Math.round(dist * 12));
+
+      world.missiles.push({
+        id: `missile-${world.nextMissileSeq++}`,
+        ownerId: source.ownerId,
+        sourceId: command.sourceAsteroidId,
+        targetId: command.targetAsteroidId,
+        arrivalTick: world.tick + travelTicks,
+      });
+
+      world.eventQueue.push({
+        kind: "missile.launched",
+        priority: "amber",
+        sourceName: source.name,
+        targetName: target.name,
+      });
+      break;
+    }
   }
 }

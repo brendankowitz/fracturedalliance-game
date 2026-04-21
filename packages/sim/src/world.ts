@@ -102,6 +102,8 @@ export function createWorld(config: WorldConfig): World {
     nextBuildingSeq: 0,
     nextShipSeq: 0,
     nextTreatySeq: 0,
+    nextMissileSeq: 0,
+    missiles: [],
     gameEndState: null,
     agents,
     expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },

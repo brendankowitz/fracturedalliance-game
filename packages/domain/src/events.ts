@@ -46,4 +46,7 @@ export type GameEvent =
   | { kind: "game.ended"; priority: "red"; state: GameEndState }
   | { kind: "asteroid.destroyed"; priority: "red"; asteroidName: string }
   | { kind: "blueprint.prerequisite_missing"; priority: "grey"; blueprintId: BlueprintId }
-  | { kind: "mauna.assault_fleet"; priority: "red"; targetAsteroidId: AsteroidId };
+  | { kind: "mauna.assault_fleet"; priority: "red"; targetAsteroidId: AsteroidId }
+  | { kind: "missile.launched"; priority: "amber"; sourceName: string; targetName: string }
+  | { kind: "missile.impact"; priority: "red"; targetAsteroidName: string }
+  | { kind: "asteroid.settled"; priority: "green"; asteroidName: string };

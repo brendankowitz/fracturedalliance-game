@@ -49,6 +49,7 @@ function makeAsteroid(overrides = {}) {
     buildQueue: [],
     powerBalance: 0,
     engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
+    incomingMissile: null,
     ...overrides,
   };
 }

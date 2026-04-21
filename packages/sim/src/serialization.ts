@@ -13,6 +13,7 @@ import type {
   DifficultyLevel,
   GameEndState,
   OreRecord,
+  PendingMissile,
   Player,
   PlayerId,
   Ship,
@@ -39,6 +40,8 @@ export function serializeWorld(world: World): Record<string, unknown> {
     nextBuildingSeq: world.nextBuildingSeq,
     nextShipSeq: world.nextShipSeq,
     nextTreatySeq: world.nextTreatySeq,
+    nextMissileSeq: world.nextMissileSeq,
+    missiles: world.missiles.map((m) => ({ ...m })),
     gameEndState: world.gameEndState,
     marketPrices: { ...world.marketPrices },
     treaties: world.treaties.map(serializeTreaty),
@@ -228,6 +231,17 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     nextBuildingSeq: snapshot["nextBuildingSeq"] as number,
     nextShipSeq: snapshot["nextShipSeq"] as number,
     nextTreatySeq: snapshot["nextTreatySeq"] as number,
+    nextMissileSeq: (snapshot["nextMissileSeq"] as number | undefined) ?? 0,
+    missiles: ((snapshot["missiles"] as unknown[] | undefined) ?? []).map((m): PendingMissile => {
+      const r = m as Record<string, unknown>;
+      return {
+        id: r["id"] as string,
+        ownerId: playerId(r["ownerId"] as string),
+        sourceId: asteroidId(r["sourceId"] as string),
+        targetId: asteroidId(r["targetId"] as string),
+        arrivalTick: r["arrivalTick"] as number,
+      };
+    }),
     gameEndState: (snapshot["gameEndState"] as GameEndState | null) ?? null,
     marketPrices: snapshot["marketPrices"] as OreRecord<number>,
     treaties: rawTreaties.map(deserializeTreaty),
