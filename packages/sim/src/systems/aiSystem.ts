@@ -219,6 +219,7 @@ export function tickAI(world: World): void {
         for (const ship of world.ships.values()) {
           if (ship.ownerId !== player.id) continue;
           if (ship.defKind !== "scout") continue;
+          if (player.credits < SETTLE_COST) break;
 
           for (const asteroid of world.asteroids.values()) {
             if (asteroid.ownerId !== null) continue;
