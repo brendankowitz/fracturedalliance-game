@@ -122,6 +122,45 @@ describe("miningSystem", () => {
   });
 });
 
+describe("miningSystem — ore refinery multiplier", () => {
+  it("ore refinery boosts mine output by its multiplier factor", () => {
+    const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });
+    const human = [...world.players.values()].find((p) => p.isHuman)!;
+    const [asteroid] = world.asteroids.values();
+    if (!asteroid) throw new Error("expected asteroid");
+    asteroid.ownerId = human.id;
+    (asteroid.deposits as Record<string, number>).selenium = 999999;
+
+    // Mine alone
+    const mineId = buildingId("refinery-test-mine");
+    world.buildings.set(mineId, {
+      id: mineId, defKind: "mineMk1", asteroidId: asteroid.id,
+      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
+      constructionProgress: 1, active: true, damage: 0,
+    });
+    asteroid.buildings.push(mineId);
+
+    tickMining(world);
+    const withoutRefinery = human.oreInventory.selenium ?? 0;
+    human.oreInventory.selenium = 0;
+
+    // Add an ore refinery (oreMiningMultiplier: 0.4)
+    const refId = buildingId("refinery-test-ref");
+    world.buildings.set(refId, {
+      id: refId, defKind: "oreRefinery", asteroidId: asteroid.id,
+      cell: { x: 1, y: 0 }, hp: 100, maxHp: 100,
+      constructionProgress: 1, active: true, damage: 0,
+    });
+    asteroid.buildings.push(refId);
+
+    tickMining(world);
+    const withRefinery = human.oreInventory.selenium ?? 0;
+
+    expect(withRefinery).toBeGreaterThan(withoutRefinery);
+    expect(withRefinery).toBeCloseTo(withoutRefinery * 1.4, 5);
+  });
+});
+
 describe("constructionSystem", () => {
   it("completes a building after its build time ticks", () => {
     const world = createWorld({ seed: 1, humanPlayerRaceId: "helionCorp" });

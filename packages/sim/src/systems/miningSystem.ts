@@ -11,18 +11,29 @@ export function tickMining(world: World): void {
 
     const happinessMultiplier = getHappinessMultiplier(asteroid.happiness);
 
+    // Calculate cumulative multiplier from refinery/processor buildings
+    let oreMiningMultiplier = 1.0;
+    for (const buildingId of asteroid.buildings) {
+      const building = world.buildings.get(buildingId);
+      if (!building?.active || building.constructionProgress < 1) continue;
+      const def = getBuildingDef(building.defKind);
+      if (def?.oreMiningMultiplier) oreMiningMultiplier += def.oreMiningMultiplier;
+    }
+
+    const totalMultiplier = happinessMultiplier * oreMiningMultiplier;
+
     for (const buildingId of asteroid.buildings) {
       const building = world.buildings.get(buildingId);
       if (!building?.active || building.constructionProgress < 1) continue;
 
       const def = getBuildingDef(building.defKind);
-      if (!def.oreProduction) continue;
+      if (!def?.oreProduction) continue;
 
       for (const [ore, ratePerTick] of Object.entries(def.oreProduction) as [string, number][]) {
         const available = asteroid.deposits[ore as keyof typeof asteroid.deposits] ?? 0;
         if (available <= 0) continue;
 
-        const extracted = Math.min(ratePerTick * happinessMultiplier, available);
+        const extracted = Math.min(ratePerTick * totalMultiplier, available);
         (asteroid.deposits as Partial<Record<OreKind, number>>)[ore as OreKind] = Math.max(
           0,
           available - extracted,

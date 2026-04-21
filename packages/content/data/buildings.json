@@ -218,7 +218,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
-    "oreProduction": { "selenium": 3, "asteros": 1.5, "barium": 0.5 },
+    "oreMiningMultiplier": 0.4,
     "blueprintRequired": "blueprint.oreRefinery"
   },
   {
@@ -231,7 +231,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
-    "oreProduction": { "crystalite": 1, "quazinc": 0.5, "bytanium": 0.2 },
+    "oreMiningMultiplier": 0.6,
     "blueprintRequired": "blueprint.crystalSeparator"
   },
   {
@@ -244,7 +244,7 @@
     "foodDelta": 0,
     "waterDelta": 0,
     "airDelta": 0,
-    "oreProduction": { "selenium": 5, "asteros": 3, "barium": 2, "crystalite": 1, "quazinc": 0.5 },
+    "oreMiningMultiplier": 1.0,
     "blueprintRequired": "blueprint.naniteExtractor"
   },
   {
