@@ -20,6 +20,7 @@ const PHASE_1_BUILDINGS = [
   "deepBoreMine",
   "radiationFilter",
   "repairFacility",
+  "shipYard",
 ];
 
 interface BuildingPanelProps {

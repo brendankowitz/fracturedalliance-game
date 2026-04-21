@@ -527,6 +527,24 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
           ★ {achToast}
         </div>
       )}
+      {!selectedAsteroidId && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 10,
+            zIndex: 5,
+            color: "rgba(100,140,180,0.4)",
+            fontFamily: "var(--font-data)",
+            fontSize: 9,
+            letterSpacing: 0.5,
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          Scroll to zoom · Drag to pan
+        </div>
+      )}
       {slowSimMode && (
         <button
           type="button"

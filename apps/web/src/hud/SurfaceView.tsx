@@ -1,5 +1,5 @@
-import { findBuildingDef, getAllBuildingDefs, getOreDef, getRaceDef } from "@fa/content";
-import { SIZE_CLASS_GRID, asteroidId as mkAsteroidId } from "@fa/domain";
+import { findBuildingDef, getAllBuildingDefs, getAllShipDefs, getOreDef, getRaceDef } from "@fa/content";
+import { SIZE_CLASS_GRID, asteroidId as mkAsteroidId, shipId as mkShipId } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useState } from "react";
@@ -267,6 +267,8 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   const setAutoHireBudget = useUiStore((s) => s.setAutoHireBudget);
   const snapshot = useGameStore((s) => s.snapshot);
   const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
+  const [orderingShipId, setOrderingShipId] = useState<string | null>(null);
+  const [shipOrderTarget, setShipOrderTarget] = useState<string>("");
 
   if (!selectedId || !snapshot) return null;
 
@@ -310,9 +312,12 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   if (!isOwnedByHuman) {
     const ownerReputation =
       snapshot.diplomacy.find((d) => d.playerId === asteroid.ownerId)?.reputation ?? null;
+    const humanShips = snapshot.ships.filter((s) => s.ownerId === snapshot.humanPlayerId);
     return (
       <AsteroidIntelPanel
+        asteroidId={asteroid.id}
         asteroidName={asteroid.name}
+        sector={asteroid.sector}
         ownerName={ownerName}
         ownerRaceId={ownerPlayer?.raceId ?? null}
         ownerReputation={ownerReputation}
@@ -322,6 +327,8 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         shipsHere={shipsHere}
         buildingsGrid={asteroid.buildingsGrid}
         humanPlayerId={snapshot.humanPlayerId}
+        humanShips={humanShips}
+        onCommand={onCommand}
         onClose={() => { selectAsteroid(null); }}
       />
     );
@@ -649,14 +656,138 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
             {shipsHere.length === 0 ? (
               <div style={{ color: "#445566", fontSize: 11 }}>None</div>
             ) : (
-              shipsHere.map((s) => (
-                <div key={s.id} style={{ color: "#aabbcc", fontSize: 11, marginBottom: 2 }}>
-                  {formatKind(s.defKind)}
-                  <span style={{ color: "#445566", marginLeft: 6 }}>({s.orderKind})</span>
-                </div>
-              ))
+              shipsHere.map((s) => {
+                const isHuman = s.ownerId === snapshot.humanPlayerId;
+                const isOrdering = orderingShipId === s.id;
+                return (
+                  <div key={s.id} style={{ marginBottom: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+                      <span style={{ color: isHuman ? "#6af" : "#aabbcc", flex: 1 }}>
+                        {formatKind(s.defKind)}
+                      </span>
+                      <span style={{ color: "#445566", fontSize: 10 }}>{s.orderKind}</span>
+                      {isHuman && (
+                        <button
+                          type="button"
+                          onClick={() => { setOrderingShipId(isOrdering ? null : s.id); setShipOrderTarget(""); }}
+                          style={{
+                            background: isOrdering ? "#1a2840" : "#0a1428",
+                            border: `1px solid ${isOrdering ? "#4488cc" : "#224"}`,
+                            color: "#8ac8ff",
+                            fontFamily: "monospace",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            padding: "2px 7px",
+                          }}
+                        >
+                          {isOrdering ? "✕" : "Order"}
+                        </button>
+                      )}
+                    </div>
+                    {isHuman && isOrdering && (
+                      <div style={{ marginTop: 4, padding: "6px 8px", background: "#060e1c", border: "1px solid #224", display: "flex", flexDirection: "column", gap: 5 }}>
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            onClick={() => { onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "idle" } }); setOrderingShipId(null); }}
+                            style={{ background: "#0a1428", border: "1px solid #224", color: "#aabbcc", fontFamily: "monospace", fontSize: 10, cursor: "pointer", padding: "2px 8px" }}
+                          >
+                            Idle
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "defend", target: mkAsteroidId(asteroid.id) } }); setOrderingShipId(null); }}
+                            style={{ background: "#0a1428", border: "1px solid #224", color: "#aabbcc", fontFamily: "monospace", fontSize: 10, cursor: "pointer", padding: "2px 8px" }}
+                          >
+                            Defend Here
+                          </button>
+                        </div>
+                        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                          <select
+                            value={shipOrderTarget}
+                            onChange={(e) => setShipOrderTarget(e.target.value)}
+                            style={{ background: "#0a1428", border: "1px solid #224", color: "#c8d8ff", fontFamily: "monospace", fontSize: 10, flex: 1, padding: "2px 4px" }}
+                          >
+                            <option value="" disabled>Target asteroid...</option>
+                            {otherAsteroids.map((a) => (
+                              <option key={a.id} value={a.id}>{a.name}</option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            disabled={!shipOrderTarget}
+                            onClick={() => {
+                              const tgt = snapshot.asteroids.find((a) => a.id === shipOrderTarget);
+                              if (!tgt) return;
+                              onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "scout", target: tgt.sector } });
+                              setOrderingShipId(null);
+                            }}
+                            style={{ background: "#0a1428", border: "1px solid #224", color: shipOrderTarget ? "#aabbcc" : "#334", fontFamily: "monospace", fontSize: 10, cursor: shipOrderTarget ? "pointer" : "default", padding: "2px 8px" }}
+                          >
+                            Scout
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!shipOrderTarget}
+                            onClick={() => {
+                              if (!shipOrderTarget) return;
+                              onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "attackAsteroid", target: mkAsteroidId(shipOrderTarget) } });
+                              setOrderingShipId(null);
+                            }}
+                            style={{ background: "#0a1428", border: "1px solid #224", color: shipOrderTarget ? "#ff6655" : "#334", fontFamily: "monospace", fontSize: 10, cursor: shipOrderTarget ? "pointer" : "default", padding: "2px 8px" }}
+                          >
+                            Attack
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </section>
+
+          {/* Ship Bay (human-owned only) */}
+          {isOwnedByHuman && (() => {
+            const hasShipYard = asteroid.buildingsGrid.some((b) => b.kind === "shipYard");
+            const shipDefs = getAllShipDefs();
+            return (
+              <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+                  Ship Bay
+                </div>
+                {!hasShipYard ? (
+                  <div style={{ color: "#445566", fontSize: 11 }}>Build a Ship Yard to launch ships from this asteroid.</div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {shipDefs.map((def) => (
+                      <button
+                        key={def.kind}
+                        type="button"
+                        onClick={() => onCommand({ kind: "launchShip", asteroidId: mkAsteroidId(asteroid.id), shipKind: def.kind })}
+                        style={{
+                          background: "#0a1428",
+                          border: "1px solid #224466",
+                          color: "#c8d8ff",
+                          fontFamily: "monospace",
+                          fontSize: 11,
+                          cursor: "pointer",
+                          padding: "5px 8px",
+                          textAlign: "left",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>⬡ {def.label}</span>
+                        <span style={{ color: "#8899bb", fontSize: 10 }}>{def.costCredits.toLocaleString()}¢ · {def.buildTimeTicks}t</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })()}
 
           {/* Engines (human-owned only) */}
           {isOwnedByHuman && asteroid.engines.count > 0 && (
@@ -928,7 +1059,9 @@ function getPortrait(raceId: string, reputation: number): string {
 // ── AsteroidIntelPanel ───────────────────────────────────────────────────────
 
 interface AsteroidIntelPanelProps {
+  asteroidId: string;
   asteroidName: string;
+  sector: { x: number; y: number };
   ownerName: string;
   ownerRaceId: string | null;
   ownerReputation: number | null;
@@ -938,11 +1071,15 @@ interface AsteroidIntelPanelProps {
   shipsHere: Array<{ id: string; defKind: string; ownerId: string; orderKind: string }>;
   buildingsGrid: Array<{ kind: string; cell: { x: number; y: number } }>;
   humanPlayerId: string;
+  humanShips: Array<{ id: string; defKind: string; orderKind: string }>;
+  onCommand: (cmd: Command) => void;
   onClose: () => void;
 }
 
 function AsteroidIntelPanel({
+  asteroidId,
   asteroidName,
+  sector,
   ownerName,
   ownerRaceId,
   ownerReputation,
@@ -952,8 +1089,12 @@ function AsteroidIntelPanel({
   shipsHere,
   buildingsGrid,
   humanPlayerId,
+  humanShips,
+  onCommand,
   onClose,
 }: AsteroidIntelPanelProps) {
+  const idleAssault = humanShips.filter((s) => s.defKind === "assaultCraft" && s.orderKind === "idle");
+  const allScouts = humanShips.filter((s) => s.defKind === "scout");
   const repColor =
     ownerReputation === null
       ? "var(--text)"
@@ -1220,22 +1361,106 @@ function AsteroidIntelPanel({
         )}
       </section>
 
+      {/* ── Scout / Attack actions ── */}
+      {(isUnclaimed || !isUnclaimed) && (
+        <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
+          <div
+            style={{
+              fontSize: 10,
+              color: "var(--text-lo)",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              marginBottom: 6,
+            }}
+          >
+            {isUnclaimed ? "Explore & Claim" : "Fleet Actions"}
+          </div>
+
+          {/* Scout dispatch */}
+          {allScouts.length > 0 ? (
+            <div style={{ marginBottom: 6 }}>
+              <div style={{ fontSize: 10, color: "var(--text-lo)", marginBottom: 4 }}>
+                Send a Scout to this location:
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                {allScouts.slice(0, 3).map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() =>
+                      onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "scout", target: sector } })
+                    }
+                    style={{
+                      background: "#0a1428",
+                      border: "1px solid #224466",
+                      color: "#6af",
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      cursor: "pointer",
+                      padding: "3px 8px",
+                      textAlign: "left",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>▶ Scout (ship {s.id.slice(-4)})</span>
+                    <span style={{ color: "var(--text-lo)" }}>{s.orderKind}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 11, color: "var(--text-lo)", marginBottom: 6 }}>
+              No scouts available — launch one from a Ship Yard.
+            </div>
+          )}
+
+          {/* Attack dispatch (enemy asteroids) */}
+          {!isUnclaimed && idleAssault.length > 0 && (
+            <div style={{ marginBottom: 6 }}>
+              <div style={{ fontSize: 10, color: "var(--text-lo)", marginBottom: 4 }}>
+                Send Assault Craft:
+              </div>
+              {idleAssault.slice(0, 2).map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() =>
+                    onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "attackAsteroid", target: mkAsteroidId(asteroidId) } })
+                  }
+                  style={{
+                    background: "#200a0a",
+                    border: "1px solid #442222",
+                    color: "#ff6655",
+                    fontFamily: "monospace",
+                    fontSize: 10,
+                    cursor: "pointer",
+                    padding: "3px 8px",
+                    display: "block",
+                    marginBottom: 3,
+                    width: "100%",
+                    textAlign: "left",
+                  }}
+                >
+                  ⚔ Attack (ship {s.id.slice(-4)})
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Claim hint for unclaimed */}
+          {isUnclaimed && (
+            <div style={{ fontSize: 10, color: "var(--text-lo)", fontStyle: "italic", lineHeight: 1.5 }}>
+              To claim this asteroid: hire an Espionage agent and assign a{" "}
+              <span style={{ color: "var(--amber)" }}>Liberate</span> mission targeting this location.
+            </div>
+          )}
+        </section>
+      )}
+
       {/* ── Footer note ── */}
-      <div
-        style={{
-          padding: "10px 12px",
-          marginTop: "auto",
-          flexShrink: 0,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 10,
-            color: "var(--text-lo)",
-            fontStyle: "italic",
-            lineHeight: 1.5,
-          }}
-        >
+      <div style={{ padding: "10px 12px", marginTop: "auto", flexShrink: 0 }}>
+        <div style={{ fontSize: 10, color: "var(--text-lo)", fontStyle: "italic", lineHeight: 1.5 }}>
           Intel may be incomplete. Send scouts for full reconnaissance.
         </div>
       </div>
