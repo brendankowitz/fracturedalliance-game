@@ -23,7 +23,13 @@
 import type { BuildingKind } from '@fab/content';
 import { BUILDINGS } from '@fab/content';
 import type { Asteroid, BuildingDef, World } from '@fab/domain';
-import { HAPPINESS_UNREST, TICKS_PER_SIM_DAY } from '../time';
+import {
+  HAPPINESS_UNREST,
+  POP_AIR_PER_DAY,
+  POP_FOOD_PER_DAY,
+  POP_WATER_PER_DAY,
+  TICKS_PER_SIM_DAY,
+} from '../time';
 import { emitEvent } from './events';
 
 const getDef = (kind: string): BuildingDef | undefined =>
@@ -46,22 +52,76 @@ const HAPPINESS_DRIFT_PER_TICK = 5 / TICKS_PER_SIM_DAY; // ±5 per sim-day, capp
 const POP_GROWTH_PER_TICK = 1 / TICKS_PER_SIM_DAY;
 const POP_STARVE_PER_TICK = 0.01; // ≈ 12 workers/day out of 100
 
+/**
+ * Days of supply at which a stock stops reading as comfortable, and at which it starts
+ * reading as a crisis. **Balance dials, not spec-derived** — §C.4 asks for "food surplus,
+ * water surplus" without giving figures, so whoever tunes these is choosing, not
+ * correcting a mistake.
+ */
+const SUPPLY_COMFORTABLE_DAYS = 30;
+const SUPPLY_STRAINED_DAYS = 10;
+
+const daysOfSupply = (stock: number, perPersonPerDay: number, population: number): number =>
+  population <= 0 ? Number.POSITIVE_INFINITY : stock / (population * perPersonPerDay);
+
+const gradeSupply = (days: number, bonus: number, penalty: number): number => {
+  if (days > SUPPLY_COMFORTABLE_DAYS) return bonus;
+  if (days > SUPPLY_STRAINED_DAYS) return bonus * 0.5;
+  if (days > 0) return 0;
+  return -penalty;
+};
+
+/**
+ * Spec §C.4 grades happiness on life-support *surplus*. Testing `stock > 0` instead graded
+ * it on mere presence, so a colony could drain a hundred sim-days of food with the number
+ * pinned at 50+10+5+5 = 70 and no warning — and because starvation culls population, which
+ * drops demand below production, the stock went positive again within a tick or two and the
+ * target barely dipped even at the famine.
+ */
 const computeTargetHappiness = (asteroid: Asteroid): number => {
+  const pop = asteroid.population;
   let target = 50;
-  if (asteroid.stocks.food > 0) target += 10;
-  else target -= 20;
-  if (asteroid.stocks.water > 0) target += 5;
-  else target -= 15;
-  if (asteroid.stocks.air > 0) target += 5;
-  else target -= 25;
+  target += gradeSupply(daysOfSupply(asteroid.stocks.food, POP_FOOD_PER_DAY, pop), 10, 20);
+  target += gradeSupply(daysOfSupply(asteroid.stocks.water, POP_WATER_PER_DAY, pop), 5, 15);
+  target += gradeSupply(daysOfSupply(asteroid.stocks.air, POP_AIR_PER_DAY, pop), 5, 25);
   // Radiation penalty (0..100).
   target -= asteroid.radiation * 0.2;
   return Math.max(0, Math.min(100, target));
 };
 
+/**
+ * Amenity buildings' contribution to the happiness target.
+ *
+ * This belongs on `BuildingDef` as a `happinessDelta` field, not in a lookup here — but
+ * `BuildingDef` has no happiness field at all today, so the Pleasure Dome's "+10 happiness
+ * in radius" lives only in its `flavour` prose and nothing reads it. A player can buy it
+ * for 1,500cr and get a −5 power drain and no benefit whatsoever. This is the smallest
+ * change that stops it being a purchasable no-op without editing the content packages.
+ *
+ * First cut is colony-wide rather than "in radius": radius needs a spatial query this
+ * system does not otherwise do, and a dome that works everywhere is closer to the spec
+ * than one that works nowhere.
+ */
+const AMENITY_HAPPINESS: Readonly<Record<string, number>> = {
+  'bld.pleasure-dome': 10,
+};
+
+const amenityHappiness = (asteroid: Asteroid, world: World): number => {
+  let total = 0;
+  for (const id of asteroid.buildings) {
+    const b = world.buildings.get(id);
+    if (!b || b.constructionProgress < 1 || !b.active) continue;
+    total += AMENITY_HAPPINESS[b.defKind] ?? 0;
+  }
+  return total;
+};
+
 const updateHappiness = (world: World, asteroid: Asteroid): void => {
   const prev = asteroid.happiness;
-  const target = computeTargetHappiness(asteroid);
+  const target = Math.max(
+    0,
+    Math.min(100, computeTargetHappiness(asteroid) + amenityHappiness(asteroid, world)),
+  );
   asteroid.happiness +=
     Math.sign(target - prev) * Math.min(Math.abs(target - prev), HAPPINESS_DRIFT_PER_TICK);
   asteroid.happiness = Math.max(0, Math.min(100, asteroid.happiness));
