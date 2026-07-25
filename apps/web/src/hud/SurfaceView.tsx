@@ -11,6 +11,7 @@ import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useState } from "react";
 import { assetUrl } from "../assetUrl.ts";
 import type { Cell } from "../game/views/surface/isoProjection.ts";
+import { useBuildStore } from "../store/buildStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildTemplates } from "./BuildTemplates.tsx";
@@ -178,9 +179,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   const [orderingShipId, setOrderingShipId] = useState<string | null>(null);
   const [shipOrderTarget, setShipOrderTarget] = useState<string>("");
   const [missileTarget, setMissileTarget] = useState<string>("");
-  // Building the player has picked from the palette; drives the ghost preview and lets
-  // subsequent cells be filled with one click each.
-  const [armedKind, setArmedKind] = useState<string | null>(null);
+  // Shared with the console's build palette — either can arm a kind.
+  const armedKind = useBuildStore((s) => s.armedKind);
+  const setArmedKind = useBuildStore((s) => s.armKind);
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
   // Cells with a queued build. The snapshot's buildQueue does not carry its cell, so the
   // scaffold position is tracked here until that field exists (see report to team-lead).
@@ -500,23 +501,26 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           >
             Surface
           </div>
-          <SurfaceCanvas
-            asteroidId={asteroid.id}
-            gridWidth={gridDims.width}
-            gridHeight={gridDims.height}
-            buildings={surfaceBuildings}
-            pending={pendingCells}
-            selected={selectedCell}
-            ghostKind={armedKind}
-            interactive={isOwnedByHuman}
-            onSelectCell={handleSurfaceClick}
-            onBlockedCell={(cell) => {
-              selectCell(null);
-              setBlockedNotice(
-                `Cell (${cell.x},${cell.y}) is crater floor — nothing will stand there.`,
-              );
-            }}
-          />
+          {/* Bounded until the console shell lands and the viewport supplies the box. */}
+          <div style={{ width: 520, height: 300, flexShrink: 0 }}>
+            <SurfaceCanvas
+              asteroidId={asteroid.id}
+              gridWidth={gridDims.width}
+              gridHeight={gridDims.height}
+              buildings={surfaceBuildings}
+              pending={pendingCells}
+              selected={selectedCell}
+              ghostKind={armedKind}
+              interactive={isOwnedByHuman}
+              onSelectCell={handleSurfaceClick}
+              onBlockedCell={(cell) => {
+                selectCell(null);
+                setBlockedNotice(
+                  `Cell (${cell.x},${cell.y}) is crater floor — nothing will stand there.`,
+                );
+              }}
+            />
+          </div>
           {blockedNotice && (
             <div style={{ fontSize: 10, color: "#ff6655", marginTop: 2 }}>⚠ {blockedNotice}</div>
           )}

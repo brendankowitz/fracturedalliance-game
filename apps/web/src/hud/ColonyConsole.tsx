@@ -1,6 +1,7 @@
 import type { AsteroidId } from "@fa/domain";
 import type { AsteroidSnapshot, HudSnapshot } from "@fa/sim";
 import type { ReactNode } from "react";
+import { useBuildStore } from "../store/buildStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildPalette } from "./BuildPalette.tsx";
@@ -19,10 +20,6 @@ import { type ColonyStocks, VitalsBar } from "./VitalsBar.tsx";
 
 export interface ColonyConsoleProps {
   snapshot: HudSnapshot;
-  /** Building the player has armed for placement, surfaced by the surface view. */
-  armedKind: string | null;
-  onArmKind: (kind: string) => void;
-  hasSelectedCell: boolean;
   children: ReactNode;
 }
 
@@ -65,15 +62,12 @@ function StatusBar({
   );
 }
 
-export function ColonyConsole({
-  snapshot,
-  armedKind,
-  onArmKind,
-  hasSelectedCell,
-  children,
-}: ColonyConsoleProps) {
+export function ColonyConsole({ snapshot, children }: ColonyConsoleProps) {
   const selectedId = useUiStore((s) => s.selectedAsteroidId);
   const selectAsteroid = useUiStore((s) => s.selectAsteroid);
+  const selectedCell = useUiStore((s) => s.selectedCell);
+  const armedKind = useBuildStore((s) => s.armedKind);
+  const armKind = useBuildStore((s) => s.armKind);
 
   const colony = snapshot.asteroids.find((a) => a.id === selectedId) ?? null;
   const ownColonies = snapshot.asteroids.filter((a) => a.ownerId === snapshot.humanPlayerId);
@@ -127,9 +121,9 @@ export function ColonyConsole({
         <BuildPalette
           blueprintsOwned={new Set(snapshot.blueprintsOwned)}
           credits={snapshot.credits}
-          canPlace={hasSelectedCell}
+          canPlace={selectedCell !== null}
           selectedKind={armedKind}
-          onSelectKind={onArmKind}
+          onSelectKind={armKind}
         />
       }
       rightRail={<BuildQueueRail colony={colony} />}
