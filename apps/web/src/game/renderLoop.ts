@@ -46,6 +46,7 @@ export function startRenderLoop(
 
   let instance: Remote<InstanceType<typeof SimApi>> | null = null;
   let accumulator = 0;
+  let autoSelectedColony = false;
   let lastFrame = performance.now();
   let rafId = 0;
   let running = true;
@@ -98,10 +99,19 @@ export function startRenderLoop(
           useGameStore.getState().setSnapshot(snap);
           sectorView?.update(snap);
           detectAchievements(snap);
-          // Auto-select human colony on first tick so inspector is immediately visible
-          if (snap.tick === 1 && useUiStore.getState().selectedAsteroidId === null) {
+          // Open the player's colony as soon as one exists, so the game does not start
+          // on an empty map with the surface unreachable. This cannot key off a single
+          // tick: the accumulator runs a batch of ticks per frame and only snapshots
+          // afterwards, so tick 1 is routinely never observed. Latches after the first
+          // success so a deliberate deselection is never overridden.
+          if (!autoSelectedColony) {
             const colony = snap.asteroids.find((a) => a.ownerId === snap.humanPlayerId);
-            if (colony) useUiStore.getState().selectAsteroid(colony.id);
+            if (colony) {
+              autoSelectedColony = true;
+              if (useUiStore.getState().selectedAsteroidId === null) {
+                useUiStore.getState().selectAsteroid(colony.id);
+              }
+            }
           }
           // Per-event SFX now live in NotificationFeed via the shared
           // eventKindMeta table (one table, both sims' vocabularies, and the
