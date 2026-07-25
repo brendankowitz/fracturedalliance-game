@@ -16,8 +16,9 @@ interface SurfaceCanvasProps {
   onBlockedCell: (cell: Cell) => void;
 }
 
-const WIDTH = 520;
-const HEIGHT = 300;
+/** Fallback extent used before the host has been measured. */
+const MIN_WIDTH = 320;
+const MIN_HEIGHT = 220;
 
 export function SurfaceCanvas({
   asteroidId,
@@ -47,11 +48,18 @@ export function SurfaceCanvas({
     // PixiJS Applications initialising against one canvas fight over its WebGL context.
     const canvas = document.createElement("canvas");
     canvas.setAttribute("aria-label", "Asteroid surface");
+    // Absolutely positioned so the canvas can never contribute to the host's own size —
+    // a canvas that sizes its parent and is then sized from it is an infinite loop.
+    canvas.style.position = "absolute";
+    canvas.style.inset = "0";
     canvas.style.display = "block";
     host.appendChild(canvas);
 
+    const initialWidth = Math.max(MIN_WIDTH, Math.round(host.clientWidth));
+    const initialHeight = Math.max(MIN_HEIGHT, Math.round(host.clientHeight));
+
     let cancelled = false;
-    void AsteroidSurfaceView.create(canvas, WIDTH, HEIGHT, {
+    void AsteroidSurfaceView.create(canvas, initialWidth, initialHeight, {
       onSelectCell: (cell) => {
         if (cell && viewRef.current?.isBlocked(cell)) {
           handlersRef.current.onBlockedCell(cell);
@@ -72,7 +80,16 @@ export function SurfaceCanvas({
       setReady(true);
     });
 
+    const observer = new ResizeObserver(() => {
+      viewRef.current?.resize(
+        Math.max(MIN_WIDTH, Math.round(host.clientWidth)),
+        Math.max(MIN_HEIGHT, Math.round(host.clientHeight)),
+      );
+    });
+    observer.observe(host);
+
     return () => {
+      observer.disconnect();
       cancelled = true;
       viewRef.current?.destroy();
       viewRef.current = null;
@@ -115,9 +132,11 @@ export function SurfaceCanvas({
     <div
       ref={hostRef}
       style={{
-        width: WIDTH,
-        height: HEIGHT,
-        border: "1px solid #1a2840",
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        minWidth: MIN_WIDTH,
+        minHeight: MIN_HEIGHT,
         cursor: interactive ? "pointer" : "default",
         overflow: "hidden",
       }}

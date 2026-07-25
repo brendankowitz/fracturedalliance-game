@@ -72,8 +72,8 @@ export class AsteroidSurfaceView {
 
   private constructor(
     app: Application,
-    private readonly viewWidth: number,
-    private readonly viewHeight: number,
+    private viewWidth: number,
+    private viewHeight: number,
     private readonly callbacks: SurfaceCallbacks,
   ) {
     this.app = app;
@@ -130,6 +130,21 @@ export class AsteroidSurfaceView {
   /** Cells a crater has eaten. The caller uses this to reject placement. */
   isBlocked(cell: Cell): boolean {
     return this.terrain?.blocked.has(cellKey(cell)) ?? false;
+  }
+
+  /**
+   * Re-sizes the renderer to a new viewport. The caller measures its own container; the
+   * canvas is out of flow, so nothing here can feed back into that measurement.
+   */
+  resize(width: number, height: number): void {
+    if (this.disposed) return;
+    if (width <= 0 || height <= 0) return;
+    if (width === this.viewWidth && height === this.viewHeight) return;
+    this.viewWidth = width;
+    this.viewHeight = height;
+    this.app.renderer.resize(width, height);
+    this.drawStarfield();
+    if (this.state) this.update(this.state);
   }
 
   destroy(): void {
