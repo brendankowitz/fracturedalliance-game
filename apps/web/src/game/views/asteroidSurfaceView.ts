@@ -49,6 +49,25 @@ export interface SurfaceCallbacks {
 }
 
 const BACKGROUND = 0x05070f;
+
+function limbBounds(terrain: Terrain): {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+} {
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  for (const point of terrain.limb) {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+  return { minX, maxX, minY, maxY };
+}
 /** How far the rock's flank drops below its limb, in screen pixels. */
 const ROCK_THICKNESS = 26;
 
@@ -173,9 +192,17 @@ export class AsteroidSurfaceView {
       (this.viewHeight * margin) / extent.height,
     );
     this.world.scale.set(scale);
+
+    // Centre on the rock's own bounds, not the grid's. The limb is deliberately lopsided,
+    // so centring the grid leaves the rock visibly off to one side with dead space
+    // opposite it. Falls back to the grid before terrain exists.
+    const bounds = this.terrain ? limbBounds(this.terrain) : null;
+    const centreX = bounds ? (bounds.minX + bounds.maxX) / 2 : 0;
+    const centreY = bounds ? (bounds.minY + bounds.maxY) / 2 : extent.height / 2 - TILE_H * 1.6;
+
+    this.world.x = this.viewWidth / 2 - centreX * scale;
     // Nudge the rock below centre: buildings grow upward, so the headroom is above.
-    this.world.x = this.viewWidth / 2 - (extent.width / 2 - extent.originX) * scale;
-    this.world.y = this.viewHeight / 2 - (extent.height / 2 - TILE_H * 1.6) * scale;
+    this.world.y = this.viewHeight / 2 - (centreY - TILE_H * 1.6) * scale;
   }
 
   private toLocal(clientX: number, clientY: number): { x: number; y: number } {
