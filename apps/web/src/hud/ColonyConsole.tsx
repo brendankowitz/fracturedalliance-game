@@ -8,6 +8,8 @@ import { BuildPalette } from "./BuildPalette.tsx";
 import { ColonySwitcher } from "./ColonySwitcher.tsx";
 import { ConsoleShell } from "./ConsoleShell.tsx";
 import { type ConsoleTab, ConsoleTabs } from "./ConsoleTabs.tsx";
+import { ConsoleUtilities } from "./ConsoleUtilities.tsx";
+import { SpeedControl } from "./SpeedControl.tsx";
 import { type ColonyStocks, VitalsBar } from "./VitalsBar.tsx";
 
 /**
@@ -116,7 +118,7 @@ export function ColonyConsole({ snapshot, children }: ColonyConsoleProps) {
   return (
     <ConsoleShell
       header={<ConsoleHeader snapshot={snapshot} />}
-      tabs={<ConsoleTabs tabs={tabs} />}
+      tabs={<ConsoleTabs tabs={tabs} trailing={<ConsoleUtilities />} />}
       leftRail={
         <BuildPalette
           blueprintsOwned={new Set(snapshot.blueprintsOwned)}
@@ -191,7 +193,12 @@ function ConsoleHeader({ snapshot }: { snapshot: HudSnapshot }) {
       </div>
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 18 }}>
         <Reading label="Fed-Stand" value={formatSigned(snapshot.federationStanding)} />
-        <Reading label="Credits" value={snapshot.credits.toLocaleString()} tone="#e8a04a" />
+        <Reading
+          label="Credits"
+          value={Math.round(snapshot.credits).toLocaleString()}
+          tone="#e8a04a"
+        />
+        <SpeedControl date={snapshot.date} day={snapshot.day} />
       </div>
     </div>
   );

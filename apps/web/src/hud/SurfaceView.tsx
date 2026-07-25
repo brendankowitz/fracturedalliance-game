@@ -501,8 +501,7 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           >
             Surface
           </div>
-          {/* Bounded until the console shell lands and the viewport supplies the box. */}
-          <div style={{ width: 520, height: 300, flexShrink: 0 }}>
+          <div style={{ flex: 1, minHeight: 260 }}>
             <SurfaceCanvas
               asteroidId={asteroid.id}
               gridWidth={gridDims.width}
