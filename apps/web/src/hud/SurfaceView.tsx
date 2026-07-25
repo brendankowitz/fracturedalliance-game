@@ -1,6 +1,5 @@
 import {
   findBuildingDef,
-  getAllBuildingDefs,
   getAllShipDefs,
   getOreDef,
   getRaceDef,
@@ -217,8 +216,6 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
       ARRIVAL_RADIUS,
   );
 
-  const blueprintsOwned = new Set(snapshot.blueprintsOwned);
-  const allBuildingDefs = getAllBuildingDefs();
   const otherAsteroids = snapshot.asteroids.filter((a) => a.id !== asteroid.id);
 
   const selectedCellKey = selectedCell ? `${selectedCell.x},${selectedCell.y}` : null;
@@ -288,17 +285,12 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
 
   // ── Layout constants ────────────────────────────────────────────────────────
 
+  // Fills the console viewport: the surface is the primary display, not a widget
+  // floating over one.
   const PANEL_STYLE: React.CSSProperties = {
     position: "absolute",
-    top: 72,
-    right: 0,
-    bottom: 0,
-    width: 560,
-    zIndex: 20,
-    overflowY: "auto",
-    background: "var(--bg-panel)",
-    backdropFilter: "blur(4px)",
-    borderLeft: "1px solid var(--border)",
+    inset: 0,
+    overflow: "hidden",
     fontFamily: "var(--font-data)",
     color: "var(--text)",
     fontSize: 12,
@@ -388,92 +380,6 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         </div>
       )}
 
-      {/* ── Stats row ── */}
-      <div
-        style={{
-          display: "flex",
-          gap: 0,
-          padding: "6px 12px",
-          borderBottom: "1px solid #224",
-          background: "rgba(0,5,15,0.4)",
-          flexShrink: 0,
-        }}
-      >
-        <StatPill label="Stability" value={`${Math.round(asteroid.stability * 100)}%`} />
-        <StatPill label="Happiness" value={`${Math.round(asteroid.happiness * 100)}%`} />
-        <StatPill
-          label="Power"
-          value={`${asteroid.powerBalance >= 0 ? "+" : ""}${asteroid.powerBalance}`}
-          valueColor={asteroid.powerBalance >= 0 ? "#44cc88" : "#cc4444"}
-        />
-        <StatPill label="Build Queue" value={String(asteroid.buildQueue.length)} />
-      </div>
-
-      {/* ── Build queue progress ── */}
-      {asteroid.buildQueue.length > 0 && (
-        <div
-          style={{
-            padding: "6px 12px",
-            borderBottom: "1px solid #112",
-            background: "rgba(0,5,15,0.3)",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 10,
-              color: "#8899bb",
-              marginBottom: 4,
-              textTransform: "uppercase",
-              letterSpacing: 1,
-            }}
-          >
-            Build Queue
-          </div>
-          {asteroid.buildQueue.map((item, i) => {
-            const pct =
-              item.totalTicks > 0 ? Math.round((item.progressTicks / item.totalTicks) * 100) : 0;
-            const label =
-              findBuildingDef(item.buildingKind)?.label ?? formatKind(item.buildingKind);
-            return (
-              // biome-ignore lint/suspicious/noArrayIndexKey: the queue carries no stable id and build templates can enqueue the same kind on the same tick, so position is the only identity
-              <div key={`${item.buildingKind}-${i}`} style={{ marginBottom: 5 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 11,
-                    marginBottom: 2,
-                  }}
-                >
-                  <span style={{ color: "#c8d8ff" }}>{label}</span>
-                  <span style={{ color: "#667" }}>{pct}%</span>
-                </div>
-                <div
-                  style={{
-                    height: 5,
-                    background: "#0a1428",
-                    border: "1px solid #224",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${pct}%`,
-                      height: "100%",
-                      background: "#2266aa",
-                      borderRadius: 2,
-                      transition: "width 0.3s",
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* ── Two-column body ── */}
       <div
         style={{
@@ -487,10 +393,10 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         {/* ── Left: Surface grid ── */}
         <div
           style={{
-            flex: "0 0 auto",
-            padding: "10px 10px 10px 12px",
+            flex: 1,
+            minWidth: 0,
+            padding: "10px 12px",
             borderRight: "1px solid #1a2840",
-            overflowY: "auto",
             display: "flex",
             flexDirection: "column",
             gap: 8,
@@ -560,7 +466,7 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         {/* ── Right: Info column ── */}
         <div
           style={{
-            flex: 1,
+            flex: "0 0 260px",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
@@ -1125,135 +1031,6 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           </span>
         </div>
       )}
-
-      {/* ── Bottom: Build actions ── */}
-      {selectedCell !== null && isOwnedByHuman && (
-        <div
-          style={{
-            borderTop: "1px solid #224",
-            padding: "10px 12px",
-            background: "rgba(0,5,15,0.5)",
-            flexShrink: 0,
-          }}
-        >
-          {selectedCellBuilding ? (
-            <div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "#8899bb",
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  marginBottom: 4,
-                }}
-              >
-                Occupied —{" "}
-                {findBuildingDef(selectedCellBuilding)?.label ?? formatKind(selectedCellBuilding)}
-              </div>
-              <div style={{ fontSize: 11, color: "#445566" }}>
-                Cell ({selectedCell.x},{selectedCell.y}) is occupied. Select an empty cell to build.
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--accent)",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.5,
-                  marginBottom: 8,
-                  fontFamily: "var(--font-head)",
-                }}
-              >
-                Build at cell ({selectedCell.x},{selectedCell.y})
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 5,
-                  maxHeight: 220,
-                  overflowY: "auto",
-                }}
-              >
-                {allBuildingDefs.map((def) => {
-                  const blueprintRequired = def.blueprintRequired;
-                  const isLocked =
-                    blueprintRequired != null && blueprintRequired !== ""
-                      ? !blueprintsOwned.has(blueprintRequired)
-                      : false;
-                  return (
-                    <button
-                      key={def.kind}
-                      type="button"
-                      disabled={isLocked}
-                      onClick={() => {
-                        if (isLocked || selectedCell === null) return;
-                        if (isCellTaken(selectedCell)) return;
-                        // Arm the kind too, so the next cells can be filled by clicking
-                        // the surface directly, with a ghost showing what will land.
-                        setArmedKind(def.kind);
-                        placeBuilding(def.kind, selectedCell);
-                      }}
-                      style={{
-                        background: isLocked ? "#08101e" : "#0a1828",
-                        border: `1px solid ${isLocked ? "#1a2030" : "#224466"}`,
-                        color: isLocked ? "#33445566" : "#c8d8ff",
-                        fontFamily: "monospace",
-                        fontSize: 10,
-                        cursor: isLocked ? "not-allowed" : "pointer",
-                        padding: "5px 8px",
-                        textAlign: "left",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 2,
-                        opacity: isLocked ? 0.45 : 1,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        {BUILDING_ICON[def.kind] && (
-                          <img
-                            src={BUILDING_ICON[def.kind]}
-                            alt=""
-                            style={{
-                              width: 24,
-                              height: 24,
-                              objectFit: "contain",
-                              imageRendering: "pixelated",
-                              opacity: isLocked ? 0.3 : 0.9,
-                            }}
-                          />
-                        )}
-                        <span
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: 11,
-                            flex: 1,
-                            marginLeft: BUILDING_ICON[def.kind] ? 6 : 0,
-                          }}
-                        >
-                          {def.label}
-                        </span>
-                        {isLocked && <span style={{ fontSize: 9, color: "#554466" }}>🔒</span>}
-                      </div>
-                      <span style={{ color: "#8899bb" }}>
-                        {def.costCredits.toLocaleString()} cr
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -1771,31 +1548,3 @@ function AsteroidIntelPanel({
 }
 
 // ── StatPill ─────────────────────────────────────────────────────────────────
-
-interface StatPillProps {
-  label: string;
-  value: string;
-  valueColor?: string;
-}
-
-function StatPill({ label, value, valueColor = "#c8d8ff" }: StatPillProps) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "4px 0",
-        borderRight: "1px solid #1a2840",
-      }}
-    >
-      <span
-        style={{ fontSize: 9, color: "#445566", textTransform: "uppercase", letterSpacing: 0.5 }}
-      >
-        {label}
-      </span>
-      <span style={{ fontSize: 13, color: valueColor, fontWeight: "bold" }}>{value}</span>
-    </div>
-  );
-}
