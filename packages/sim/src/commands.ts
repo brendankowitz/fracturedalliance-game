@@ -34,7 +34,10 @@ export type Command =
   | { kind: "cancelAsteroidEngine"; asteroidId: AsteroidId }
   | { kind: "blackMarketBuy"; itemKind: BlackMarketItemKind }
   | { kind: "bribeOfficial"; targetPlayerId: PlayerId; credits: number }
-  | { kind: "sellOre"; oreKind: OreKind; quantity: number }
-  | { kind: "buyOre"; oreKind: OreKind; quantity: number }
+  // asteroidId selects which colony's stockpile the order draws from /
+  // delivers to under the adopted per-asteroid ore model; the legacy sim
+  // ignores it (global inventory).
+  | { kind: "sellOre"; oreKind: OreKind; quantity: number; asteroidId?: AsteroidId }
+  | { kind: "buyOre"; oreKind: OreKind; quantity: number; asteroidId?: AsteroidId }
   | { kind: "fireMissile"; sourceAsteroidId: AsteroidId; targetAsteroidId: AsteroidId }
   | { kind: "settleAsteroid"; asteroidId: AsteroidId };

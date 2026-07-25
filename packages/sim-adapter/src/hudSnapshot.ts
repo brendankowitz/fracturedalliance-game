@@ -31,6 +31,8 @@ export interface CouncilSummary {
 export interface HudSnapshotV2 extends HudSnapshot {
   /** Tick on which the Federal Transporter next drains queued orders. */
   transporterNextTick: number;
+  /** The human player's queued Federal Transporter orders. */
+  queuedOrders: Array<{ side: "sell" | "buy"; ore: string; tonnes: number; asteroidId: string }>;
   /** Per-asteroid extras keyed by asteroid id. */
   colonyExtras: Record<
     string,
@@ -261,6 +263,12 @@ export function takeHudSnapshot(
     date: formatSimDate(simDay(world.tick)),
     // ── V2 extras ─────────────────────────────────────────────────────────
     transporterNextTick: world.federalTransporterNextTick,
+    queuedOrders: human.marketOrders.map((o) => ({
+      side: o.side,
+      ore: o.ore,
+      tonnes: o.tonnes,
+      asteroidId: o.asteroid,
+    })),
     colonyExtras,
     council,
     researchInProgress: human.activeResearch
@@ -272,3 +280,11 @@ export function takeHudSnapshot(
       : null,
   };
 }
+
+/**
+ * Narrow a snapshot to V2. Post-flip this is always true in play; it stays a
+ * guard (not an assertion) so the `?sim=v1` rollback path keeps rendering the
+ * legacy panels until Phase E deletes it.
+ */
+export const isV2Snapshot = (snap: HudSnapshot): snap is HudSnapshotV2 =>
+  "transporterNextTick" in snap;

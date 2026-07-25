@@ -87,10 +87,15 @@ export function translateCommand(
     case "sellOre":
     case "sellOreToTrader": {
       // The instant spot market is gone by design: sales become queued
-      // Federal Transporter orders drained on the transporter cadence.
-      const source = pickColonyWithOre(world, humanId, cmd.oreKind);
+      // Federal Transporter orders drained on the transporter cadence. An
+      // explicit asteroidId (per-colony ledger UI) wins; otherwise draw from
+      // the colony holding the most of that ore.
+      const explicit = cmd.kind === "sellOre" ? cmd.asteroidId : undefined;
+      const source = explicit
+        ? { asteroidId: asFabAsteroidId(explicit), stock: stockAt(world, explicit, cmd.oreKind) }
+        : pickColonyWithOre(world, humanId, cmd.oreKind);
       if (!source) return null;
-      const tonnes = cmd.kind === "sellOre" ? cmd.quantity : source.stock;
+      const tonnes = cmd.kind === "sellOre" ? Math.min(cmd.quantity, source.stock) : source.stock;
       if (tonnes <= 0) return null;
       return {
         kind: "queueSellOrder",
@@ -101,7 +106,7 @@ export function translateCommand(
       };
     }
     case "buyOre": {
-      const colony = firstColony(world, humanId);
+      const colony = cmd.asteroidId ? asFabAsteroidId(cmd.asteroidId) : firstColony(world, humanId);
       if (!colony) return null;
       return {
         kind: "queueBuyOrder",
@@ -183,6 +188,11 @@ const firstColony = (world: World, ownerId: PlayerId): AsteroidId | null => {
     if (a.ownerId === ownerId) return a.id;
   }
   return null;
+};
+
+const stockAt = (world: World, asteroidId: string, ore: string): number => {
+  const a = world.asteroids.get(asFabAsteroidId(asteroidId));
+  return a?.stocks.ores[ore as keyof typeof a.stocks.ores] ?? 0;
 };
 
 const pickColonyWithOre = (
