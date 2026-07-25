@@ -10,11 +10,13 @@
 
 import { type Cell, cellToScreen, TILE_H, TILE_W } from "./isoProjection.ts";
 
+/**
+ * A crater *is* the set of cells it has eaten. The renderer draws these cells, so the
+ * depression a player sees and the ground the game refuses are the same object rather
+ * than two shapes that have to be kept in agreement.
+ */
 export interface Crater {
-  readonly x: number;
-  readonly y: number;
-  readonly rx: number;
-  readonly ry: number;
+  readonly cells: ReadonlyArray<Cell>;
   readonly depth: number;
 }
 
@@ -95,8 +97,6 @@ export function generateTerrain(asteroidId: string, width: number, height: numbe
   const blocked = new Set<string>();
   const cellBudget = Math.floor(width * height * MAX_BLOCKED_FRACTION);
 
-  // Craters are seated on *cells*, not on free screen space: a crater that misses the
-  // buildable plateau is scenery, and the point of the terrain is to take cells away.
   const rimCells: Cell[] = [];
   for (let gy = 0; gy < height; gy++) {
     for (let gx = 0; gx < width; gx++) {
@@ -110,26 +110,32 @@ export function generateTerrain(asteroidId: string, width: number, height: numbe
   for (let i = 0; i < craterCount; i++) {
     const seat = rimCells[Math.floor(rng() * rimCells.length)];
     if (!seat) continue;
-    const p = cellToScreen(seat);
-    const rx = TILE_W * (0.55 + rng() * 0.5);
-    const crater: Crater = { x: p.x, y: p.y, rx, ry: rx / 2, depth: 0.3 + rng() * 0.4 };
-    craters.push(crater);
-
+    // Radius in cells, so the crater is defined on the same lattice it blocks.
+    const radius = rng() < 0.45 ? 1 : rng() < 0.8 ? 1.5 : 2;
+    const members: Cell[] = [];
     for (let gy = 0; gy < height; gy++) {
       for (let gx = 0; gx < width; gx++) {
-        if (blocked.size >= cellBudget) break;
+        if (blocked.size + members.length >= cellBudget) break;
         const key = cellKey({ x: gx, y: gy });
         if (blocked.has(key)) continue;
-        const q = cellToScreen({ x: gx, y: gy });
-        const dx = (q.x - crater.x) / crater.rx;
-        const dy = (q.y - crater.y) / crater.ry;
-        if (dx * dx + dy * dy < 0.7) blocked.add(key);
+        const dx = gx - seat.x;
+        const dy = gy - seat.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= radius) members.push({ x: gx, y: gy });
       }
     }
+    if (members.length === 0) continue;
+    for (const cell of members) blocked.add(cellKey(cell));
+    craters.push({ cells: members, depth: 0.3 + rng() * 0.4 });
   }
 
-  // The CPU core spawns at the grid centre, so that cell must always be buildable.
-  blocked.delete(cellKey({ x: Math.floor(width / 2), y: Math.floor(height / 2) }));
+  // The CPU core spawns at the grid centre, so that cell must always be buildable — and
+  // the crater that claimed it has to release it too, or the drawing would disagree again.
+  const centreKey = cellKey({ x: Math.floor(width / 2), y: Math.floor(height / 2) });
+  blocked.delete(centreKey);
+  const releasedCraters = craters.map((crater) => ({
+    ...crater,
+    cells: crater.cells.filter((cell) => cellKey(cell) !== centreKey),
+  }));
 
   // Scree scattered over the whole body, biased outside the buildable plateau so it
   // does not compete with the buildings for attention.
@@ -152,5 +158,5 @@ export function generateTerrain(asteroidId: string, width: number, height: numbe
     }
   }
 
-  return { limb, craters, motes, blocked, cellShade };
+  return { limb, craters: releasedCraters, motes, blocked, cellShade };
 }

@@ -11,6 +11,7 @@
  */
 
 import type { Graphics } from "pixi.js";
+import { TILE_W } from "./isoProjection.ts";
 
 export const SURFACE_PALETTE = {
   top: 0x3f4858,
@@ -29,7 +30,22 @@ export const SURFACE_PALETTE = {
   danger: 0xcc3322,
 } as const;
 
-/** Half-width of one cell footprint, in the same units as the tile. */
+/**
+ * Half-width of one cell footprint, in screen pixels. A base drawn to this extent
+ * exactly inscribes its diamond.
+ */
+export const CELL_HALF = TILE_W / 2;
+
+/**
+ * Forms are authored against a nominal half-extent and scaled by {@link FORM_UNIT} at
+ * paint time, so every footprint is a fraction of the cell rather than a loose pixel
+ * count. Keeping a form's horizontal extents within FORM_NOMINAL_HALF is what makes it
+ * provably fit; height is deliberately unbounded, since height is what carries
+ * legibility at this scale.
+ */
+export const FORM_NOMINAL_HALF = 15;
+export const FORM_UNIT = CELL_HALF / FORM_NOMINAL_HALF;
+
 export interface Anchor {
   readonly x: number;
   readonly y: number;

@@ -23,7 +23,7 @@ import {
   TILE_H,
   TILE_W,
 } from "./surface/isoProjection.ts";
-import { SURFACE_PALETTE } from "./surface/isoVolumes.ts";
+import { FORM_UNIT, SURFACE_PALETTE } from "./surface/isoVolumes.ts";
 
 export interface SurfaceBuilding {
   readonly kind: string;
@@ -51,8 +51,6 @@ export interface SurfaceCallbacks {
 const BACKGROUND = 0x05070f;
 /** How far the rock's flank drops below its limb, in screen pixels. */
 const ROCK_THICKNESS = 26;
-/** Buildings are drawn in tile units; this lifts them to read against the terrain. */
-const BUILDING_SCALE = 1.55;
 
 export class AsteroidSurfaceView {
   private readonly app: Application;
@@ -272,23 +270,43 @@ export class AsteroidSurfaceView {
       });
     }
 
-    // 5. Craters: dark floor, a lit rim arc on the sun side and a cast shadow opposite.
+    // 5. Craters, drawn as the cells they occupy. The depression and the refusal are
+    //    the same set by construction, so the picture cannot contradict the rule.
     for (const crater of terrain.craters) {
-      g.ellipse(crater.x, crater.y, crater.rx, crater.ry).fill({
-        color: SURFACE_PALETTE.rockDark,
-        alpha: 0.5 + crater.depth * 0.35,
-      });
-      g.ellipse(
-        crater.x - SUN.x * crater.rx * 0.16,
-        crater.y - SUN.y * crater.ry * 0.16,
-        crater.rx * 0.94,
-        crater.ry * 0.94,
-      ).fill({ color: SURFACE_PALETTE.rockDark, alpha: 0.45 });
-      g.ellipse(crater.x + SUN.x * 2, crater.y + SUN.y * 2, crater.rx, crater.ry).stroke({
-        color: SURFACE_PALETTE.rockLit,
-        width: 2,
-        alpha: 0.65,
-      });
+      const members = new Set(crater.cells.map(cellKey));
+      for (const cell of crater.cells) {
+        const corners = cellCorners(cell);
+        g.poly(corners.flatMap((p) => [p.x, p.y])).fill({
+          color: 0x000000,
+          alpha: 0.42 + crater.depth * 0.3,
+        });
+      }
+      // Rim only along edges that leave the crater, so the outline traces the hole.
+      for (const cell of crater.cells) {
+        const corners = cellCorners(cell);
+        const neighbours: Cell[] = [
+          { x: cell.x, y: cell.y - 1 },
+          { x: cell.x + 1, y: cell.y },
+          { x: cell.x, y: cell.y + 1 },
+          { x: cell.x - 1, y: cell.y },
+        ];
+        for (let i = 0; i < 4; i++) {
+          const neighbour = neighbours[i];
+          if (neighbour && members.has(cellKey(neighbour))) continue;
+          const a = corners[i];
+          const b = corners[(i + 1) % 4];
+          if (!a || !b) continue;
+          // The sun sits upper-left, so rims facing it catch light and the rest fall away.
+          const facingSun = (a.y + b.y) / 2 < cellToScreen(cell).y;
+          g.moveTo(a.x, a.y)
+            .lineTo(b.x, b.y)
+            .stroke({
+              color: facingSun ? SURFACE_PALETTE.rockLit : 0x000000,
+              width: 2.5,
+              alpha: facingSun ? 0.95 : 0.8,
+            });
+        }
+      }
     }
 
     // 6. Lit limb on the sun side only — a full outline would flatten it again.
@@ -359,7 +377,7 @@ export class AsteroidSurfaceView {
       item.paint(g);
       const at = cellToScreen(item.cell);
       g.position.set(at.x, at.y + TILE_H / 4);
-      g.scale.set(BUILDING_SCALE);
+      g.scale.set(FORM_UNIT);
       this.structures.addChild(g);
     }
   }
@@ -430,7 +448,7 @@ export class AsteroidSurfaceView {
       const at = cellToScreen(hovered);
       paintBuilding(this.ghost, state.ghostKind, { x: 0, y: 0 });
       this.ghost.position.set(at.x, at.y + TILE_H / 4);
-      this.ghost.scale.set(BUILDING_SCALE);
+      this.ghost.scale.set(FORM_UNIT);
     }
   }
 }

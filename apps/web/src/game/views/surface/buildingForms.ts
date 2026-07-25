@@ -164,7 +164,7 @@ const PAINTERS: Readonly<Record<BuildingForm, Painter>> = {
   },
 
   greenhouse: (g, at) => {
-    drawPad(g, at, 17, 16, SURFACE_PALETTE.pad);
+    drawPad(g, at, 15, 15, SURFACE_PALETTE.pad);
     // Deliberately the lowest thing on the surface: a run of glass barrel vaults.
     for (const dx of [-9, 0, 9]) {
       drawDome(g, { x: at.x + dx, y: at.y - 1 }, 6, 9, SURFACE_PALETTE.plant);
@@ -213,7 +213,7 @@ const PAINTERS: Readonly<Record<BuildingForm, Painter>> = {
   },
 
   refinery: (g, at) => {
-    drawPad(g, at, 16, 15, SURFACE_PALETTE.pad);
+    drawPad(g, at, 15, 15, SURFACE_PALETTE.pad);
     drawTank(g, { x: at.x - 6, y: at.y - 1 }, 5, 11);
     drawTank(g, { x: at.x + 6, y: at.y - 3 }, 4, 8);
     g.moveTo(at.x - 6, at.y - 10)
@@ -223,7 +223,7 @@ const PAINTERS: Readonly<Record<BuildingForm, Painter>> = {
   },
 
   shipyard: (g, at) => {
-    drawPad(g, at, 18, 17, SURFACE_PALETTE.pad);
+    drawPad(g, at, 15, 15, SURFACE_PALETTE.pad);
     drawBox(g, at, 7, 14, 3);
     // Wide, low, and spanned by a big open gantry.
     drawGantry(g, { x: at.x, y: at.y - 3 }, 15, 22);
@@ -266,9 +266,9 @@ const PAINTERS: Readonly<Record<BuildingForm, Painter>> = {
   },
 
   wall: (g, at) => {
-    drawPad(g, at, 16, 15, SURFACE_PALETTE.pad);
-    for (const dx of [-9, 0, 9]) {
-      drawBox(g, { x: at.x + dx, y: at.y - 1 }, 4, 11, 8);
+    drawPad(g, at, 15, 15, SURFACE_PALETTE.pad);
+    for (const dx of [-7, 0, 7]) {
+      drawBox(g, { x: at.x + dx, y: at.y - 1 }, 4, 8, 8);
     }
   },
 
@@ -281,7 +281,7 @@ const PAINTERS: Readonly<Record<BuildingForm, Painter>> = {
   },
 
   market: (g, at) => {
-    drawPad(g, at, 16, 15, SURFACE_PALETTE.pad);
+    drawPad(g, at, 15, 15, SURFACE_PALETTE.pad);
     drawBox(g, at, 13, 12, 7);
     drawDish(g, { x: at.x + 6, y: at.y - 7 }, 5, 7);
     drawLights(g, at, 5, 20, 4);
@@ -312,7 +312,7 @@ const PAINTERS: Readonly<Record<BuildingForm, Painter>> = {
   },
 
   repair: (g, at) => {
-    drawPad(g, at, 16, 15, SURFACE_PALETTE.pad);
+    drawPad(g, at, 15, 15, SURFACE_PALETTE.pad);
     drawBox(g, at, 8, 10, 6);
     g.moveTo(at.x + 4, at.y - 6)
       .lineTo(at.x + 12, at.y - 16)
