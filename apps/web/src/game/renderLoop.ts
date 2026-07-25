@@ -103,61 +103,26 @@ export function startRenderLoop(
             const colony = snap.asteroids.find((a) => a.ownerId === snap.humanPlayerId);
             if (colony) useUiStore.getState().selectAsteroid(colony.id);
           }
+          // Per-event SFX now live in NotificationFeed via the shared
+          // eventKindMeta table (one table, both sims' vocabularies, and the
+          // feed's dedup stops repeat-fire). The render loop keeps only the
+          // music-level transitions.
           for (const ev of snap.events) {
-            switch (ev.kind) {
-              case "asteroid.settled":
-                playSound(SFX.treatySigned);
-                break;
-              case "construction.done":
-                playSound(SFX.buildComplete);
-                break;
-              case "blackmarket.purchase":
-                playSound(SFX.blackMarket);
-                break;
-              case "asteroid.engine_charging":
-                playSound(SFX.engineCharging);
-                break;
-              case "asteroid.destroyed":
-                playSound(SFX.attack);
-                break;
-              case "missile.launched":
-                playSound(SFX.engineCharging);
-                break;
-              case "missile.impact":
-                playSound(SFX.attack);
-                break;
-              case "expedition.enforcer_arrived":
-                playSound(SFX.attack);
-                break;
-              case "agent.mission_failed":
-                playSound(SFX.espionage);
-                break;
-              case "bribe.accepted":
-                playSound(SFX.treatySigned);
-                break;
-              case "bribe.rejected":
-              case "treaty.broken":
-              case "colony.seceded":
-              case "trader.arrived":
-              case "federation.investigation_warning":
-              case "federation.license_revoked":
-              case "asteroid.independence":
-                playSound(SFX.notification);
-                break;
-              case "victory.independence":
-                playSound(SFX.victoryFanfare);
-                musicPlayer.stop();
-                break;
-              case "game.ended":
-                if (snap.gameEndState === "defeat") playSound(SFX.defeat);
-                else playSound(SFX.victoryFanfare);
-                musicPlayer.stop();
-                break;
+            if (ev.kind === "victory.independence") {
+              playSound(SFX.victoryFanfare);
+              musicPlayer.stop();
+            } else if (ev.kind === "game.ended" || ev.kind === "game.over") {
+              if (snap.gameEndState === "defeat") playSound(SFX.defeat);
+              else playSound(SFX.victoryFanfare);
+              musicPlayer.stop();
             }
           }
           if (
             snap.events.some(
-              (e) => e.kind === "asteroid.destroyed" || e.kind === "expedition.enforcer_arrived",
+              (e) =>
+                e.kind === "asteroid.destroyed" ||
+                e.kind === "expedition.enforcer_arrived" ||
+                e.kind === "colony.under_attack",
             )
           ) {
             musicPlayer.play("combat");

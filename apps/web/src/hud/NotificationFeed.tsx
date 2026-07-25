@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { playSound, SFX } from "../audio.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { EVENT_KIND_META, eventLabel } from "./eventKindMeta.ts";
 
 interface NotificationEntry {
   id: number;
@@ -11,20 +12,6 @@ interface NotificationEntry {
   priority: EventPriority;
   label: string;
 }
-
-export const EVENT_LABELS: Partial<Record<string, string>> = {
-  "colony.under_attack": "Colony under attack",
-  "colony.starved": "Colony starving",
-  "colony.captured": "Colony captured",
-  "asteroid.incoming": "Asteroid incoming",
-  "trader.arrived": "Transporter arrived",
-  "construction.done": "Construction complete",
-  "treaty.broken": "Treaty broken",
-  "blueprint.purchased": "Blueprint acquired",
-  "missile.launched": "Missile launched",
-  "missile.impact": "Missile impact!",
-  "asteroid.settled": "Asteroid settled",
-};
 
 const PRIORITY_COLORS: Record<EventPriority, string> = {
   red: "var(--red)",
@@ -82,7 +69,9 @@ export function NotificationFeed() {
         tick: snapshot.tick,
         kind: ev.kind,
         priority: ev.priority,
-        label: EVENT_LABELS[ev.kind] ?? ev.kind,
+        // Unknown kinds pass through with their raw kind string — an event
+        // must never vanish because a table missed it (spec §5).
+        label: eventLabel(ev.kind),
       });
     }
     if (newEntries.length === 0) return;
@@ -100,12 +89,9 @@ export function NotificationFeed() {
     if (latestRed) setAriaAnnounce(latestRed.label);
 
     for (const entry of newEntries) {
-      if (entry.kind === "construction.done") {
-        playSound(SFX.buildComplete);
-      } else if (entry.kind === "treaty.signed" || entry.kind === "treaty.broken") {
-        playSound(SFX.treatySigned);
-      } else if (entry.kind === "espionage.detected") {
-        playSound(SFX.espionage);
+      const meta = EVENT_KIND_META[entry.kind];
+      if (meta) {
+        if (meta.sfx) playSound(SFX[meta.sfx], meta.volume ?? 0.5);
       } else if (entry.priority === "red") {
         playSound(SFX.notification, 0.7);
       } else if (entry.priority === "amber") {
