@@ -20,11 +20,18 @@ import type {
   ShipId,
   ShipOrder,
   Treaty,
-  TreatyId,
   TreatyKind,
   World,
 } from "@fa/domain";
-import { agentId, asteroidId, blueprintId, buildingId, playerId, shipId, treatyId } from "@fa/domain";
+import {
+  agentId,
+  asteroidId,
+  blueprintId,
+  buildingId,
+  playerId,
+  shipId,
+  treatyId,
+} from "@fa/domain";
 import { makePrng } from "./prng.ts";
 
 // ---------------------------------------------------------------------------
@@ -161,11 +168,11 @@ function serializePlayer(p: Player): Record<string, unknown> {
 // ---------------------------------------------------------------------------
 
 export function deserializeWorld(snapshot: Record<string, unknown>, rngState: number): World {
-  const seed = snapshot["seed"] as number;
+  const seed = snapshot.seed as number;
   const prng = makePrng(seed);
   prng.restore(rngState);
 
-  const rawAsteroids = snapshot["asteroids"] as Array<Record<string, unknown>>;
+  const rawAsteroids = snapshot.asteroids as Array<Record<string, unknown>>;
   const asteroids = new Map<AsteroidId, Asteroid>(
     rawAsteroids.map((raw) => {
       const a = deserializeAsteroid(raw);
@@ -173,7 +180,7 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     }),
   );
 
-  const rawBuildings = snapshot["buildings"] as Array<Record<string, unknown>>;
+  const rawBuildings = snapshot.buildings as Array<Record<string, unknown>>;
   const buildings = new Map<BuildingId, Building>(
     rawBuildings.map((raw) => {
       const b = deserializeBuilding(raw);
@@ -181,7 +188,7 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     }),
   );
 
-  const rawShips = snapshot["ships"] as Array<Record<string, unknown>>;
+  const rawShips = snapshot.ships as Array<Record<string, unknown>>;
   const ships = new Map<ShipId, Ship>(
     rawShips.map((raw) => {
       const s = deserializeShip(raw);
@@ -189,7 +196,7 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     }),
   );
 
-  const rawPlayers = snapshot["players"] as Array<Record<string, unknown>>;
+  const rawPlayers = snapshot.players as Array<Record<string, unknown>>;
   const players = new Map<PlayerId, Player>(
     rawPlayers.map((raw) => {
       const p = deserializePlayer(raw);
@@ -197,53 +204,53 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
     }),
   );
 
-  const rawTreaties = snapshot["treaties"] as Array<Record<string, unknown>>;
+  const rawTreaties = snapshot.treaties as Array<Record<string, unknown>>;
 
   const agents = new Map<AgentId, Agent>(
-    ((snapshot["agents"] ?? []) as Array<Record<string, unknown>>).map((a) => {
-      const id = agentId(a["id"] as string);
+    ((snapshot.agents ?? []) as Array<Record<string, unknown>>).map((a) => {
+      const id = agentId(a.id as string);
       const agent: Agent = {
         id,
-        name: a["name"] as string,
-        ownerId: a["ownerId"] != null ? playerId(a["ownerId"] as string) : null,
-        stealth: a["stealth"] as number,
-        hireCost: a["hireCost"] as number,
-        missionKind: (a["missionKind"] as AgentMissionKind | null) ?? null,
-        missionTarget: a["missionTarget"] != null ? asteroidId(a["missionTarget"] as string) : null,
-        missionCompleteTick: (a["missionCompleteTick"] as number | null) ?? null,
-        tributeActive: (a["tributeActive"] as boolean | undefined) ?? false,
-        tributeEndTick: (a["tributeEndTick"] as number | null | undefined) ?? null,
+        name: a.name as string,
+        ownerId: a.ownerId != null ? playerId(a.ownerId as string) : null,
+        stealth: a.stealth as number,
+        hireCost: a.hireCost as number,
+        missionKind: (a.missionKind as AgentMissionKind | null) ?? null,
+        missionTarget: a.missionTarget != null ? asteroidId(a.missionTarget as string) : null,
+        missionCompleteTick: (a.missionCompleteTick as number | null) ?? null,
+        tributeActive: (a.tributeActive as boolean | undefined) ?? false,
+        tributeEndTick: (a.tributeEndTick as number | null | undefined) ?? null,
       };
       return [id, agent];
     }),
   );
 
-  const rawExpeditionFleet = snapshot["expeditionFleet"] as
+  const rawExpeditionFleet = snapshot.expeditionFleet as
     | { active?: boolean; ticksRemaining?: number; fleetsLaunched?: number }
     | undefined;
 
   return {
-    tick: snapshot["tick"] as number,
+    tick: snapshot.tick as number,
     seed,
-    difficulty: (snapshot["difficulty"] as DifficultyLevel | undefined) ?? "manager",
+    difficulty: (snapshot.difficulty as DifficultyLevel | undefined) ?? "manager",
     prng,
-    schemaVersion: snapshot["schemaVersion"] as number,
-    nextBuildingSeq: snapshot["nextBuildingSeq"] as number,
-    nextShipSeq: snapshot["nextShipSeq"] as number,
-    nextTreatySeq: snapshot["nextTreatySeq"] as number,
-    nextMissileSeq: (snapshot["nextMissileSeq"] as number | undefined) ?? 0,
-    missiles: ((snapshot["missiles"] as unknown[] | undefined) ?? []).map((m): PendingMissile => {
+    schemaVersion: snapshot.schemaVersion as number,
+    nextBuildingSeq: snapshot.nextBuildingSeq as number,
+    nextShipSeq: snapshot.nextShipSeq as number,
+    nextTreatySeq: snapshot.nextTreatySeq as number,
+    nextMissileSeq: (snapshot.nextMissileSeq as number | undefined) ?? 0,
+    missiles: ((snapshot.missiles as unknown[] | undefined) ?? []).map((m): PendingMissile => {
       const r = m as Record<string, unknown>;
       return {
-        id: r["id"] as string,
-        ownerId: playerId(r["ownerId"] as string),
-        sourceId: asteroidId(r["sourceId"] as string),
-        targetId: asteroidId(r["targetId"] as string),
-        arrivalTick: r["arrivalTick"] as number,
+        id: r.id as string,
+        ownerId: playerId(r.ownerId as string),
+        sourceId: asteroidId(r.sourceId as string),
+        targetId: asteroidId(r.targetId as string),
+        arrivalTick: r.arrivalTick as number,
       };
     }),
-    gameEndState: (snapshot["gameEndState"] as GameEndState | null) ?? null,
-    marketPrices: snapshot["marketPrices"] as OreRecord<number>,
+    gameEndState: (snapshot.gameEndState as GameEndState | null) ?? null,
+    marketPrices: snapshot.marketPrices as OreRecord<number>,
     treaties: rawTreaties.map(deserializeTreaty),
     asteroids,
     buildings,
@@ -260,14 +267,14 @@ export function deserializeWorld(snapshot: Record<string, unknown>, rngState: nu
 }
 
 function deserializeTreaty(raw: Record<string, unknown>): Treaty {
-  const parties = raw["parties"] as [string, string];
+  const parties = raw.parties as [string, string];
   const base: Treaty = {
-    id: treatyId(raw["id"] as string),
+    id: treatyId(raw.id as string),
     parties: [playerId(parties[0]), playerId(parties[1])],
-    kind: raw["kind"] as TreatyKind,
-    signedTick: raw["signedTick"] as number,
+    kind: raw.kind as TreatyKind,
+    signedTick: raw.signedTick as number,
   };
-  const expiresTick = raw["expiresTick"];
+  const expiresTick = raw.expiresTick;
   if (expiresTick !== null && expiresTick !== undefined) {
     return { ...base, expiresTick: expiresTick as number };
   }
@@ -275,94 +282,92 @@ function deserializeTreaty(raw: Record<string, unknown>): Treaty {
 }
 
 function deserializeAsteroid(raw: Record<string, unknown>): Asteroid {
-  const rawSector = raw["sector"] as { x: number; y: number };
-  const rawEngines = raw["engines"] as Record<string, unknown>;
-  const rawBuildQueue = raw["buildQueue"] as Array<Record<string, unknown>>;
-  const rawBuildings = raw["buildings"] as string[];
-  const rawInOrbit = raw["inOrbit"] as string[];
+  const rawSector = raw.sector as { x: number; y: number };
+  const rawEngines = raw.engines as Record<string, unknown>;
+  const rawBuildQueue = raw.buildQueue as Array<Record<string, unknown>>;
+  const rawBuildings = raw.buildings as string[];
+  const rawInOrbit = raw.inOrbit as string[];
 
   return {
-    id: asteroidId(raw["id"] as string),
-    name: raw["name"] as string,
-    ownerId: raw["ownerId"] !== null ? playerId(raw["ownerId"] as string) : null,
+    id: asteroidId(raw.id as string),
+    name: raw.name as string,
+    ownerId: raw.ownerId !== null ? playerId(raw.ownerId as string) : null,
     sector: { x: rawSector.x, y: rawSector.y },
-    sizeClass: raw["sizeClass"] as Asteroid["sizeClass"],
-    radiation: raw["radiation"] as number,
-    stability: raw["stability"] as number,
-    happiness: raw["happiness"] as number,
-    deposits: raw["deposits"] as Asteroid["deposits"],
+    sizeClass: raw.sizeClass as Asteroid["sizeClass"],
+    radiation: raw.radiation as number,
+    stability: raw.stability as number,
+    happiness: raw.happiness as number,
+    deposits: raw.deposits as Asteroid["deposits"],
     buildings: rawBuildings.map((id) => buildingId(id)),
     inOrbit: rawInOrbit.map((id) => shipId(id)),
     buildQueue: rawBuildQueue.map(deserializeBuildQueueItem),
     engines: {
-      count: rawEngines["count"] as number,
+      count: rawEngines.count as number,
       destinationId:
-        rawEngines["destinationId"] !== null
-          ? asteroidId(rawEngines["destinationId"] as string)
-          : null,
-      etaTick: rawEngines["etaTick"] as number | null,
-      chargeTick: rawEngines["chargeTick"] as number | null,
+        rawEngines.destinationId !== null ? asteroidId(rawEngines.destinationId as string) : null,
+      etaTick: rawEngines.etaTick as number | null,
+      chargeTick: rawEngines.chargeTick as number | null,
     } satisfies AsteroidEngineState,
   };
 }
 
 function deserializeBuildQueueItem(raw: Record<string, unknown>): BuildQueueItem {
-  const rawCell = raw["cell"] as { x: number; y: number };
+  const rawCell = raw.cell as { x: number; y: number };
   return {
-    buildingKind: raw["buildingKind"] as string,
-    progressTicks: raw["progressTicks"] as number,
-    totalTicks: raw["totalTicks"] as number,
+    buildingKind: raw.buildingKind as string,
+    progressTicks: raw.progressTicks as number,
+    totalTicks: raw.totalTicks as number,
     cell: { x: rawCell.x, y: rawCell.y },
-    queuedAt: raw["queuedAt"] as number,
+    queuedAt: raw.queuedAt as number,
   };
 }
 
 function deserializeBuilding(raw: Record<string, unknown>): Building {
-  const rawCell = raw["cell"] as { x: number; y: number };
+  const rawCell = raw.cell as { x: number; y: number };
   return {
-    id: buildingId(raw["id"] as string),
-    defKind: raw["defKind"] as string,
-    asteroidId: asteroidId(raw["asteroidId"] as string),
+    id: buildingId(raw.id as string),
+    defKind: raw.defKind as string,
+    asteroidId: asteroidId(raw.asteroidId as string),
     cell: { x: rawCell.x, y: rawCell.y },
-    hp: raw["hp"] as number,
-    maxHp: raw["maxHp"] as number,
-    constructionProgress: raw["constructionProgress"] as number,
-    active: raw["active"] as boolean,
-    damage: raw["damage"] as number,
+    hp: raw.hp as number,
+    maxHp: raw.maxHp as number,
+    constructionProgress: raw.constructionProgress as number,
+    active: raw.active as boolean,
+    damage: raw.damage as number,
   };
 }
 
 function deserializeShip(raw: Record<string, unknown>): Ship {
-  const rawPos = raw["position"] as { x: number; y: number };
-  const rawVel = raw["velocity"] as { x: number; y: number };
+  const rawPos = raw.position as { x: number; y: number };
+  const rawVel = raw.velocity as { x: number; y: number };
   return {
-    id: shipId(raw["id"] as string),
-    defKind: raw["defKind"] as Ship["defKind"],
-    ownerId: playerId(raw["ownerId"] as string),
-    hullHp: raw["hullHp"] as number,
-    shieldHp: raw["shieldHp"] as number,
+    id: shipId(raw.id as string),
+    defKind: raw.defKind as Ship["defKind"],
+    ownerId: playerId(raw.ownerId as string),
+    hullHp: raw.hullHp as number,
+    shieldHp: raw.shieldHp as number,
     position: { x: rawPos.x, y: rawPos.y },
     velocity: { x: rawVel.x, y: rawVel.y },
-    order: raw["order"] as ShipOrder,
-    cargo: raw["cargo"] as Ship["cargo"],
+    order: raw.order as ShipOrder,
+    cargo: raw.cargo as Ship["cargo"],
   };
 }
 
 function deserializePlayer(raw: Record<string, unknown>): Player {
-  const rawReputation = raw["reputation"] as Array<[string, number]>;
-  const rawBlueprints = raw["blueprintsOwned"] as string[];
-  const rawEventLog = raw["eventLog"] as Array<Record<string, unknown>>;
+  const rawReputation = raw.reputation as Array<[string, number]>;
+  const rawBlueprints = raw.blueprintsOwned as string[];
+  const rawEventLog = raw.eventLog as Array<Record<string, unknown>>;
 
   return {
-    id: playerId(raw["id"] as string),
-    raceId: raw["raceId"] as string,
-    isHuman: raw["isHuman"] as boolean,
-    alive: raw["alive"] as boolean,
-    credits: raw["credits"] as number,
-    federationStanding: raw["federationStanding"] as number,
-    suspicion: raw["suspicion"] as number,
-    licenseRevoked: (raw["licenseRevoked"] as boolean | undefined) ?? false,
-    oreInventory: raw["oreInventory"] as Player["oreInventory"],
+    id: playerId(raw.id as string),
+    raceId: raw.raceId as string,
+    isHuman: raw.isHuman as boolean,
+    alive: raw.alive as boolean,
+    credits: raw.credits as number,
+    federationStanding: raw.federationStanding as number,
+    suspicion: raw.suspicion as number,
+    licenseRevoked: (raw.licenseRevoked as boolean | undefined) ?? false,
+    oreInventory: raw.oreInventory as Player["oreInventory"],
     reputation: new Map<PlayerId, number>(rawReputation.map(([id, val]) => [playerId(id), val])),
     blueprintsOwned: new Set<BlueprintId>(rawBlueprints.map((id) => blueprintId(id))),
     eventLog: rawEventLog.map(deserializeAiEventRecord),
@@ -371,8 +376,8 @@ function deserializePlayer(raw: Record<string, unknown>): Player {
 
 function deserializeAiEventRecord(raw: Record<string, unknown>): AiEventRecord {
   return {
-    tick: raw["tick"] as number,
-    kind: raw["kind"] as string,
-    data: raw["data"] as Record<string, unknown>,
+    tick: raw.tick as number,
+    kind: raw.kind as string,
+    data: raw.data as Record<string, unknown>,
   };
 }

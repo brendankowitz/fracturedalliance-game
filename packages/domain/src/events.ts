@@ -22,15 +22,26 @@ export type GameEvent =
   | { kind: "blueprint.purchased"; priority: "grey"; playerId: PlayerId; blueprintId: BlueprintId }
   | {
       kind: "agent.mission_complete";
-      priority: "grey";
+      // Liberating an asteroid is a territory gain, so it earns "green"; the other missions stay "grey".
+      priority: "grey" | "green";
       agentName: string;
       missionKind: AgentMissionKind;
       targetAsteroidName: string;
     }
   | { kind: "agent.captured"; priority: "amber"; agentName: string }
   | { kind: "agent.mission_failed"; priority: "grey"; agentName: string }
-  | { kind: "asteroid.engine_charging"; priority: "amber"; asteroidName: string; destinationName: string }
-  | { kind: "asteroid.engine_fired"; priority: "red"; asteroidName: string; destinationName: string }
+  | {
+      kind: "asteroid.engine_charging";
+      priority: "amber";
+      asteroidName: string;
+      destinationName: string;
+    }
+  | {
+      kind: "asteroid.engine_fired";
+      priority: "red";
+      asteroidName: string;
+      destinationName: string;
+    }
   | { kind: "asteroid.lost_in_collision"; priority: "red"; asteroidName: string }
   | { kind: "asteroid.captured_in_collision"; priority: "green"; asteroidName: string }
   | { kind: "asteroid.deflected"; priority: "amber"; asteroidName: string }

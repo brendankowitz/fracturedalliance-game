@@ -16,12 +16,12 @@ describe("world serialization", () => {
     const world = createWorld({ seed: 99, humanPlayerRaceId: "helionCorp" });
     const human = [...world.players.values()].find((p) => p.isHuman)!;
     human.credits = 12345;
-    human.oreInventory["selenium"] = 99;
+    human.oreInventory.selenium = 99;
     const snapshot = serializeWorld(world);
     const restored = deserializeWorld(snapshot, world.prng.state());
     const restoredHuman = [...restored.players.values()].find((p) => p.isHuman);
     expect(restoredHuman?.credits).toBe(12345);
-    expect(restoredHuman?.oreInventory["selenium"]).toBe(99);
+    expect(restoredHuman?.oreInventory.selenium).toBe(99);
   });
 
   it("round-trips asteroid count and deposits", () => {

@@ -1,7 +1,13 @@
 import type { Player, TreatyKind, World } from "@fa/domain";
 
 const ATTACK_VIOLATING_KINDS: ReadonlyArray<TreatyKind> = ["nonAggression", "peace", "openBorders"];
-const TREATY_BREAKING_KINDS: ReadonlyArray<TreatyKind> = ["nonAggression", "peace", "openBorders", "trade", "noCovert"];
+const TREATY_BREAKING_KINDS: ReadonlyArray<TreatyKind> = [
+  "nonAggression",
+  "peace",
+  "openBorders",
+  "trade",
+  "noCovert",
+];
 
 const GRUDGE_WINDOW_TICKS = 2400;
 
@@ -100,10 +106,7 @@ export function tickDiplomacy(world: World): void {
 
     for (const kind of ATTACK_VIOLATING_KINDS) {
       const treatyIndex = world.treaties.findIndex(
-        (t) =>
-          t.kind === kind &&
-          t.parties.includes(ship.ownerId) &&
-          t.parties.includes(human.id),
+        (t) => t.kind === kind && t.parties.includes(ship.ownerId) && t.parties.includes(human.id),
       );
       if (treatyIndex === -1) continue;
 

@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { DIFFICULTY_PRESETS } from "../difficulty.ts";
 import type { DifficultyLevel } from "@fa/domain";
+import { describe, expect, it } from "vitest";
+import { DIFFICULTY_PRESETS } from "../difficulty.ts";
 
 const ORDERED: DifficultyLevel[] = ["intern", "manager", "director", "ceo", "board"];
 
@@ -12,29 +12,33 @@ describe("DIFFICULTY_PRESETS", () => {
 
   it("humanStartCredits decreases as difficulty increases", () => {
     for (let i = 1; i < ORDERED.length; i++) {
-      expect(DIFFICULTY_PRESETS[ORDERED[i]!].humanStartCredits)
-        .toBeLessThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].humanStartCredits);
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].humanStartCredits).toBeLessThan(
+        DIFFICULTY_PRESETS[ORDERED[i - 1]!].humanStartCredits,
+      );
     }
   });
 
   it("aiCreditMultiplier increases as difficulty increases", () => {
     for (let i = 1; i < ORDERED.length; i++) {
-      expect(DIFFICULTY_PRESETS[ORDERED[i]!].aiCreditMultiplier)
-        .toBeGreaterThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].aiCreditMultiplier);
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].aiCreditMultiplier).toBeGreaterThan(
+        DIFFICULTY_PRESETS[ORDERED[i - 1]!].aiCreditMultiplier,
+      );
     }
   });
 
   it("traderGenerosity decreases as difficulty increases", () => {
     for (let i = 1; i < ORDERED.length; i++) {
-      expect(DIFFICULTY_PRESETS[ORDERED[i]!].traderGenerosity)
-        .toBeLessThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].traderGenerosity);
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].traderGenerosity).toBeLessThan(
+        DIFFICULTY_PRESETS[ORDERED[i - 1]!].traderGenerosity,
+      );
     }
   });
 
   it("federationGracePeriod decreases as difficulty increases", () => {
     for (let i = 1; i < ORDERED.length; i++) {
-      expect(DIFFICULTY_PRESETS[ORDERED[i]!].federationGracePeriod)
-        .toBeLessThan(DIFFICULTY_PRESETS[ORDERED[i - 1]!].federationGracePeriod);
+      expect(DIFFICULTY_PRESETS[ORDERED[i]!].federationGracePeriod).toBeLessThan(
+        DIFFICULTY_PRESETS[ORDERED[i - 1]!].federationGracePeriod,
+      );
     }
   });
 

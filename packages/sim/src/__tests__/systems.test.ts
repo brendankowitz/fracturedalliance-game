@@ -135,9 +135,15 @@ describe("miningSystem — ore refinery multiplier", () => {
     // Mine alone
     const mineId = buildingId("refinery-test-mine");
     world.buildings.set(mineId, {
-      id: mineId, defKind: "mineMk1", asteroidId: asteroid.id,
-      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
-      constructionProgress: 1, active: true, damage: 0,
+      id: mineId,
+      defKind: "mineMk1",
+      asteroidId: asteroid.id,
+      cell: { x: 0, y: 0 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
     });
     asteroid.buildings.push(mineId);
 
@@ -148,9 +154,15 @@ describe("miningSystem — ore refinery multiplier", () => {
     // Add an ore refinery (oreMiningMultiplier: 0.4)
     const refId = buildingId("refinery-test-ref");
     world.buildings.set(refId, {
-      id: refId, defKind: "oreRefinery", asteroidId: asteroid.id,
-      cell: { x: 1, y: 0 }, hp: 100, maxHp: 100,
-      constructionProgress: 1, active: true, damage: 0,
+      id: refId,
+      defKind: "oreRefinery",
+      asteroidId: asteroid.id,
+      cell: { x: 1, y: 0 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
     });
     asteroid.buildings.push(refId);
 
@@ -655,17 +667,26 @@ describe("combatSystem — defense buildings", () => {
     // Place a completed turretBattery on target
     const tId = buildingId("turret-1");
     world.buildings.set(tId, {
-      id: tId, defKind: "turretBattery", asteroidId: targetAsteroid.id,
-      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
-      constructionProgress: 1, active: true, damage: 0,
+      id: tId,
+      defKind: "turretBattery",
+      asteroidId: targetAsteroid.id,
+      cell: { x: 0, y: 0 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
     });
     targetAsteroid.buildings.push(tId);
 
     // Spawn an attacking ship at the asteroid's position
     const sId = shipId("attacker-1");
     world.ships.set(sId, {
-      id: sId, defKind: "assaultCraft", ownerId: ai.id,
-      hullHp: 80, shieldHp: 40,
+      id: sId,
+      defKind: "assaultCraft",
+      ownerId: ai.id,
+      hullHp: 80,
+      shieldHp: 40,
       position: { x: targetAsteroid.sector.x, y: targetAsteroid.sector.y },
       velocity: { x: 0, y: 0 },
       order: { kind: "attackAsteroid", target: targetAsteroid.id },
@@ -675,7 +696,7 @@ describe("combatSystem — defense buildings", () => {
     const beforeHp = 80 + 40; // hull + shield
     tickCombat(world);
     const ship = world.ships.get(sId);
-    const afterHp = ship ? (ship.hullHp + ship.shieldHp) : 0;
+    const afterHp = ship ? ship.hullHp + ship.shieldHp : 0;
     expect(afterHp).toBeLessThan(beforeHp);
   });
 });
@@ -728,6 +749,7 @@ describe("aiSystem", () => {
       progressTicks: 0,
       totalTicks: 100,
       cell: { x: 1, y: 0 },
+      queuedAt: world.tick,
     });
 
     const buildQueueBefore = kryllAsteroid.buildQueue.length;
@@ -748,8 +770,11 @@ describe("settlement", () => {
 
     const sId = shipId("settle-scout");
     world.ships.set(sId, {
-      id: sId, defKind: "scout", ownerId: human.id,
-      hullHp: 20, shieldHp: 5,
+      id: sId,
+      defKind: "scout",
+      ownerId: human.id,
+      hullHp: 20,
+      shieldHp: 5,
       position: { x: unclaimedAsteroid.sector.x, y: unclaimedAsteroid.sector.y },
       velocity: { x: 0, y: 0 },
       order: { kind: "idle" },
@@ -790,8 +815,11 @@ describe("aiSystem — expansion", () => {
     // Spawn an AI scout at the unclaimed asteroid's position
     const sId = shipId("ai-scout");
     world.ships.set(sId, {
-      id: sId, defKind: "scout", ownerId: aiPlayer.id,
-      hullHp: 20, shieldHp: 5,
+      id: sId,
+      defKind: "scout",
+      ownerId: aiPlayer.id,
+      hullHp: 20,
+      shieldHp: 5,
       position: { x: unclaimedAsteroid.sector.x, y: unclaimedAsteroid.sector.y },
       velocity: { x: 0, y: 0 },
       order: { kind: "idle" },
@@ -824,23 +852,39 @@ describe("missileSystem", () => {
     // Give source a completed missile silo
     const siloId = buildingId("missile-silo-1");
     world.buildings.set(siloId, {
-      id: siloId, defKind: "missileSilo", asteroidId: sourceAsteroid.id,
-      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
-      constructionProgress: 1, active: true, damage: 0,
+      id: siloId,
+      defKind: "missileSilo",
+      asteroidId: sourceAsteroid.id,
+      cell: { x: 0, y: 0 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
     });
     sourceAsteroid.buildings.push(siloId);
 
     // Give target a building to potentially destroy
     const targetBId = buildingId("target-building-1");
     world.buildings.set(targetBId, {
-      id: targetBId, defKind: "mineMk1", asteroidId: targetAsteroid.id,
-      cell: { x: 0, y: 0 }, hp: 100, maxHp: 100,
-      constructionProgress: 1, active: true, damage: 0,
+      id: targetBId,
+      defKind: "mineMk1",
+      asteroidId: targetAsteroid.id,
+      cell: { x: 0, y: 0 },
+      hp: 100,
+      maxHp: 100,
+      constructionProgress: 1,
+      active: true,
+      damage: 0,
     });
     targetAsteroid.buildings.push(targetBId);
     const stabilityBefore = targetAsteroid.stability;
 
-    applyCommand(world, { kind: "fireMissile", sourceAsteroidId: sourceAsteroid.id, targetAsteroidId: targetAsteroid.id });
+    applyCommand(world, {
+      kind: "fireMissile",
+      sourceAsteroidId: sourceAsteroid.id,
+      targetAsteroidId: targetAsteroid.id,
+    });
     expect(world.missiles).toHaveLength(1);
 
     // Advance to arrival tick

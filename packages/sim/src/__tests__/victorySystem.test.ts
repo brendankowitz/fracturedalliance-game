@@ -2,17 +2,16 @@ import type { World } from "@fa/domain";
 import {
   type AsteroidId,
   asteroidId,
-  type BlueprintId,
-  blueprintId,
   type BuildingId,
+  blueprintId,
   buildingId,
   type PlayerId,
   playerId,
 } from "@fa/domain";
 import { describe, expect, it } from "vitest";
-import { makePrng } from "../prng.ts";
-import { checkVictory } from "../systems/victorySystem.ts";
 import { DESTROYED_SECTOR_COORD } from "../systems/asteroidEngineSystem.ts";
+import { checkVictory } from "../systems/victorySystem.ts";
+import { makeTestAsteroid, makeTestBuilding, makeTestPlayer, makeTestWorld } from "./testWorld.ts";
 
 function makeMinimalWorld(): World {
   const humanId: PlayerId = playerId("player-human");
@@ -21,117 +20,40 @@ function makeMinimalWorld(): World {
   const aiAsteroidId: AsteroidId = asteroidId("asteroid-ai");
   const cpuBid: BuildingId = buildingId("cpu-1");
 
-  const humanAsteroid = {
-    id: humanAsteroidId,
-    name: "Human Base",
-    ownerId: humanId,
-    sector: { x: 0, y: 0 },
-    sizeClass: "M" as const,
-    deposits: {},
-    radiation: 0,
-    stability: 100,
-    happiness: 75,
-    buildings: [cpuBid],
-    buildQueue: [],
-    inOrbit: [],
-    engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-  };
-
-  const aiAsteroid = {
-    id: aiAsteroidId,
-    name: "AI Base",
-    ownerId: aiId,
-    sector: { x: 10, y: 10 },
-    sizeClass: "M" as const,
-    deposits: {},
-    radiation: 0,
-    stability: 100,
-    happiness: 75,
-    buildings: [],
-    buildQueue: [],
-    inOrbit: [],
-    engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-  };
-
-  const humanPlayer = {
-    id: humanId,
-    raceId: "helionCorp",
-    isHuman: true,
-    credits: 10_000,
-    oreInventory: {},
-    reputation: new Map<PlayerId, number>(),
-    federationStanding: 50,
-    blueprintsOwned: new Set<BlueprintId>(),
-    eventLog: [],
-    alive: true,
-    suspicion: 0,
-    licenseRevoked: false,
-  };
-
-  const aiPlayer = {
-    id: aiId,
-    raceId: "kryllCollective",
-    isHuman: false,
-    credits: 8_000,
-    oreInventory: {},
-    reputation: new Map<PlayerId, number>(),
-    federationStanding: 30,
-    blueprintsOwned: new Set<BlueprintId>(),
-    eventLog: [],
-    alive: true,
-    suspicion: 0,
-    licenseRevoked: false,
-  };
-
-  const cpu = {
-    id: cpuBid,
-    defKind: "cpu",
-    asteroidId: humanAsteroidId,
-    cell: { x: 3, y: 3 },
-    hp: 100,
-    maxHp: 100,
-    constructionProgress: 1,
-    active: true,
-    damage: 0,
-  };
-
-  return {
+  return makeTestWorld({
     tick: 100,
-    seed: 1,
     asteroids: new Map([
-      [humanAsteroidId, humanAsteroid],
-      [aiAsteroidId, aiAsteroid],
+      [
+        humanAsteroidId,
+        makeTestAsteroid(humanAsteroidId, {
+          name: "Human Base",
+          ownerId: humanId,
+          buildings: [cpuBid],
+        }),
+      ],
+      [
+        aiAsteroidId,
+        makeTestAsteroid(aiAsteroidId, {
+          name: "AI Base",
+          ownerId: aiId,
+          sector: { x: 10, y: 10 },
+        }),
+      ],
     ]),
-    buildings: new Map([[cpuBid, cpu]]),
-    ships: new Map(),
+    buildings: new Map([[cpuBid, makeTestBuilding(cpuBid, humanAsteroidId)]]),
     players: new Map([
-      [humanId, humanPlayer],
-      [aiId, aiPlayer],
+      [humanId, makeTestPlayer(humanId, { raceId: "helionCorp", isHuman: true, credits: 10_000 })],
+      [
+        aiId,
+        makeTestPlayer(aiId, {
+          raceId: "kryllCollective",
+          isHuman: false,
+          credits: 8_000,
+          federationStanding: 30,
+        }),
+      ],
     ]),
-    treaties: [],
-    marketPrices: {
-      selenium: 100,
-      asteros: 150,
-      barium: 220,
-      crystalite: 300,
-      quazinc: 380,
-      bytanium: 500,
-      korellium: 650,
-      dragonium: 820,
-      traxium: 1100,
-      nexos: 1500,
-    },
-    eventQueue: [],
-    prng: makePrng(1),
-    schemaVersion: 1,
-    nextBuildingSeq: 0,
-    nextShipSeq: 0,
-    nextTreatySeq: 0,
-    gameEndState: null,
-    agents: new Map(),
-    difficulty: "manager" as const,
-    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-  };
+  });
 }
 
 describe("victorySystem", () => {
@@ -273,7 +195,7 @@ describe("victorySystem", () => {
 
   it("does not trigger independence victory when human owns exactly 50% of asteroids", () => {
     const world = makeMinimalWorld();
-    const humanId = playerId("player-human");
+    const _humanId = playerId("player-human");
     // 1 human, 1 AI = 50%, not > 50%
     // (default setup already has this)
 

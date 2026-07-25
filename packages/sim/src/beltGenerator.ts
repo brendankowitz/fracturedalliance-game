@@ -6,8 +6,8 @@ import {
   type OreKind,
   type Player,
   type PlayerId,
-  playerId,
   type Prng,
+  playerId,
   type SizeClass,
 } from "@fa/domain";
 import { DIFFICULTY_PRESETS, type DifficultyLevel } from "./difficulty.ts";
@@ -79,7 +79,7 @@ function fisherYates<T>(arr: T[], prng: Prng): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(prng.next() * (i + 1));
-    // biome-ignore lint/style/noNonNullAssertion -- bounds guaranteed by loop
+    // biome-ignore lint/style/noNonNullAssertion: bounds guaranteed by loop
     [result[i], result[j]] = [result[j]!, result[i]!];
   }
   return result;
@@ -117,7 +117,7 @@ function generateAsteroids(prng: Prng): Asteroid[] {
     const deposits = generateDeposits(prng);
 
     const id: AsteroidId = asteroidId(`a${index + 1}`);
-    // biome-ignore lint/style/noNonNullAssertion -- sectors has ASTEROID_COUNT entries
+    // biome-ignore lint/style/noNonNullAssertion: sectors has ASTEROID_COUNT entries
     const sector = sectors[index]!;
 
     const asteroid: Asteroid = {
@@ -182,11 +182,7 @@ function generatePlayers(prng: Prng, humanRaceId: string, difficulty: Difficulty
   return [humanPlayer, ...aiPlayers];
 }
 
-function assignStartingAsteroids(
-  asteroids: Asteroid[],
-  players: Player[],
-  prng: Prng,
-): void {
+function assignStartingAsteroids(asteroids: Asteroid[], players: Player[], prng: Prng): void {
   const unowned = [...asteroids];
   const shuffled = fisherYates(unowned, prng);
   let cursor = 0;
@@ -194,7 +190,7 @@ function assignStartingAsteroids(
   for (const player of players) {
     const count = player.isHuman ? 1 : 1 + (prng.next() < 0.5 ? 0 : 1);
     for (let i = 0; i < count && cursor < shuffled.length; i++) {
-      // biome-ignore lint/style/noNonNullAssertion -- cursor bounded by shuffled.length check
+      // biome-ignore lint/style/noNonNullAssertion: cursor bounded by shuffled.length check
       shuffled[cursor]!.ownerId = player.id as PlayerId;
       cursor++;
     }

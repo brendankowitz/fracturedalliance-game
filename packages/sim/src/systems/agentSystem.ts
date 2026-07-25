@@ -12,7 +12,11 @@ function defenderSecurity(world: World, asteroidId: AsteroidId): number {
   return Math.min(secCount * 15, 85);
 }
 
-function resolveOutcome(agent: Agent, security: number, world: World): "success" | "captured" | "failed" {
+function resolveOutcome(
+  agent: Agent,
+  security: number,
+  world: World,
+): "success" | "captured" | "failed" {
   const roll = Math.floor(world.prng.next() * 100) + 1;
   const threshold = agent.stealth - security;
   if (roll <= threshold) return "success";
@@ -99,7 +103,11 @@ function applyMissionEffect(world: World, agent: Agent, human: Player): void {
     case "liberate": {
       // Precondition: target must be enemy-owned with low happiness
       if (!target.ownerId || target.ownerId === human.id || target.happiness >= 0.2) {
-        world.eventQueue.push({ kind: "agent.mission_failed", priority: "grey", agentName: agent.name });
+        world.eventQueue.push({
+          kind: "agent.mission_failed",
+          priority: "grey",
+          agentName: agent.name,
+        });
         clearMission(agent);
         return;
       }
@@ -162,7 +170,12 @@ export function tickAgents(world: World): void {
 
   for (const agent of world.agents.values()) {
     if (agent.ownerId !== human.id) continue;
-    if (agent.missionKind === null || agent.missionTarget === null || agent.missionCompleteTick === null) continue;
+    if (
+      agent.missionKind === null ||
+      agent.missionTarget === null ||
+      agent.missionCompleteTick === null
+    )
+      continue;
     if (world.tick < agent.missionCompleteTick) continue;
 
     const security = defenderSecurity(world, agent.missionTarget);

@@ -1,4 +1,4 @@
-import type { BuildingId, World } from "@fa/domain";
+import type { World } from "@fa/domain";
 
 const MISSILE_STABILITY_DAMAGE = 0.3;
 
@@ -25,9 +25,7 @@ export function tickMissiles(world: World): void {
       const idx = Math.floor(world.prng.next() * destroyable.length);
       const victimId = destroyable[idx]!;
       world.buildings.delete(victimId);
-      (target as { buildings: BuildingId[] }).buildings = target.buildings.filter(
-        (id) => id !== victimId,
-      );
+      target.buildings = target.buildings.filter((id) => id !== victimId);
     }
 
     world.eventQueue.push({

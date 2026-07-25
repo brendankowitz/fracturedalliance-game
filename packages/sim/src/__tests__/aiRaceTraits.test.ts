@@ -1,69 +1,27 @@
+import type { AsteroidId, PlayerId, ShipId, World } from "@fa/domain";
+import { agentId, asteroidId, buildingId, playerId, shipId, treatyId } from "@fa/domain";
 import { describe, expect, it } from "vitest";
-import type { AsteroidId, BuildingId, PlayerId, ShipId, World } from "@fa/domain";
-import {
-  agentId,
-  asteroidId,
-  buildingId,
-  playerId,
-  shipId,
-  treatyId,
-} from "@fa/domain";
-import { makePrng } from "../prng.ts";
 import { applyCommand } from "../commandProcessor.ts";
-import { tickCombat } from "../systems/combatSystem.ts";
-import { tickDiplomacy, resolveKryllAccusation, applyTreatySignedTraits } from "../systems/diplomacySystem.ts";
+import { makePrng } from "../prng.ts";
 import { tickAI } from "../systems/aiSystem.ts";
+import { tickCombat } from "../systems/combatSystem.ts";
+import {
+  applyTreatySignedTraits,
+  resolveKryllAccusation,
+  tickDiplomacy,
+} from "../systems/diplomacySystem.ts";
+import { makeTestAsteroid, makeTestBuilding, makeTestPlayer, makeTestWorld } from "./testWorld.ts";
 
 // ---------------------------------------------------------------------------
 // Shared inline factories
 // ---------------------------------------------------------------------------
 
-const MARKET_PRICES = {
-  selenium: 100,
-  asteros: 150,
-  barium: 220,
-  crystalite: 300,
-  quazinc: 380,
-  bytanium: 500,
-  korellium: 650,
-  dragonium: 820,
-  traxium: 1100,
-  nexos: 1500,
-} as const;
-
 function makeAsteroid(id: AsteroidId, ownerId: PlayerId | null, sector = { x: 0, y: 0 }) {
-  return {
-    id,
-    name: `Asteroid ${id}`,
-    ownerId,
-    sector,
-    sizeClass: "M" as const,
-    deposits: {},
-    radiation: 0,
-    stability: 100,
-    happiness: 75,
-    buildings: [] as BuildingId[],
-    buildQueue: [],
-    inOrbit: [],
-    engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-  };
+  return makeTestAsteroid(id, { ownerId, sector });
 }
 
 function makePlayer(id: PlayerId, raceId: string, isHuman: boolean, credits = 10_000) {
-  return {
-    id,
-    raceId,
-    isHuman,
-    credits,
-    oreInventory: {},
-    reputation: new Map<PlayerId, number>(),
-    federationStanding: 50,
-    blueprintsOwned: new Set<import("@fa/domain").BlueprintId>(),
-    eventLog: [],
-    alive: true,
-    suspicion: 0,
-    licenseRevoked: false,
-  };
+  return makeTestPlayer(id, { raceId, isHuman, credits });
 }
 
 function makeWorld(overrides: Partial<World> = {}): World {
@@ -78,47 +36,18 @@ function makeWorld(overrides: Partial<World> = {}): World {
 
   const aiAsteroid = makeAsteroid(aiAsteroidId, aiId, { x: 10, y: 10 });
 
-  const base: World = {
+  const base = makeTestWorld({
     tick: 1,
-    seed: 1,
-    difficulty: "manager",
     asteroids: new Map([
       [humanAsteroidId, humanAsteroid],
       [aiAsteroidId, aiAsteroid],
     ]),
-    buildings: new Map([
-      [
-        cpuBid,
-        {
-          id: cpuBid,
-          defKind: "cpu",
-          asteroidId: humanAsteroidId,
-          cell: { x: 3, y: 3 },
-          hp: 100,
-          maxHp: 100,
-          constructionProgress: 1,
-          active: true,
-          damage: 0,
-        },
-      ],
-    ]),
-    ships: new Map(),
+    buildings: new Map([[cpuBid, makeTestBuilding(cpuBid, humanAsteroidId)]]),
     players: new Map([
       [humanId, makePlayer(humanId, "helionCorp", true)],
       [aiId, makePlayer(aiId, "kryllCollective", false)],
     ]),
-    treaties: [],
-    marketPrices: { ...MARKET_PRICES },
-    eventQueue: [],
-    prng: makePrng(1),
-    schemaVersion: 1,
-    nextBuildingSeq: 0,
-    nextShipSeq: 0,
-    nextTreatySeq: 0,
-    gameEndState: null,
-    agents: new Map(),
-    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-  };
+  });
 
   return { ...base, ...overrides };
 }
@@ -145,7 +74,7 @@ describe("Rigal Conclave — tech-steal duration halved", () => {
   it("baseline techSteal duration is 400 ticks", () => {
     const world = makeWorld();
     const humanId = playerId("player-human");
-    const aiId = playerId("player-ai");
+    const _aiId = playerId("player-ai");
     const human = world.players.get(humanId)!;
     // Override raceId to non-rigal baseline (helionCorp)
     (human as { raceId: string }).raceId = "helionCorp";
@@ -258,7 +187,7 @@ describe("Mauna — Board difficulty assault fleet at tick 1", () => {
     const maunaAsteroid = makeAsteroid(maunaAsteroidId, maunaId, { x: 20, y: 20 });
     maunaAsteroid.buildings.push(cpuBid);
 
-    return {
+    return makeTestWorld({
       tick: 1,
       seed: 42,
       difficulty,
@@ -266,39 +195,13 @@ describe("Mauna — Board difficulty assault fleet at tick 1", () => {
         [humanAsteroidId, humanAsteroid],
         [maunaAsteroidId, maunaAsteroid],
       ]),
-      buildings: new Map([
-        [
-          cpuBid,
-          {
-            id: cpuBid,
-            defKind: "cpu",
-            asteroidId: maunaAsteroidId,
-            cell: { x: 3, y: 3 },
-            hp: 100,
-            maxHp: 100,
-            constructionProgress: 1,
-            active: true,
-            damage: 0,
-          },
-        ],
-      ]),
-      ships: new Map(),
+      buildings: new Map([[cpuBid, makeTestBuilding(cpuBid, maunaAsteroidId)]]),
       players: new Map([
         [humanId, makePlayer(humanId, "helionCorp", true, 4000)],
         [maunaId, makePlayer(maunaId, "mauna", false, 8800)],
       ]),
-      treaties: [],
-      marketPrices: { ...MARKET_PRICES },
-      eventQueue: [],
       prng: makePrng(42),
-      schemaVersion: 1,
-      nextBuildingSeq: 0,
-      nextShipSeq: 0,
-      nextTreatySeq: 0,
-      gameEndState: null,
-      agents: new Map(),
-      expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-    };
+    });
   }
 
   it("fires mauna.assault_fleet event on Board difficulty at tick 1", () => {
@@ -399,7 +302,7 @@ describe("Kryll Collective — accusation success multiplier", () => {
 
   it("Kryll accusationBonusActive applies +25% damage in combat and clears flag", () => {
     const world = makeWorld();
-    const humanId = playerId("player-human");
+    const _humanId = playerId("player-human");
     const aiId = playerId("player-ai");
     const humanAsteroidId = asteroidId("asteroid-human");
 
@@ -472,7 +375,7 @@ describe("Achar Gatherings — grace period after treaty", () => {
 
   it("Achar ship does not attack during grace period in combat", () => {
     const world = makeWorld();
-    const humanId = playerId("player-human");
+    const _humanId = playerId("player-human");
     const aiId = playerId("player-ai");
     const humanAsteroidId = asteroidId("asteroid-human");
 
@@ -504,7 +407,7 @@ describe("Achar Gatherings — grace period after treaty", () => {
 
   it("Achar ship attacks after grace period expires", () => {
     const world = makeWorld();
-    const humanId = playerId("player-human");
+    const _humanId = playerId("player-human");
     const aiId = playerId("player-ai");
     const humanAsteroidId = asteroidId("asteroid-human");
 
@@ -535,7 +438,7 @@ describe("Achar Gatherings — grace period after treaty", () => {
 
   it("proposeTreaty with Achar target sets grace period", () => {
     const world = makeWorld();
-    const humanId = playerId("player-human");
+    const _humanId = playerId("player-human");
     const aiId = playerId("player-ai");
 
     // Override AI player to Achar
@@ -607,7 +510,7 @@ describe("Motkaj Clans — treaty break at low credits", () => {
 
     // Use a PRNG that always returns 0 (below any threshold) to force the break
     let broken = false;
-    const originalNext = world.prng.next.bind(world.prng);
+    const _originalNext = world.prng.next.bind(world.prng);
     world.prng = {
       ...world.prng,
       next: () => 0, // always 0, which is < MOTKAJ_BREAK_BASE_CHANCE * 2 = 0.1

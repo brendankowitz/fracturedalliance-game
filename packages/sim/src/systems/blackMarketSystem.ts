@@ -18,10 +18,7 @@ export function tickBlackMarket(world: World): void {
   // that the tick that *starts* the expedition preserves its initialized
   // ticksRemaining — the first decrement happens on the next tick).
   if (world.expeditionFleet.active) {
-    world.expeditionFleet.ticksRemaining = Math.max(
-      0,
-      world.expeditionFleet.ticksRemaining - 1,
-    );
+    world.expeditionFleet.ticksRemaining = Math.max(0, world.expeditionFleet.ticksRemaining - 1);
     if (world.expeditionFleet.ticksRemaining <= 0) {
       world.expeditionFleet.active = false;
       world.eventQueue.push({ kind: "victory.independence", priority: "green" });

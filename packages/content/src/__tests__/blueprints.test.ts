@@ -1,3 +1,4 @@
+import type { BlueprintDiscipline } from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import {
   findBlueprintDef,
@@ -17,16 +18,15 @@ describe("blueprint loader", () => {
   });
 
   it("each discipline has the correct number of blueprints", () => {
-    const expectations: Record<string, number> = {
-      mining: 8,
-      infrastructure: 8,
-      military: 12,
-      science: 8,
-      commerce: 8,
-    };
-    const disciplines = Object.keys(expectations) as const;
-    for (const d of disciplines) {
-      expect(getBlueprintsByDiscipline(d as any)).toHaveLength(expectations[d]);
+    const expectations: ReadonlyArray<readonly [BlueprintDiscipline, number]> = [
+      ["mining", 8],
+      ["infrastructure", 8],
+      ["military", 12],
+      ["science", 8],
+      ["commerce", 8],
+    ];
+    for (const [discipline, count] of expectations) {
+      expect(getBlueprintsByDiscipline(discipline)).toHaveLength(count);
     }
   });
 

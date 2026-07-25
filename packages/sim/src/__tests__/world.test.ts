@@ -67,10 +67,9 @@ describe("createWorld", () => {
     if (!human) throw new Error("human player not found");
     const humanAsteroids = [...world.asteroids.values()].filter((a) => a.ownerId === human.id);
     expect(humanAsteroids.length).toBeGreaterThanOrEqual(1);
-    const totalDeposits = humanAsteroids.flatMap((a) => Object.values(a.deposits)).reduce(
-      (sum, v) => sum + (v ?? 0),
-      0,
-    );
+    const totalDeposits = humanAsteroids
+      .flatMap((a) => Object.values(a.deposits))
+      .reduce((sum, v) => sum + (v ?? 0), 0);
     expect(totalDeposits).toBeGreaterThan(0);
   });
 });

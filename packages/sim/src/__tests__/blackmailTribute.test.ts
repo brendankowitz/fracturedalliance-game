@@ -1,128 +1,62 @@
-import { describe, expect, it } from "vitest";
-import type { AsteroidId, PlayerId } from "@fa/domain";
+import type { AsteroidId, PlayerId, World } from "@fa/domain";
 import { agentId, asteroidId, buildingId, playerId } from "@fa/domain";
-import type { World } from "@fa/domain";
+import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
 import { tickAgents } from "../systems/agentSystem.ts";
+import {
+  makeTestAgent,
+  makeTestAsteroid,
+  makeTestBuilding,
+  makeTestPlayer,
+  makeTestWorld,
+} from "./testWorld.ts";
 
 function makeWorld(): World {
   const humanId: PlayerId = playerId("player-human");
   const aiId: PlayerId = playerId("player-ai");
   const aiAsteroidId: AsteroidId = asteroidId("asteroid-ai");
 
-  const agent = {
-    id: agentId("agent-spy"),
+  const agent = makeTestAgent(agentId("agent-spy"), {
     name: "Spy",
     ownerId: humanId,
     stealth: 99,
     hireCost: 1000,
-    missionKind: null as null,
-    missionTarget: null as null,
-    missionCompleteTick: null as null,
-    tributeActive: false,
-    tributeEndTick: null as null,
-  };
+  });
 
-  return {
+  return makeTestWorld({
     tick: 100,
     seed: 42,
+    prng: makePrng(42),
     asteroids: new Map([
       [
         aiAsteroidId,
-        {
-          id: aiAsteroidId,
+        makeTestAsteroid(aiAsteroidId, {
           name: "AI Base",
           ownerId: aiId,
           sector: { x: 10, y: 10 },
-          sizeClass: "M" as const,
-          deposits: {},
-          radiation: 0,
-          stability: 100,
-          happiness: 75,
-          buildings: [],
-          buildQueue: [],
-          inOrbit: [],
-          engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-        },
+        }),
       ],
     ]),
     buildings: new Map([
       [
         buildingId("cpu-human"),
-        {
-          id: buildingId("cpu-human"),
-          defKind: "cpu",
-          asteroidId: asteroidId("asteroid-human"),
-          cell: { x: 3, y: 3 },
-          hp: 100,
-          maxHp: 100,
-          constructionProgress: 1,
-          active: true,
-          damage: 0,
-        },
+        makeTestBuilding(buildingId("cpu-human"), asteroidId("asteroid-human")),
       ],
     ]),
-    ships: new Map(),
     players: new Map([
-      [
-        humanId,
-        {
-          id: humanId,
-          raceId: "helionCorp",
-          isHuman: true,
-          credits: 10_000,
-          oreInventory: {},
-          reputation: new Map(),
-          federationStanding: 50,
-          blueprintsOwned: new Set(),
-          eventLog: [],
-          alive: true,
-          suspicion: 0,
-          licenseRevoked: false,
-        },
-      ],
+      [humanId, makeTestPlayer(humanId, { raceId: "helionCorp", isHuman: true, credits: 10_000 })],
       [
         aiId,
-        {
-          id: aiId,
+        makeTestPlayer(aiId, {
           raceId: "kryllCollective",
           isHuman: false,
           credits: 8_000,
-          oreInventory: {},
-          reputation: new Map(),
           federationStanding: 30,
-          blueprintsOwned: new Set(),
-          eventLog: [],
-          alive: true,
-          suspicion: 0,
-          licenseRevoked: false,
-        },
+        }),
       ],
     ]),
-    treaties: [],
-    marketPrices: {
-      selenium: 100,
-      asteros: 150,
-      barium: 220,
-      crystalite: 300,
-      quazinc: 380,
-      bytanium: 500,
-      korellium: 650,
-      dragonium: 820,
-      traxium: 1100,
-      nexos: 1500,
-    },
-    eventQueue: [],
-    prng: makePrng(42),
-    schemaVersion: 1,
-    nextBuildingSeq: 0,
-    nextShipSeq: 0,
-    nextTreatySeq: 0,
-    gameEndState: null,
     agents: new Map([[agentId("agent-spy"), agent]]),
-    difficulty: "manager" as const,
-    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-  };
+  });
 }
 
 describe("blackmail — recurring tribute", () => {

@@ -2,8 +2,8 @@ import { getAllAgentDefs } from "@fa/content";
 import {
   type Agent,
   type AgentId,
-  agentId,
   type AsteroidId,
+  agentId,
   type Building,
   type BuildingId,
   buildingId,
@@ -48,11 +48,11 @@ function makeCpuBuilding(bid: BuildingId, aid: AsteroidId): Building {
 
 export function createWorld(config: WorldConfig): World {
   const difficulty: DifficultyLevel = config.difficulty ?? "manager";
-  const { asteroids: beltAsteroids, players: beltPlayers, prng } = generateBelt(
-    config.seed,
-    config.humanPlayerRaceId,
-    difficulty,
-  );
+  const {
+    asteroids: beltAsteroids,
+    players: beltPlayers,
+    prng,
+  } = generateBelt(config.seed, config.humanPlayerRaceId, difficulty);
 
   const asteroids = new Map(beltAsteroids.map((a) => [a.id, a]));
   const buildings = new Map<BuildingId, Building>();

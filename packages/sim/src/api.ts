@@ -61,13 +61,13 @@ export class SimApi {
 
   restore(blob: string): void {
     const save = JSON.parse(blob) as Record<string, unknown>;
-    if (save["schemaVersion"] !== 1) {
+    if (save.schemaVersion !== 1) {
       throw new Error(
-        `Unsupported save schema version: ${String(save["schemaVersion"] ?? "unknown")}`,
+        `Unsupported save schema version: ${String(save.schemaVersion ?? "unknown")}`,
       );
     }
-    const rngState = save["rngState"] as number;
-    const worldSnapshot = save["worldSnapshot"] as Record<string, unknown>;
+    const rngState = save.rngState as number;
+    const worldSnapshot = save.worldSnapshot as Record<string, unknown>;
     this.world = deserializeWorld(worldSnapshot, rngState);
     this.pendingCommands = [];
   }

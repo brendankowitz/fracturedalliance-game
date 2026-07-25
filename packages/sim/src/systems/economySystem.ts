@@ -14,9 +14,8 @@ export const BASE_PRICES: OreRecord<number> = {
   nexos: 1500,
 };
 
-export function clampOrePrice(oreKind: string, price: number): number {
-  const base = BASE_PRICES[oreKind as OreKind];
-  if (base === undefined) return price;
+export function clampOrePrice(oreKind: OreKind, price: number): number {
+  const base = BASE_PRICES[oreKind];
   return Math.max(base * 0.5, Math.min(base * 2.0, price));
 }
 

@@ -1,9 +1,23 @@
-import { findBlueprintDef, findBuildingDef, getAllBlueprintDefs, getRaceDef, getShipDef } from "@fa/content";
-import type { AgentMissionKind, BlackMarketItemKind, BlueprintDef, OreKind, Player, Treaty, TreatyKind, World } from "@fa/domain";
+import {
+  findBlueprintDef,
+  findBuildingDef,
+  getAllBlueprintDefs,
+  getRaceDef,
+  getShipDef,
+} from "@fa/content";
+import type {
+  AgentMissionKind,
+  BlackMarketItemKind,
+  BlueprintDef,
+  Player,
+  Treaty,
+  TreatyKind,
+  World,
+} from "@fa/domain";
 import { blueprintId, shipId, treatyId } from "@fa/domain";
 import type { Command } from "./commands.ts";
-import { clampOrePrice } from "./systems/economySystem.ts";
 import { applyTreatySignedTraits } from "./systems/diplomacySystem.ts";
+import { clampOrePrice } from "./systems/economySystem.ts";
 import { ARRIVAL_RADIUS } from "./systems/shipSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
 
@@ -15,6 +29,9 @@ const ITEM_COSTS: Record<BlackMarketItemKind, number> = {
   sabotageKit: 1500,
   contraband: 500,
 };
+
+// Priced as a bargain, not a printing press: 12 selenium is worth ~1,200cr against the 800cr cost.
+const ORE_CACHE_SELENIUM = 12;
 
 const ITEM_SUSPICION: Record<BlackMarketItemKind, number> = {
   oreCache: 5,
@@ -299,9 +316,7 @@ export function applyCommand(world: World, command: Command): void {
       break;
     }
     case "blackMarketBuy": {
-      const maunaAlive = [...world.players.values()].some(
-        (p) => p.raceId === "mauna" && p.alive,
-      );
+      const maunaAlive = [...world.players.values()].some((p) => p.raceId === "mauna" && p.alive);
       if (!maunaAlive) return;
 
       const human = [...world.players.values()].find((p) => p.isHuman);
@@ -315,7 +330,7 @@ export function applyCommand(world: World, command: Command): void {
 
       switch (command.itemKind) {
         case "oreCache": {
-          human.oreInventory["iron"] = (human.oreInventory["iron"] ?? 0) + 200;
+          human.oreInventory.selenium = (human.oreInventory.selenium ?? 0) + ORE_CACHE_SELENIUM;
           break;
         }
         case "stealth": {
@@ -389,16 +404,13 @@ export function applyCommand(world: World, command: Command): void {
       const currentStock = human.oreInventory[oreKind] ?? 0;
       if (currentStock < quantity) return;
 
-      const marketPrice = world.marketPrices[oreKind as OreKind];
-      if (marketPrice === undefined) return;
+      const marketPrice = world.marketPrices[oreKind];
 
       human.oreInventory[oreKind] = currentStock - quantity;
       human.credits += quantity * marketPrice;
 
       const depressed = marketPrice * 0.99;
-      world.marketPrices[oreKind as OreKind] = Math.round(
-        clampOrePrice(oreKind, depressed) * 100,
-      ) / 100;
+      world.marketPrices[oreKind] = Math.round(clampOrePrice(oreKind, depressed) * 100) / 100;
       break;
     }
     case "buyOre": {
@@ -408,8 +420,7 @@ export function applyCommand(world: World, command: Command): void {
       if (!human) return;
 
       const { oreKind, quantity } = command;
-      const marketPrice = world.marketPrices[oreKind as OreKind];
-      if (marketPrice === undefined) return;
+      const marketPrice = world.marketPrices[oreKind];
 
       const cost = quantity * marketPrice;
       if (human.credits < cost) return;
@@ -418,9 +429,7 @@ export function applyCommand(world: World, command: Command): void {
       human.oreInventory[oreKind] = (human.oreInventory[oreKind] ?? 0) + quantity;
 
       const raised = marketPrice * 1.01;
-      world.marketPrices[oreKind as OreKind] = Math.round(
-        clampOrePrice(oreKind, raised) * 100,
-      ) / 100;
+      world.marketPrices[oreKind] = Math.round(clampOrePrice(oreKind, raised) * 100) / 100;
       break;
     }
     case "settleAsteroid": {

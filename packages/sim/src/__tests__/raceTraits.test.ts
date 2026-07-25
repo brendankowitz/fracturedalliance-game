@@ -1,5 +1,5 @@
+import { getAllRaceDefs } from "@fa/content";
 import { describe, expect, it } from "vitest";
-import { getAllRaceDefs, getRaceDef } from "@fa/content";
 import { getSellPrice } from "../systems/economySystem.ts";
 
 describe("Race demand modifiers", () => {
@@ -11,19 +11,19 @@ describe("Race demand modifiers", () => {
 
   it("motkaj pays 1.3x for korellium", () => {
     const races = getAllRaceDefs();
-    const motkaj = races.find(r => r.id.toLowerCase().includes("motkaj"));
+    const motkaj = races.find((r) => r.id.toLowerCase().includes("motkaj"));
     expect(motkaj?.demandModifiers?.korellium).toBe(1.3);
   });
 
   it("achar pays 0.8x for quazinc", () => {
     const races = getAllRaceDefs();
-    const achar = races.find(r => r.id.toLowerCase().includes("achar"));
+    const achar = races.find((r) => r.id.toLowerCase().includes("achar"));
     expect(achar?.demandModifiers?.quazinc).toBe(0.8);
   });
 
   it("getSellPrice applies race modifier", () => {
     const races = getAllRaceDefs();
-    const motkaj = races.find(r => r.id.toLowerCase().includes("motkaj"))!;
+    const motkaj = races.find((r) => r.id.toLowerCase().includes("motkaj"))!;
     const basePrice = 650;
     const price = getSellPrice("korellium", basePrice, motkaj.id);
     expect(price).toBeCloseTo(845); // 650 * 1.3

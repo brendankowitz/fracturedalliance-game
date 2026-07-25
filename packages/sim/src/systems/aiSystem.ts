@@ -53,7 +53,7 @@ function computePowerBalance(asteroid: Asteroid, world: World): number {
 }
 
 function utilityBuildMine(
-  world: World,
+  _world: World,
   asteroid: Asteroid,
   player: Player,
   personality: RacePersonality,

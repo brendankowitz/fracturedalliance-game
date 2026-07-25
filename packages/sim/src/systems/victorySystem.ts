@@ -6,7 +6,7 @@ export function checkVictory(world: World): void {
 
   const human = [...world.players.values()].find((p) => p.isHuman);
 
-  if (!human || !human.alive) {
+  if (!human?.alive) {
     world.gameEndState = "defeat";
     world.eventQueue.push({ kind: "game.ended", priority: "red", state: "defeat" });
     return;

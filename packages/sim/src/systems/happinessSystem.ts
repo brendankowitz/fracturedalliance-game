@@ -20,7 +20,11 @@ export function tickHappiness(world: World): void {
     asteroid.ownerId = null;
     const owner = world.players.get(ownerId);
     if (owner?.isHuman) {
-      world.eventQueue.push({ kind: "colony.seceded", priority: "amber", asteroidName: asteroid.name });
+      world.eventQueue.push({
+        kind: "colony.seceded",
+        priority: "amber",
+        asteroidName: asteroid.name,
+      });
     }
   }
 }

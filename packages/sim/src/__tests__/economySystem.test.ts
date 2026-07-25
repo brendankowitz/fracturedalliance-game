@@ -1,86 +1,39 @@
-import { asteroidId, buildingId, playerId, type World, type AsteroidId, type BuildingId, type PlayerId } from "@fa/domain";
+import {
+  type AsteroidId,
+  asteroidId,
+  type BuildingId,
+  buildingId,
+  type PlayerId,
+  playerId,
+  type World,
+} from "@fa/domain";
 import { describe, expect, it } from "vitest";
 import { applyCommand } from "../commandProcessor.ts";
-import { makePrng } from "../prng.ts";
 import { BASE_PRICES, tickEconomy } from "../systems/economySystem.ts";
+import { makeTestAsteroid, makeTestBuilding, makeTestPlayer, makeTestWorld } from "./testWorld.ts";
 
 function makeMinimalWorld(): World {
   const humanId: PlayerId = playerId("player-human");
   const humanAstId: AsteroidId = asteroidId("asteroid-human");
   const cpuBid: BuildingId = buildingId("cpu-1");
 
-  return {
-    tick: 0,
-    seed: 1,
+  return makeTestWorld({
     asteroids: new Map([
       [
         humanAstId,
-        {
-          id: humanAstId,
+        makeTestAsteroid(humanAstId, {
           name: "Human Base",
           ownerId: humanId,
-          sector: { x: 0, y: 0 },
-          sizeClass: "M" as const,
-          deposits: {},
-          radiation: 0,
-          stability: 100,
-          happiness: 0.8,
           buildings: [cpuBid],
-          buildQueue: [],
-          inOrbit: [],
-          engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-        },
+          happiness: 0.8,
+        }),
       ],
     ]),
-    buildings: new Map([
-      [
-        cpuBid,
-        {
-          id: cpuBid,
-          defKind: "cpu",
-          asteroidId: humanAstId,
-          cell: { x: 3, y: 3 },
-          hp: 100,
-          maxHp: 100,
-          constructionProgress: 1,
-          active: true,
-          damage: 0,
-        },
-      ],
-    ]),
-    ships: new Map(),
+    buildings: new Map([[cpuBid, makeTestBuilding(cpuBid, humanAstId)]]),
     players: new Map([
-      [
-        humanId,
-        {
-          id: humanId,
-          raceId: "helionCorp",
-          isHuman: true,
-          credits: 50_000,
-          oreInventory: {},
-          reputation: new Map(),
-          federationStanding: 50,
-          blueprintsOwned: new Set(),
-          eventLog: [],
-          alive: true,
-          suspicion: 0,
-          licenseRevoked: false,
-        },
-      ],
+      [humanId, makeTestPlayer(humanId, { raceId: "helionCorp", isHuman: true, credits: 50_000 })],
     ]),
-    treaties: [],
-    marketPrices: { ...BASE_PRICES },
-    eventQueue: [],
-    prng: makePrng(1),
-    schemaVersion: 1,
-    nextBuildingSeq: 0,
-    nextShipSeq: 0,
-    nextTreatySeq: 0,
-    gameEndState: null,
-    agents: new Map(),
-    difficulty: "manager" as const,
-    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-  };
+  });
 }
 
 function makeMockPrng(value: number) {
@@ -158,13 +111,13 @@ describe("sellOre command", () => {
   it("deducts ore, adds credits, reduces market price", () => {
     const world = makeMinimalWorld();
     const human = world.players.get(playerId("player-human"))!;
-    human.oreInventory["selenium"] = 20;
+    human.oreInventory.selenium = 20;
     const creditsBefore = human.credits;
     const priceBefore = world.marketPrices.selenium;
 
     applyCommand(world, { kind: "sellOre", oreKind: "selenium", quantity: 10 });
 
-    expect(human.oreInventory["selenium"]).toBe(10);
+    expect(human.oreInventory.selenium).toBe(10);
     expect(human.credits).toBeCloseTo(creditsBefore + 10 * priceBefore, 1);
     expect(world.marketPrices.selenium).toBeLessThan(priceBefore);
   });
@@ -172,19 +125,19 @@ describe("sellOre command", () => {
   it("fails when inventory is insufficient", () => {
     const world = makeMinimalWorld();
     const human = world.players.get(playerId("player-human"))!;
-    human.oreInventory["selenium"] = 5;
+    human.oreInventory.selenium = 5;
     const creditsBefore = human.credits;
 
     applyCommand(world, { kind: "sellOre", oreKind: "selenium", quantity: 10 });
 
     expect(human.credits).toBe(creditsBefore);
-    expect(human.oreInventory["selenium"]).toBe(5);
+    expect(human.oreInventory.selenium).toBe(5);
   });
 
   it("fails when quantity is 0", () => {
     const world = makeMinimalWorld();
     const human = world.players.get(playerId("player-human"))!;
-    human.oreInventory["selenium"] = 20;
+    human.oreInventory.selenium = 20;
     const creditsBefore = human.credits;
 
     applyCommand(world, { kind: "sellOre", oreKind: "selenium", quantity: 0 });
@@ -192,13 +145,12 @@ describe("sellOre command", () => {
     expect(human.credits).toBe(creditsBefore);
   });
 
-  it("fails when ore kind is not in marketPrices", () => {
+  it("fails when player has no inventory of the requested ore", () => {
     const world = makeMinimalWorld();
     const human = world.players.get(playerId("player-human"))!;
-    human.oreInventory["iron"] = 50;
     const creditsBefore = human.credits;
 
-    applyCommand(world, { kind: "sellOre", oreKind: "iron", quantity: 10 });
+    applyCommand(world, { kind: "sellOre", oreKind: "selenium", quantity: 10 });
 
     expect(human.credits).toBe(creditsBefore);
   });
@@ -213,7 +165,7 @@ describe("buyOre command", () => {
 
     applyCommand(world, { kind: "buyOre", oreKind: "selenium", quantity: 10 });
 
-    expect(human.oreInventory["selenium"]).toBe(10);
+    expect(human.oreInventory.selenium).toBe(10);
     expect(human.credits).toBeCloseTo(creditsBefore - 10 * priceBefore, 1);
     expect(world.marketPrices.selenium).toBeGreaterThan(priceBefore);
   });
@@ -223,12 +175,12 @@ describe("buyOre command", () => {
     const human = world.players.get(playerId("player-human"))!;
     // nexos = 1500/unit, 10 units = 15000, but human only has 50000 credits — set lower
     human.credits = 100;
-    const oreBefore = human.oreInventory["nexos"] ?? 0;
+    const oreBefore = human.oreInventory.nexos ?? 0;
 
     applyCommand(world, { kind: "buyOre", oreKind: "nexos", quantity: 10 });
 
     expect(human.credits).toBe(100);
-    expect(human.oreInventory["nexos"] ?? 0).toBe(oreBefore);
+    expect(human.oreInventory.nexos ?? 0).toBe(oreBefore);
   });
 
   it("fails when quantity is 0", () => {

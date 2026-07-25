@@ -1,132 +1,73 @@
-import { describe, expect, it } from "vitest";
-import type { AsteroidId, PlayerId } from "@fa/domain";
+import type { AsteroidId, PlayerId, World } from "@fa/domain";
 import { agentId, asteroidId, buildingId, playerId } from "@fa/domain";
-import type { World } from "@fa/domain";
+import { describe, expect, it } from "vitest";
 import { makePrng } from "../prng.ts";
 import { tickAgents } from "../systems/agentSystem.ts";
+import {
+  makeTestAgent,
+  makeTestAsteroid,
+  makeTestBuilding,
+  makeTestPlayer,
+  makeTestWorld,
+} from "./testWorld.ts";
 
-function makeWorld(overrides?: { happiness?: number; asteroidOwnerId?: PlayerId | null }): World {
+function makeWorld(overrides?: {
+  happiness?: number;
+  asteroidOwnerId?: PlayerId | null;
+  agentStealth?: number;
+}): World {
   const humanId: PlayerId = playerId("player-human");
   const aiId: PlayerId = playerId("player-ai");
   const targetId: AsteroidId = asteroidId("asteroid-target");
 
-  const agent = {
-    id: agentId("agent-spy"),
+  const agent = makeTestAgent(agentId("agent-spy"), {
     name: "Spy",
-    // stealth=99 ensures outcome=success against security=0
+    // stealth=99 ensures outcome=success against security=0 (unless agentStealth override is passed)
     ownerId: humanId,
-    stealth: 99,
+    stealth: overrides?.agentStealth ?? 99,
     hireCost: 1000,
-    missionKind: "liberate" as const,
+    missionKind: "liberate",
     missionTarget: targetId,
     missionCompleteTick: 100,
-    tributeActive: false,
-    tributeEndTick: null as null,
-  };
+  });
 
   const happiness = overrides?.happiness ?? 0.1;
-  const asteroidOwnerId = overrides?.asteroidOwnerId !== undefined ? overrides.asteroidOwnerId : aiId;
+  const asteroidOwnerId =
+    overrides?.asteroidOwnerId !== undefined ? overrides.asteroidOwnerId : aiId;
 
-  return {
+  return makeTestWorld({
     tick: 100,
-    seed: 1,
     asteroids: new Map([
       [
         targetId,
-        {
-          id: targetId,
+        makeTestAsteroid(targetId, {
           name: "Target",
           ownerId: asteroidOwnerId,
           sector: { x: 5, y: 5 },
-          sizeClass: "M" as const,
-          deposits: {},
-          radiation: 0,
-          stability: 100,
           happiness,
-          buildings: [],
-          buildQueue: [],
-          inOrbit: [],
-          engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-        },
+        }),
       ],
     ]),
     buildings: new Map([
       [
         buildingId("cpu-human"),
-        {
-          id: buildingId("cpu-human"),
-          defKind: "cpu",
-          asteroidId: asteroidId("asteroid-human"),
-          cell: { x: 3, y: 3 },
-          hp: 100,
-          maxHp: 100,
-          constructionProgress: 1,
-          active: true,
-          damage: 0,
-        },
+        makeTestBuilding(buildingId("cpu-human"), asteroidId("asteroid-human")),
       ],
     ]),
-    ships: new Map(),
     players: new Map([
-      [
-        humanId,
-        {
-          id: humanId,
-          raceId: "helionCorp",
-          isHuman: true,
-          credits: 10_000,
-          oreInventory: {},
-          reputation: new Map(),
-          federationStanding: 50,
-          blueprintsOwned: new Set(),
-          eventLog: [],
-          alive: true,
-          suspicion: 0,
-          licenseRevoked: false,
-        },
-      ],
+      [humanId, makeTestPlayer(humanId, { raceId: "helionCorp", isHuman: true, credits: 10_000 })],
       [
         aiId,
-        {
-          id: aiId,
+        makeTestPlayer(aiId, {
           raceId: "kryllCollective",
           isHuman: false,
           credits: 8_000,
-          oreInventory: {},
-          reputation: new Map(),
           federationStanding: 30,
-          blueprintsOwned: new Set(),
-          eventLog: [],
-          alive: true,
-          suspicion: 0,
-          licenseRevoked: false,
-        },
+        }),
       ],
     ]),
-    treaties: [],
-    marketPrices: {
-      selenium: 100,
-      asteros: 150,
-      barium: 220,
-      crystalite: 300,
-      quazinc: 380,
-      bytanium: 500,
-      korellium: 650,
-      dragonium: 820,
-      traxium: 1100,
-      nexos: 1500,
-    },
-    eventQueue: [],
-    prng: makePrng(1),
-    schemaVersion: 1,
-    nextBuildingSeq: 0,
-    nextShipSeq: 0,
-    nextTreatySeq: 0,
-    gameEndState: null,
     agents: new Map([[agentId("agent-spy"), agent]]),
-    difficulty: "manager" as const,
-    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-  };
+  });
 }
 
 describe("liberate mission — preconditions", () => {
@@ -190,10 +131,9 @@ describe("liberate mission — failure happiness spike", () => {
     // Seed 1 produces roll=63, which is in the failed range (41-80)
     const targetId = asteroidId("asteroid-target");
 
-    const world = makeWorld({ happiness: 0.1 });
+    // threshold=40: roll 41-80 = failed
+    const world = makeWorld({ happiness: 0.1, agentStealth: 40 });
     world.prng = makePrng(1); // seed 1 produces roll=63, outcome="failed"
-    const agent = world.agents.get(agentId("agent-spy"))!;
-    agent.stealth = 40; // threshold=40: roll 41-80 = failed
     const target = world.asteroids.get(targetId)!;
     const happinessBefore = target.happiness;
 

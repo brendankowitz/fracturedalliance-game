@@ -1,4 +1,4 @@
-import type { Asteroid, AsteroidId, ShipId, World } from "@fa/domain";
+import type { Asteroid, AsteroidId, World } from "@fa/domain";
 
 export const DESTROYED_SECTOR_COORD = -9999;
 const STABILITY_DECAY_PER_FIRE = 0.1;
@@ -10,7 +10,11 @@ export function tickAsteroidEngines(world: World): void {
 
     const { engines } = asteroid;
 
-    if (engines.chargeTick !== null && engines.etaTick === null && world.tick === engines.chargeTick) {
+    if (
+      engines.chargeTick !== null &&
+      engines.etaTick === null &&
+      world.tick === engines.chargeTick
+    ) {
       const destId = engines.destinationId;
       if (!destId) continue;
       const destination = world.asteroids.get(destId);
@@ -61,7 +65,7 @@ export function tickAsteroidEngines(world: World): void {
       });
 
       let landX = destination.sector.x;
-      let landY = destination.sector.y;
+      const landY = destination.sector.y;
 
       if (hasNullifier) {
         landX += NULLIFIER_DEFLECT_OFFSET;
@@ -92,11 +96,15 @@ function destroyAsteroid(world: World, asteroid: Asteroid): void {
   for (const sid of [...asteroid.inOrbit]) {
     world.ships.delete(sid);
   }
-  (asteroid as { inOrbit: typeof asteroid.inOrbit }).inOrbit = [] as ShipId[];
+  asteroid.inOrbit = [];
   if (asteroid.ownerId) {
     const owner = world.players.get(asteroid.ownerId);
     if (owner?.isHuman) {
-      world.eventQueue.push({ kind: "asteroid.destroyed", priority: "red", asteroidName: asteroid.name });
+      world.eventQueue.push({
+        kind: "asteroid.destroyed",
+        priority: "red",
+        asteroidName: asteroid.name,
+      });
     }
     asteroid.ownerId = null;
   }
@@ -128,12 +136,12 @@ function resolveCollisions(world: World, movedId: AsteroidId, landX: number, lan
     for (const sid of moved.inOrbit) {
       world.ships.delete(sid);
     }
-    (moved as { inOrbit: ShipId[] }).inOrbit = [];
+    moved.inOrbit = [];
 
     for (const sid of other.inOrbit) {
       world.ships.delete(sid);
     }
-    (other as { inOrbit: ShipId[] }).inOrbit = [];
+    other.inOrbit = [];
 
     const movedWins = moved.engines.count >= other.engines.count;
     const loser = movedWins ? other : moved;

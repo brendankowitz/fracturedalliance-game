@@ -6,13 +6,12 @@ import {
   buildingId,
   type PlayerId,
   playerId,
-  type ShipId,
   shipId,
 } from "@fa/domain";
 import { describe, expect, it } from "vitest";
-import { makePrng } from "../prng.ts";
 import { applyCommand } from "../commandProcessor.ts";
 import { tickAsteroidEngines } from "../systems/asteroidEngineSystem.ts";
+import { makeTestAsteroid, makeTestBuilding, makeTestPlayer, makeTestWorld } from "./testWorld.ts";
 
 function makeMinimalWorld(): World {
   const humanId: PlayerId = playerId("player-human");
@@ -21,117 +20,40 @@ function makeMinimalWorld(): World {
   const aiAsteroidId: AsteroidId = asteroidId("asteroid-ai");
   const cpuBid: BuildingId = buildingId("cpu-1");
 
-  const humanAsteroid = {
-    id: humanAsteroidId,
-    name: "Human Base",
-    ownerId: humanId,
-    sector: { x: 0, y: 0 },
-    sizeClass: "M" as const,
-    deposits: {},
-    radiation: 0,
-    stability: 100,
-    happiness: 75,
-    buildings: [cpuBid],
-    buildQueue: [],
-    inOrbit: [] as ShipId[],
-    engines: { count: 3, destinationId: null, etaTick: null, chargeTick: null },
-  };
-
-  const aiAsteroid = {
-    id: aiAsteroidId,
-    name: "AI Base",
-    ownerId: aiId,
-    sector: { x: 3, y: 4 },
-    sizeClass: "M" as const,
-    deposits: {},
-    radiation: 0,
-    stability: 100,
-    happiness: 75,
-    buildings: [],
-    buildQueue: [],
-    inOrbit: [] as ShipId[],
-    engines: { count: 0, destinationId: null, etaTick: null, chargeTick: null },
-  };
-
-  const humanPlayer = {
-    id: humanId,
-    raceId: "helionCorp",
-    isHuman: true,
-    credits: 10_000,
-    oreInventory: {},
-    reputation: new Map<PlayerId, number>(),
-    federationStanding: 50,
-    blueprintsOwned: new Set<import("@fa/domain").BlueprintId>(),
-    eventLog: [],
-    alive: true,
-    suspicion: 0,
-    licenseRevoked: false,
-  };
-
-  const aiPlayer = {
-    id: aiId,
-    raceId: "kryllCollective",
-    isHuman: false,
-    credits: 8_000,
-    oreInventory: {},
-    reputation: new Map<PlayerId, number>(),
-    federationStanding: 30,
-    blueprintsOwned: new Set<import("@fa/domain").BlueprintId>(),
-    eventLog: [],
-    alive: true,
-    suspicion: 0,
-    licenseRevoked: false,
-  };
-
-  const cpu = {
-    id: cpuBid,
-    defKind: "cpu",
-    asteroidId: humanAsteroidId,
-    cell: { x: 3, y: 3 },
-    hp: 100,
-    maxHp: 100,
-    constructionProgress: 1,
-    active: true,
-    damage: 0,
-  };
-
-  return {
-    tick: 0,
-    seed: 1,
+  return makeTestWorld({
     asteroids: new Map([
-      [humanAsteroidId, humanAsteroid],
-      [aiAsteroidId, aiAsteroid],
+      [
+        humanAsteroidId,
+        makeTestAsteroid(humanAsteroidId, {
+          name: "Human Base",
+          ownerId: humanId,
+          buildings: [cpuBid],
+          engines: { count: 3, destinationId: null, etaTick: null, chargeTick: null },
+        }),
+      ],
+      [
+        aiAsteroidId,
+        makeTestAsteroid(aiAsteroidId, {
+          name: "AI Base",
+          ownerId: aiId,
+          sector: { x: 3, y: 4 },
+        }),
+      ],
     ]),
-    buildings: new Map([[cpuBid, cpu]]),
-    ships: new Map(),
+    buildings: new Map([[cpuBid, makeTestBuilding(cpuBid, humanAsteroidId)]]),
     players: new Map([
-      [humanId, humanPlayer],
-      [aiId, aiPlayer],
+      [humanId, makeTestPlayer(humanId, { raceId: "helionCorp", isHuman: true, credits: 10_000 })],
+      [
+        aiId,
+        makeTestPlayer(aiId, {
+          raceId: "kryllCollective",
+          isHuman: false,
+          credits: 8_000,
+          federationStanding: 30,
+        }),
+      ],
     ]),
-    treaties: [],
-    marketPrices: {
-      selenium: 100,
-      asteros: 150,
-      barium: 220,
-      crystalite: 300,
-      quazinc: 380,
-      bytanium: 500,
-      korellium: 650,
-      dragonium: 820,
-      traxium: 1100,
-      nexos: 1500,
-    },
-    eventQueue: [],
-    prng: makePrng(1),
-    schemaVersion: 1,
-    nextBuildingSeq: 0,
-    nextShipSeq: 0,
-    nextTreatySeq: 0,
-    gameEndState: null,
-    agents: new Map(),
-    difficulty: "manager" as const,
-    expeditionFleet: { active: false, ticksRemaining: 0, fleetsLaunched: 0 },
-  };
+  });
 }
 
 describe("setAsteroidDestination command", () => {
@@ -339,7 +261,7 @@ describe("tickAsteroidEngines — collision", () => {
       order: { kind: "idle" },
       cargo: {},
     });
-    (humanAsteroid as unknown as { inOrbit: ShipId[] }).inOrbit = [orbitShipId];
+    humanAsteroid.inOrbit = [orbitShipId];
 
     // Set up human asteroid to arrive at ai asteroid's sector
     humanAsteroid.engines.destinationId = aiAsteroidId;
