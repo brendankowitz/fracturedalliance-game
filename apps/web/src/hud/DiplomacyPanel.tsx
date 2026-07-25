@@ -1,6 +1,7 @@
 import { getRaceDef } from "@fa/content";
 import type { TreatyKind } from "@fa/domain";
 import type { Command, DiplomacyEntry, HudSnapshot } from "@fa/sim";
+import { assetUrl } from "../assetUrl.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
 
@@ -53,7 +54,7 @@ const PORTRAIT_SETS = ["civpro", "matreKhan", "terran"] as const;
 function getPortrait(raceId: string, reputation: number): string {
   const set = PORTRAIT_SETS[Math.abs(hashStr(raceId)) % 3];
   const mood = reputation <= -10 ? "hostile" : "neutral";
-  return `/assets/portraits/${set}-${mood}.png`;
+  return assetUrl(`/assets/portraits/${set}-${mood}.png`);
 }
 
 function repSign(reputation: number): string {

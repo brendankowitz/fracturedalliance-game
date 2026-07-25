@@ -1,3 +1,4 @@
+import { ALL_ORES } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
@@ -14,8 +15,6 @@ export function TradePanel({ onCommand }: Props) {
   const snapshot = useGameStore((s) => s.snapshot);
 
   if (!open || !snapshot) return null;
-
-  const oreEntries = Object.entries(snapshot.marketPrices);
 
   return (
     <div
@@ -35,7 +34,10 @@ export function TradePanel({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Ore Market<HelpTip text="Trade ore with passing transporters. Prices vary by supply, demand, and race." /></div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>
+        Ore Market
+        <HelpTip text="Trade ore with passing transporters. Prices vary by supply, demand, and race." />
+      </div>
 
       <div style={{ marginBottom: 10, fontSize: 12, color: "#7090b0" }}>
         Credits:{" "}
@@ -62,7 +64,8 @@ export function TradePanel({ onCommand }: Props) {
         <span style={{ textAlign: "center" }}>Actions</span>
       </div>
 
-      {oreEntries.map(([oreKind, price]) => {
+      {ALL_ORES.map((oreKind) => {
+        const price = snapshot.marketPrices[oreKind] ?? 0;
         const stock = snapshot.oreInventory[oreKind] ?? 0;
         const canSell = stock >= TRADE_QUANTITY;
         const canBuy = snapshot.credits >= price * TRADE_QUANTITY;
@@ -86,9 +89,7 @@ export function TradePanel({ onCommand }: Props) {
               </div>
               <div style={{ fontSize: 10, color: "#7090b0" }}>Stock: {stock}</div>
             </div>
-            <div style={{ textAlign: "right", fontSize: 12 }}>
-              &#x20a1;{price.toLocaleString()}
-            </div>
+            <div style={{ textAlign: "right", fontSize: 12 }}>&#x20a1;{price.toLocaleString()}</div>
             <div style={{ display: "flex", gap: 4 }}>
               <button
                 type="button"

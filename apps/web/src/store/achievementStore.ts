@@ -12,14 +12,23 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "five_mines", name: "Mine Operator", description: "Build 5 mines on a single asteroid." },
   { id: "wealthy_baron", name: "Wealthy Baron", description: "Accumulate 100,000 credits." },
   { id: "diplomat", name: "Diplomat", description: "Hold 3 active treaties simultaneously." },
-  { id: "black_market", name: "Back-Alley Dealings", description: "Make 3 black market purchases." },
+  {
+    id: "black_market",
+    name: "Back-Alley Dealings",
+    description: "Make 3 black market purchases.",
+  },
   { id: "espionage", name: "Shadow Hand", description: "Deploy 3 agents across the belt." },
   { id: "independence_win", name: "Independence!", description: "Win via Independence victory." },
   { id: "military_win", name: "Iron Fist", description: "Win via Military conquest." },
   { id: "economic_win", name: "Belt Baron", description: "Win via Economic dominance." },
   { id: "science_win", name: "Future Architect", description: "Win via Scientific breakthrough." },
   { id: "first_win", name: "Claim the Belt", description: "Win any game." },
-  { id: "speed_run", name: "Lightning Baron", description: "Win any game within 200 ticks.", secret: true },
+  {
+    id: "speed_run",
+    name: "Lightning Baron",
+    description: "Win any game within 200 ticks.",
+    secret: true,
+  },
 ];
 
 const STORAGE_KEY = "fa-achievements";

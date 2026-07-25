@@ -27,7 +27,7 @@ export function App() {
   }, [colorPalette]);
 
   useEffect(() => {
-    document.documentElement.style.fontSize = fontScale + "%";
+    document.documentElement.style.fontSize = `${fontScale}%`;
   }, [fontScale]);
 
   useEffect(() => {

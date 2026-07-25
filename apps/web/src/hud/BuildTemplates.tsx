@@ -100,7 +100,9 @@ export function BuildTemplates({ currentQueue, onApplyTemplate }: BuildTemplates
           >
             <option value="">-- select --</option>
             {Object.keys(buildTemplates).map((name) => (
-              <option key={name} value={name}>{name}</option>
+              <option key={name} value={name}>
+                {name}
+              </option>
             ))}
           </select>
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>

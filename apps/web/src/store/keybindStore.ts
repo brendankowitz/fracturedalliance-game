@@ -27,7 +27,6 @@ interface KeybindState {
 
 export const useKeybindStore = create<KeybindState>((set) => ({
   keybinds: { ...DEFAULT_KEYBINDS },
-  setKeybind: (action, key) =>
-    set((s) => ({ keybinds: { ...s.keybinds, [action]: key } })),
+  setKeybind: (action, key) => set((s) => ({ keybinds: { ...s.keybinds, [action]: key } })),
   resetKeybinds: () => set({ keybinds: { ...DEFAULT_KEYBINDS } }),
 }));

@@ -4,11 +4,5 @@
   "description": "Default capabilities for Fractured Alliance desktop",
   "platforms": ["linux", "macOS", "windows"],
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "fs:read-all",
-    "fs:write-all",
-    "dialog:open",
-    "dialog:save"
-  ]
+  "permissions": ["core:default", "fs:read-all", "fs:write-all", "dialog:open", "dialog:save"]
 }

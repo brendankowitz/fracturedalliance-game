@@ -68,28 +68,57 @@ interface NavBarProps {
 }
 
 function NavBar({
-  tradePanelOpen, blackMarketOpen, blueprintShopOpen, espionageOpen,
-  alertsOpen, diplomacyOpen, saveLoadOpen, surfaceOpen, colonyName,
-  toggleTradePanel, toggleBlackMarket, toggleBlueprintShop,
-  toggleEspionage, toggleAlerts, toggleDiplomacy, toggleSaveLoad, toggleSurface,
-  paused, setPaused, colorPalette, setColorPalette,
-  fontScale, setFontScale,
-  ecoMode, toggleEcoMode,
-  showHelp, toggleHelp,
-  slowSimMode, toggleSlowSimMode,
-  keybindingsOpen, setKeybindingsOpen,
-  achievementsOpen, setAchievementsOpen,
-  unlockedCount, totalAchievements,
+  tradePanelOpen,
+  blackMarketOpen,
+  blueprintShopOpen,
+  espionageOpen,
+  alertsOpen,
+  diplomacyOpen,
+  saveLoadOpen,
+  surfaceOpen,
+  colonyName,
+  toggleTradePanel,
+  toggleBlackMarket,
+  toggleBlueprintShop,
+  toggleEspionage,
+  toggleAlerts,
+  toggleDiplomacy,
+  toggleSaveLoad,
+  toggleSurface,
+  paused,
+  setPaused,
+  colorPalette,
+  setColorPalette,
+  fontScale,
+  setFontScale,
+  ecoMode,
+  toggleEcoMode,
+  showHelp,
+  toggleHelp,
+  slowSimMode,
+  toggleSlowSimMode,
+  keybindingsOpen,
+  setKeybindingsOpen,
+  achievementsOpen,
+  setAchievementsOpen,
+  unlockedCount,
+  totalAchievements,
 }: NavBarProps) {
   const navItems = [
-    { label: colonyName ? `★ ${colonyName}` : "★ Surface", key: "—", open: surfaceOpen, toggle: toggleSurface, accent: true },
-    { label: "Trade",      key: "T", open: tradePanelOpen,     toggle: toggleTradePanel },
-    { label: "Market",     key: "M", open: blackMarketOpen,    toggle: toggleBlackMarket },
-    { label: "Espionage",  key: "E", open: espionageOpen,      toggle: toggleEspionage },
-    { label: "Research",   key: "R", open: blueprintShopOpen,  toggle: toggleBlueprintShop },
-    { label: "Alerts",     key: "A", open: alertsOpen,         toggle: toggleAlerts },
-    { label: "Diplomacy",  key: "D", open: diplomacyOpen,      toggle: toggleDiplomacy },
-    { label: "Save/Load",  key: "⌘S", open: saveLoadOpen,       toggle: toggleSaveLoad },
+    {
+      label: colonyName ? `★ ${colonyName}` : "★ Surface",
+      key: "—",
+      open: surfaceOpen,
+      toggle: toggleSurface,
+      accent: true,
+    },
+    { label: "Trade", key: "T", open: tradePanelOpen, toggle: toggleTradePanel },
+    { label: "Market", key: "M", open: blackMarketOpen, toggle: toggleBlackMarket },
+    { label: "Espionage", key: "E", open: espionageOpen, toggle: toggleEspionage },
+    { label: "Research", key: "R", open: blueprintShopOpen, toggle: toggleBlueprintShop },
+    { label: "Alerts", key: "A", open: alertsOpen, toggle: toggleAlerts },
+    { label: "Diplomacy", key: "D", open: diplomacyOpen, toggle: toggleDiplomacy },
+    { label: "Save/Load", key: "⌘S", open: saveLoadOpen, toggle: toggleSaveLoad },
   ];
 
   return (
@@ -128,7 +157,14 @@ function NavBar({
         }}
       >
         {paused ? "▶" : "⏸"}
-        <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}>
+        <span
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: 0.5,
+          }}
+        >
           {paused ? "PAUSED" : "LIVE"}
         </span>
       </button>
@@ -146,10 +182,14 @@ function NavBar({
           aria-label={`${label} panel`}
           className="fa-nav-btn"
           title={`${key} — toggle ${label}`}
-          style={accent ? {
-            color: open ? "var(--amber)" : "rgba(255,146,0,0.7)",
-            borderBottomColor: open ? "var(--amber)" : "transparent",
-          } : undefined}
+          style={
+            accent
+              ? {
+                  color: open ? "var(--amber)" : "rgba(255,146,0,0.7)",
+                  borderBottomColor: open ? "var(--amber)" : "transparent",
+                }
+              : undefined
+          }
         >
           {label}
           {key !== "—" && <span style={{ marginLeft: 5, fontSize: 9, opacity: 0.4 }}>[{key}]</span>}
@@ -167,7 +207,17 @@ function NavBar({
           gap: 4,
         }}
       >
-        <span style={{ fontFamily: "var(--font-ui)", fontSize: 9, color: "var(--text-lo)", letterSpacing: 1, marginRight: 4 }}>COLOUR</span>
+        <span
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontSize: 9,
+            color: "var(--text-lo)",
+            letterSpacing: 1,
+            marginRight: 4,
+          }}
+        >
+          COLOUR
+        </span>
         {(["normal", "deuteranopia", "protanopia"] as const).map((p) => (
           <button
             key={p}
@@ -189,7 +239,16 @@ function NavBar({
         ))}
 
         <span style={{ color: "var(--border)", margin: "0 4px" }}>|</span>
-        <span style={{ fontFamily: "var(--font-ui)", fontSize: 9, color: "var(--text-lo)", letterSpacing: 1 }}>TEXT</span>
+        <span
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontSize: 9,
+            color: "var(--text-lo)",
+            letterSpacing: 1,
+          }}
+        >
+          TEXT
+        </span>
         {([100, 125, 150, 175, 200] as const).map((scale) => (
           <button
             key={scale}
@@ -387,7 +446,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       }
 
       // Ctrl/Cmd + S — save/load panel
-      if ((e.ctrlKey || e.metaKey) && (key === "s")) {
+      if ((e.ctrlKey || e.metaKey) && key === "s") {
         s.toggleSaveLoadPanel();
         e.preventDefault();
         return;
@@ -416,7 +475,19 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
 
   if (!snapshot) {
     return (
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text)", fontFamily: "var(--font-head)", fontSize: 13, letterSpacing: 2 }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--text)",
+          fontFamily: "var(--font-head)",
+          fontSize: 13,
+          letterSpacing: 2,
+        }}
+      >
         INITIALIZING…
       </div>
     );
@@ -503,9 +574,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
           <KeybindingsPanel />
         </div>
       )}
-      {achievementsOpen && (
-        <AchievementsPanel onClose={() => setAchievementsOpen(false)} />
-      )}
+      {achievementsOpen && <AchievementsPanel onClose={() => setAchievementsOpen(false)} />}
       {achToast && (
         <div
           style={{

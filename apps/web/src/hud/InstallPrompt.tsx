@@ -34,8 +34,6 @@ export function InstallPrompt() {
 
   return (
     <div
-      role="banner"
-      aria-label="Install app"
       style={{
         position: "fixed",
         bottom: 16,

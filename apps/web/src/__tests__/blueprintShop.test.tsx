@@ -1,31 +1,13 @@
-import { fireEvent, render, screen } from "@testing-library/react";
 import type { HudSnapshot } from "@fa/sim";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BlueprintShop } from "../hud/BlueprintShop.tsx";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { makeTestSnapshot } from "./testSnapshot.ts";
 
 function makeSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
-  return {
-    tick: 0,
-    credits: 10000,
-    federationStanding: 0,
-    suspicion: 0,
-    humanPlayerId: "human",
-    traderActive: false,
-    oreInventory: {},
-    players: [],
-    asteroids: [],
-    ships: [],
-    events: [],
-    marketPrices: {},
-    combatFlashes: [],
-    diplomacy: [],
-    gameEndState: null,
-    blueprintsOwned: [],
-    agents: [],
-    ...overrides,
-  };
+  return makeTestSnapshot({ credits: 10000, ...overrides });
 }
 
 afterEach(() => {
@@ -68,7 +50,10 @@ describe("BlueprintShop", () => {
     // Mine Mk2 is first Research button (T1 mining, affordable, no prereq)
     const researchButtons = screen.getAllByText("Research");
     fireEvent.click(researchButtons[0]!);
-    expect(onCommand).toHaveBeenCalledWith({ kind: "buyBlueprint", blueprintId: "blueprint.mineMk2" });
+    expect(onCommand).toHaveBeenCalledWith({
+      kind: "buyBlueprint",
+      blueprintId: "blueprint.mineMk2",
+    });
   });
 
   it("shows LOCKED for Deep Bore Mine when Mine Mk2 not owned", () => {

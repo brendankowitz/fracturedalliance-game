@@ -1,31 +1,13 @@
-import { render, screen } from "@testing-library/react";
 import type { HudSnapshot } from "@fa/sim";
+import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EspionagePanel } from "../hud/EspionagePanel.tsx";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { makeTestSnapshot } from "./testSnapshot.ts";
 
 function makeSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
-  return {
-    tick: 0,
-    credits: 10_000,
-    federationStanding: 0,
-    suspicion: 0,
-    humanPlayerId: "player-human",
-    traderActive: false,
-    oreInventory: {},
-    players: [],
-    asteroids: [],
-    ships: [],
-    events: [],
-    marketPrices: {},
-    combatFlashes: [],
-    diplomacy: [],
-    gameEndState: null,
-    blueprintsOwned: [],
-    agents: [],
-    ...overrides,
-  };
+  return makeTestSnapshot({ credits: 10_000, humanPlayerId: "player-human", ...overrides });
 }
 
 afterEach(() => {

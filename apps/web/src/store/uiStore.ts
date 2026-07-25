@@ -104,7 +104,8 @@ export const useUiStore = create<UiState>((set) => ({
   showHelp: false,
   toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
   unlockedScenarios: new Set<string>(),
-  unlockScenario: (id) => set((s) => ({ unlockedScenarios: new Set([...s.unlockedScenarios, id]) })),
+  unlockScenario: (id) =>
+    set((s) => ({ unlockedScenarios: new Set([...s.unlockedScenarios, id]) })),
   autoHireBudgets: {},
   setAutoHireBudget: (asteroidId, budget) =>
     set((s) => ({ autoHireBudgets: { ...s.autoHireBudgets, [asteroidId]: budget } })),

@@ -2,7 +2,7 @@ import type { BlackMarketItemKind } from "@fa/domain";
 import { playerId } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { useEffect, useState } from "react";
-import { playSound } from "../audio.ts";
+import { playSound, SFX } from "../audio.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const ITEMS: Array<{ kind: BlackMarketItemKind; label: string; cost: number; desc: string }> = [
-  { kind: "oreCache", label: "Ore Cache", cost: 800, desc: "+200 Iron" },
+  { kind: "oreCache", label: "Ore Cache", cost: 800, desc: "+12 Selenium" },
   { kind: "stealth", label: "Stealth Package", cost: 2000, desc: "Recruit a free agent" },
   { kind: "sabotageKit", label: "Sabotage Kit", cost: 1500, desc: "+800 credits bounty" },
   { kind: "contraband", label: "Contraband", cost: 500, desc: "+5 Federation Standing" },
@@ -27,7 +27,7 @@ export function BlackMarketPanel({ onCommand }: Props) {
   const [bribeAmount, setBribeAmount] = useState<500 | 1000 | 2000>(500);
 
   useEffect(() => {
-    if (open) playSound("/audio/sfx/black_market_visit.wav", 0.4);
+    if (open) playSound(SFX.blackMarket, 0.4);
   }, [open]);
 
   if (!open || !snapshot) return null;
@@ -57,7 +57,10 @@ export function BlackMarketPanel({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Black Market<HelpTip text="Purchase illegal goods from the black market. Each buy raises your suspicion level." /></div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>
+        Black Market
+        <HelpTip text="Purchase illegal goods from the black market. Each buy raises your suspicion level." />
+      </div>
 
       <div style={{ marginBottom: 10, fontSize: 12 }}>
         <span style={{ color: "#7090b0" }}>Suspicion: </span>
@@ -123,7 +126,8 @@ export function BlackMarketPanel({ onCommand }: Props) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {"\u20a1"}{item.cost.toLocaleString()}
+                  {"\u20a1"}
+                  {item.cost.toLocaleString()}
                 </button>
               </div>
             );
@@ -170,7 +174,8 @@ export function BlackMarketPanel({ onCommand }: Props) {
                   cursor: "pointer",
                 }}
               >
-                {"\u20a1"}{amt}
+                {"\u20a1"}
+                {amt}
               </button>
             ))}
           </div>

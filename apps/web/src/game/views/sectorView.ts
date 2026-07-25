@@ -1,7 +1,17 @@
 import type { AsteroidId, ShipId } from "@fa/domain";
 import type { HudSnapshot } from "@fa/sim";
 import type { Application, Texture } from "pixi.js";
-import { Assets, BlurFilter, Circle, Container, Graphics, Sprite, Text, TilingSprite } from "pixi.js";
+import {
+  Assets,
+  BlurFilter,
+  Circle,
+  Container,
+  Graphics,
+  Sprite,
+  Text,
+  TilingSprite,
+} from "pixi.js";
+import { assetUrl } from "../../assetUrl.ts";
 
 const SIZE_RADIUS: Record<string, number> = {
   small: 8,
@@ -13,17 +23,31 @@ const SIZE_RADIUS: Record<string, number> = {
 const VARIANT_COUNT = 2;
 
 const METEOR_URLS = {
-  small: ["/assets/meteors/meteorBrown_small1.png", "/assets/meteors/meteorBrown_small2.png"],
-  medium: ["/assets/meteors/meteorBrown_med1.png", "/assets/meteors/meteorGrey_med1.png"],
-  large: ["/assets/meteors/meteorBrown_big1.png", "/assets/meteors/meteorBrown_big2.png"],
+  small: [
+    assetUrl("/assets/meteors/meteorBrown_small1.png"),
+    assetUrl("/assets/meteors/meteorBrown_small2.png"),
+  ],
+  medium: [
+    assetUrl("/assets/meteors/meteorBrown_med1.png"),
+    assetUrl("/assets/meteors/meteorGrey_med1.png"),
+  ],
+  large: [
+    assetUrl("/assets/meteors/meteorBrown_big1.png"),
+    assetUrl("/assets/meteors/meteorBrown_big2.png"),
+  ],
+};
+
+const SHIP_URLS = {
+  human: assetUrl("/assets/ships/player.png"),
+  ai: assetUrl("/assets/ships/ai.png"),
 };
 
 export const SECTOR_ASSET_URLS: string[] = [
   ...METEOR_URLS.small,
   ...METEOR_URLS.medium,
   ...METEOR_URLS.large,
-  "/assets/ships/player.png",
-  "/assets/ships/ai.png",
+  SHIP_URLS.human,
+  SHIP_URLS.ai,
 ];
 
 function hashId(id: string): number {
@@ -41,9 +65,9 @@ function getMeteorTexture(sizeClass: string, id: string): Texture {
 export type ColorPalette = "normal" | "deuteranopia" | "protanopia";
 
 export const PALETTES: Record<ColorPalette, { human: number; ai: number; neutral: number }> = {
-  normal:       { human: 0x3399ff, ai: 0xff4433, neutral: 0x888888 },
+  normal: { human: 0x3399ff, ai: 0xff4433, neutral: 0x888888 },
   deuteranopia: { human: 0x3399ff, ai: 0xff8c00, neutral: 0x888888 },
-  protanopia:   { human: 0x0099cc, ai: 0xd4a017, neutral: 0x888888 },
+  protanopia: { human: 0x0099cc, ai: 0xd4a017, neutral: 0x888888 },
 };
 
 const SECTOR_SCALE = 80; // pixels per sector unit — 7×80=560px fits a typical 768px-tall screen
@@ -103,8 +127,8 @@ export class SectorView {
     // Feature 1: 3-layer parallax starfield (added before _worldLayer so they render behind)
     const starLayerDefs = [
       { count: 400, color: 0x334455, speed: 0.04 }, // distant, barely moves
-      { count: 200, color: 0x6688aa, speed: 0.10 }, // mid
-      { count: 100, color: 0xaaccee, speed: 0.20 }, // near, moves noticeably
+      { count: 200, color: 0x6688aa, speed: 0.1 }, // mid
+      { count: 100, color: 0xaaccee, speed: 0.2 }, // near, moves noticeably
     ];
 
     for (const def of starLayerDefs) {
@@ -123,7 +147,11 @@ export class SectorView {
       }
       const tex = app.renderer.generateTexture(g);
       g.destroy();
-      const ts = new TilingSprite({ texture: tex, width: app.screen.width, height: app.screen.height });
+      const ts = new TilingSprite({
+        texture: tex,
+        width: app.screen.width,
+        height: app.screen.height,
+      });
       this.container.addChild(ts);
       this._starLayers.push({ sprite: ts, speed: def.speed });
     }
@@ -140,8 +168,14 @@ export class SectorView {
     const GRID_LINES = 8;
     for (let i = 0; i <= GRID_LINES; i++) {
       const pos = i * SECTOR_SCALE;
-      gridLayer.moveTo(pos, 0).lineTo(pos, GRID_LINES * SECTOR_SCALE).stroke({ color: 0x3366aa, alpha: GRID_ALPHA, width: 1 });
-      gridLayer.moveTo(0, pos).lineTo(GRID_LINES * SECTOR_SCALE, pos).stroke({ color: 0x3366aa, alpha: GRID_ALPHA, width: 1 });
+      gridLayer
+        .moveTo(pos, 0)
+        .lineTo(pos, GRID_LINES * SECTOR_SCALE)
+        .stroke({ color: 0x3366aa, alpha: GRID_ALPHA, width: 1 });
+      gridLayer
+        .moveTo(0, pos)
+        .lineTo(GRID_LINES * SECTOR_SCALE, pos)
+        .stroke({ color: 0x3366aa, alpha: GRID_ALPHA, width: 1 });
     }
     this._worldLayer.addChild(gridLayer);
 
@@ -149,8 +183,8 @@ export class SectorView {
     this._worldLayer.addChild(this._laserGfx);
 
     // Centre the view on the midpoint of the 7×7 sector grid
-    this._offsetX = app.screen.width / 2 - (3 * SECTOR_SCALE);
-    this._offsetY = app.screen.height / 2 - (3 * SECTOR_SCALE);
+    this._offsetX = app.screen.width / 2 - 3 * SECTOR_SCALE;
+    this._offsetY = app.screen.height / 2 - 3 * SECTOR_SCALE;
     this._applyTransform();
 
     app.stage.addChild(this.container);
@@ -200,23 +234,27 @@ export class SectorView {
       this._dragging = false;
     });
 
-    app.canvas.addEventListener("wheel", (e: WheelEvent) => {
-      e.preventDefault();
-      const factor = e.deltaY > 0 ? 0.9 : 1.1;
-      const oldScale = this._scale;
-      const newScale = Math.max(0.25, Math.min(4.0, oldScale * factor));
-      // Zoom toward the mouse cursor position
-      const rect = app.canvas.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      this._offsetX = mx - (mx - this._offsetX) * (newScale / oldScale);
-      this._offsetY = my - (my - this._offsetY) * (newScale / oldScale);
-      this._scale = newScale;
-      // Zero inertia so zooming doesn't fight ongoing momentum
-      this._velX = 0;
-      this._velY = 0;
-      this._applyTransform();
-    }, { passive: false });
+    app.canvas.addEventListener(
+      "wheel",
+      (e: WheelEvent) => {
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 0.9 : 1.1;
+        const oldScale = this._scale;
+        const newScale = Math.max(0.25, Math.min(4.0, oldScale * factor));
+        // Zoom toward the mouse cursor position
+        const rect = app.canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        this._offsetX = mx - (mx - this._offsetX) * (newScale / oldScale);
+        this._offsetY = my - (my - this._offsetY) * (newScale / oldScale);
+        this._scale = newScale;
+        // Zero inertia so zooming doesn't fight ongoing momentum
+        this._velX = 0;
+        this._velY = 0;
+        this._applyTransform();
+      },
+      { passive: false },
+    );
   }
 
   private _applyTransform(): void {
@@ -314,9 +352,7 @@ export class SectorView {
       pulseRing.clear();
       if (isHuman) {
         const pulse = 0.45 + Math.sin(Date.now() / 500) * 0.25;
-        pulseRing
-          .circle(0, 0, radius + 10)
-          .stroke({ color: colour, alpha: pulse, width: 2 });
+        pulseRing.circle(0, 0, radius + 10).stroke({ color: colour, alpha: pulse, width: 2 });
       }
 
       // Ownership ring (drawn in local space around origin)
@@ -356,7 +392,7 @@ export class SectorView {
       let sprite = this._shipGraphics.get(ship.id);
       if (!sprite) {
         const isHuman = ship.ownerId === snapshot.humanPlayerId;
-        const tex = Assets.get<Texture>(isHuman ? "/assets/ships/player.png" : "/assets/ships/ai.png") as Texture;
+        const tex = Assets.get<Texture>(isHuman ? SHIP_URLS.human : SHIP_URLS.ai) as Texture;
         sprite = new Sprite(tex);
         sprite.anchor.set(0.5, 0.5);
         this._worldLayer.addChild(sprite);

@@ -1,10 +1,10 @@
 import { findBuildingDef, getOreDef, getRaceDef } from "@fa/content";
-import { SIZE_CLASS_GRID, asteroidId as mkAsteroidId } from "@fa/domain";
+import { type AsteroidId, asteroidId as mkAsteroidId, SIZE_CLASS_GRID } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
-import { BuildTemplates } from "./BuildTemplates.tsx";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { BuildTemplates } from "./BuildTemplates.tsx";
 
 function formatKind(kind: string): string {
   return kind.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
@@ -40,14 +40,15 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
 
   const shipsHere = snapshot.ships.filter(
     (s) =>
-      Math.hypot(s.position.x - asteroid.sector.x, s.position.y - asteroid.sector.y) <= ARRIVAL_RADIUS,
+      Math.hypot(s.position.x - asteroid.sector.x, s.position.y - asteroid.sector.y) <=
+      ARRIVAL_RADIUS,
   );
 
   const isOwnedByHuman = asteroid.ownerId === snapshot.humanPlayerId;
 
-  const gridDims =
-    (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[asteroid.sizeClass] ??
-    { width: 7, height: 7 };
+  const gridDims = (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[
+    asteroid.sizeClass
+  ] ?? { width: 7, height: 7 };
 
   const occupiedCells = new Map<string, string>(
     asteroid.buildingsGrid.map((b) => [`${b.cell.x},${b.cell.y}`, b.kind]),
@@ -168,11 +169,7 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
                     style={{
                       width: 18,
                       height: 18,
-                      background: building
-                        ? "#1a3860"
-                        : isSelected
-                          ? "#2a4870"
-                          : "#0a1420",
+                      background: building ? "#1a3860" : isSelected ? "#2a4870" : "#0a1420",
                       border: `1px solid ${isSelected ? "#4488cc" : building ? "#336" : "#1a2840"}`,
                       color: building ? "#c8d8ff" : "#334",
                       fontFamily: "monospace",
@@ -205,10 +202,10 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
           <div style={{ fontWeight: "bold", color: "#c8d8ff", marginBottom: 2 }}>
             Buildings ({asteroid.buildingsGrid.length})
           </div>
-          {asteroid.buildingsGrid.map((b, i) => {
+          {asteroid.buildingsGrid.map((b) => {
             const label = findBuildingDef(b.kind)?.label ?? formatKind(b.kind);
             return (
-              <div key={`${b.kind}-${i}`} style={{ color: "#aaa" }}>
+              <div key={`${b.cell.x},${b.cell.y}`} style={{ color: "#aaa" }}>
                 {label} ({b.cell.x},{b.cell.y})
               </div>
             );
@@ -221,12 +218,11 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
           <div style={{ fontWeight: "bold", color: "#c8d8ff", marginBottom: 2 }}>
             Build Queue ({asteroid.buildQueue.length})
           </div>
-          {asteroid.buildQueue.map((item, i) => {
+          {asteroid.buildQueue.map((item, _i) => {
             const pct =
-              item.totalTicks > 0
-                ? Math.round((item.progressTicks / item.totalTicks) * 100)
-                : 0;
-            const label = findBuildingDef(item.buildingKind)?.label ?? formatKind(item.buildingKind);
+              item.totalTicks > 0 ? Math.round((item.progressTicks / item.totalTicks) * 100) : 0;
+            const label =
+              findBuildingDef(item.buildingKind)?.label ?? formatKind(item.buildingKind);
             return (
               <div key={`${item.buildingKind}-${item.queuedAt}`} style={{ marginBottom: 4 }}>
                 <div style={{ color: "#aaa" }}>{label}</div>
@@ -269,7 +265,12 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
                     const key = `${x},${y}`;
                     if (!occupied.has(key)) {
                       occupied.add(key);
-                      onCommand({ kind: "placeBuilding", asteroidId: asteroid.id, buildingKind, cell: { x, y } });
+                      onCommand({
+                        kind: "placeBuilding",
+                        asteroidId: asteroid.id,
+                        buildingKind,
+                        cell: { x, y },
+                      });
                       continue outer;
                     }
                   }
@@ -284,13 +285,20 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
       {isOwnedByHuman && (
         <section style={{ padding: "4px 8px", borderBottom: "1px solid #112" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "#c8d8ff", cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 10,
+                color: "#c8d8ff",
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={(autoHireBudgets[asteroid.id] ?? 0) > 0}
-                onChange={(e) =>
-                  setAutoHireBudget(asteroid.id, e.target.checked ? 2000 : 0)
-                }
+                onChange={(e) => setAutoHireBudget(asteroid.id, e.target.checked ? 2000 : 0)}
                 style={{ cursor: "pointer" }}
               />
               Auto-hire workers
@@ -327,9 +335,7 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
               </div>
               <button
                 type="button"
-                onClick={() =>
-                  onCommand({ kind: "cancelAsteroidEngine", asteroidId: asteroid.id })
-                }
+                onClick={() => onCommand({ kind: "cancelAsteroidEngine", asteroidId: asteroid.id })}
                 style={{
                   background: "#1a1830",
                   border: "1px solid #442",
@@ -375,12 +381,16 @@ export function AsteroidInspector({ onCommand }: AsteroidInspectorProps) {
 }
 
 interface EngineTargetSelectorProps {
-  asteroidId: string;
+  asteroidId: AsteroidId;
   otherAsteroids: Array<{ id: string; name: string }>;
   onCommand: (cmd: Command) => void;
 }
 
-function EngineTargetSelector({ asteroidId, otherAsteroids, onCommand }: EngineTargetSelectorProps) {
+function EngineTargetSelector({
+  asteroidId,
+  otherAsteroids,
+  onCommand,
+}: EngineTargetSelectorProps) {
   const handleLaunch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;

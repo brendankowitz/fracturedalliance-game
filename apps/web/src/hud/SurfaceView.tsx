@@ -1,8 +1,15 @@
-import { findBuildingDef, getAllBuildingDefs, getAllShipDefs, getOreDef, getRaceDef } from "@fa/content";
-import { SIZE_CLASS_GRID, asteroidId as mkAsteroidId, shipId as mkShipId } from "@fa/domain";
+import {
+  findBuildingDef,
+  getAllBuildingDefs,
+  getAllShipDefs,
+  getOreDef,
+  getRaceDef,
+} from "@fa/content";
+import { asteroidId as mkAsteroidId, shipId as mkShipId, SIZE_CLASS_GRID } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useState } from "react";
+import { assetUrl } from "../assetUrl.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildTemplates } from "./BuildTemplates.tsx";
@@ -76,63 +83,63 @@ const BUILDING_COLORS: Record<string, string> = {
 };
 
 const BUILDING_ICON: Record<string, string> = {
-  airProcessor: "/assets/buildings/airProc.png",
-  cpu: "/assets/buildings/cpu.png",
-  powerPlant: "/assets/buildings/plant.png",
-  fusionReactor: "/assets/buildings/fusion.png",
-  geothermalTap: "/assets/buildings/volcanicTap.png",
-  ecc: "/assets/buildings/cpu.png",
-  radiationFilter: "/assets/buildings/airProc.png",
-  repairFacility: "/assets/buildings/medBay.png",
-  mineMk1: "/assets/buildings/mine.png",
-  mineMk2: "/assets/buildings/mine.png",
-  deepBoreMine: "/assets/buildings/deepBore.png",
-  oreRefinery: "/assets/buildings/refinery.png",
-  crystalSeparator: "/assets/buildings/refinery.png",
-  naniteExtractor: "/assets/buildings/nanoExtract.png",
-  astralMiner: "/assets/buildings/quantumDrill.png",
-  antimatterDrill: "/assets/buildings/antimatter.png",
-  shipYard: "/assets/buildings/shipyard.png",
-  turretBattery: "/assets/buildings/laser.png",
-  shieldGenerator: "/assets/buildings/solar.png",
-  missileSilo: "/assets/buildings/missile.png",
-  commandCentre: "/assets/buildings/assault.png",
-  ionCannon: "/assets/buildings/laser.png",
-  antimatterMine: "/assets/buildings/antimatter.png",
-  fortressWall: "/assets/buildings/assault.png",
-  doomsdayDevice: "/assets/buildings/planetKiller.png",
-  livingQuarters: "/assets/buildings/quarters.png",
-  resiblock: "/assets/buildings/resiblock.png",
-  megaHabitat: "/assets/buildings/arcology.png",
-  arcology: "/assets/buildings/arcology.png",
-  hydroponics: "/assets/buildings/hydro.png",
-  advHydroponics: "/assets/buildings/hydro.png",
-  hydrationPlant: "/assets/buildings/hydrate.png",
-  medicalCentre: "/assets/buildings/medBay.png",
-  pleasureDome: "/assets/buildings/spa.png",
-  securityCentre: "/assets/buildings/assault.png",
-  storageTower: "/assets/buildings/storage.png",
-  tradingPost: "/assets/buildings/market.png",
-  blackMarket: "/assets/buildings/market.png",
-  smugglerBay: "/assets/buildings/tradeFleet.png",
-  pricingOffice: "/assets/buildings/market.png",
-  federationLobby: "/assets/buildings/megaport.png",
-  creditMint: "/assets/buildings/bank.png",
-  monopolyOffice: "/assets/buildings/monopoly.png",
-  galacticExchange: "/assets/buildings/stockExchange.png",
-  researchLab: "/assets/buildings/seismicProbe.png",
-  computingArray: "/assets/buildings/cpu.png",
-  xenologyLab: "/assets/buildings/seismicProbe.png",
-  materialsSynth: "/assets/buildings/refinery.png",
-  quantumProcessor: "/assets/buildings/quantumDrill.png",
-  warpResearch: "/assets/buildings/zeroPoint.png",
-  bioResearchLab: "/assets/buildings/seismicProbe.png",
-  omniscienceNode: "/assets/buildings/zeroPoint.png",
-  biosphereDome: "/assets/buildings/arcology.png",
-  recyclingCentre: "/assets/buildings/refinery.png",
-  gravityPlating: "/assets/buildings/gravityNullifier.png",
-  gravityNullifier: "/assets/buildings/gravityNullifier.png",
-  atmosphericCondenser: "/assets/buildings/airProc.png",
+  airProcessor: assetUrl("/assets/buildings/airProc.png"),
+  cpu: assetUrl("/assets/buildings/cpu.png"),
+  powerPlant: assetUrl("/assets/buildings/plant.png"),
+  fusionReactor: assetUrl("/assets/buildings/fusion.png"),
+  geothermalTap: assetUrl("/assets/buildings/volcanicTap.png"),
+  ecc: assetUrl("/assets/buildings/cpu.png"),
+  radiationFilter: assetUrl("/assets/buildings/airProc.png"),
+  repairFacility: assetUrl("/assets/buildings/medBay.png"),
+  mineMk1: assetUrl("/assets/buildings/mine.png"),
+  mineMk2: assetUrl("/assets/buildings/mine.png"),
+  deepBoreMine: assetUrl("/assets/buildings/deepBore.png"),
+  oreRefinery: assetUrl("/assets/buildings/refinery.png"),
+  crystalSeparator: assetUrl("/assets/buildings/refinery.png"),
+  naniteExtractor: assetUrl("/assets/buildings/nanoExtract.png"),
+  astralMiner: assetUrl("/assets/buildings/quantumDrill.png"),
+  antimatterDrill: assetUrl("/assets/buildings/antimatter.png"),
+  shipYard: assetUrl("/assets/buildings/shipyard.png"),
+  turretBattery: assetUrl("/assets/buildings/laser.png"),
+  shieldGenerator: assetUrl("/assets/buildings/solar.png"),
+  missileSilo: assetUrl("/assets/buildings/missile.png"),
+  commandCentre: assetUrl("/assets/buildings/assault.png"),
+  ionCannon: assetUrl("/assets/buildings/laser.png"),
+  antimatterMine: assetUrl("/assets/buildings/antimatter.png"),
+  fortressWall: assetUrl("/assets/buildings/assault.png"),
+  doomsdayDevice: assetUrl("/assets/buildings/planetKiller.png"),
+  livingQuarters: assetUrl("/assets/buildings/quarters.png"),
+  resiblock: assetUrl("/assets/buildings/resiblock.png"),
+  megaHabitat: assetUrl("/assets/buildings/arcology.png"),
+  arcology: assetUrl("/assets/buildings/arcology.png"),
+  hydroponics: assetUrl("/assets/buildings/hydro.png"),
+  advHydroponics: assetUrl("/assets/buildings/hydro.png"),
+  hydrationPlant: assetUrl("/assets/buildings/hydrate.png"),
+  medicalCentre: assetUrl("/assets/buildings/medBay.png"),
+  pleasureDome: assetUrl("/assets/buildings/spa.png"),
+  securityCentre: assetUrl("/assets/buildings/assault.png"),
+  storageTower: assetUrl("/assets/buildings/storage.png"),
+  tradingPost: assetUrl("/assets/buildings/market.png"),
+  blackMarket: assetUrl("/assets/buildings/market.png"),
+  smugglerBay: assetUrl("/assets/buildings/tradeFleet.png"),
+  pricingOffice: assetUrl("/assets/buildings/market.png"),
+  federationLobby: assetUrl("/assets/buildings/megaport.png"),
+  creditMint: assetUrl("/assets/buildings/bank.png"),
+  monopolyOffice: assetUrl("/assets/buildings/monopoly.png"),
+  galacticExchange: assetUrl("/assets/buildings/stockExchange.png"),
+  researchLab: assetUrl("/assets/buildings/seismicProbe.png"),
+  computingArray: assetUrl("/assets/buildings/cpu.png"),
+  xenologyLab: assetUrl("/assets/buildings/seismicProbe.png"),
+  materialsSynth: assetUrl("/assets/buildings/refinery.png"),
+  quantumProcessor: assetUrl("/assets/buildings/quantumDrill.png"),
+  warpResearch: assetUrl("/assets/buildings/zeroPoint.png"),
+  bioResearchLab: assetUrl("/assets/buildings/seismicProbe.png"),
+  omniscienceNode: assetUrl("/assets/buildings/zeroPoint.png"),
+  biosphereDome: assetUrl("/assets/buildings/arcology.png"),
+  recyclingCentre: assetUrl("/assets/buildings/refinery.png"),
+  gravityPlating: assetUrl("/assets/buildings/gravityNullifier.png"),
+  gravityNullifier: assetUrl("/assets/buildings/gravityNullifier.png"),
+  atmosphericCondenser: assetUrl("/assets/buildings/airProc.png"),
 };
 
 const BUILDING_ABBR: Record<string, string> = {
@@ -201,7 +208,11 @@ interface EngineTargetSelectorProps {
   onCommand: (cmd: Command) => void;
 }
 
-function EngineTargetSelector({ asteroidId, otherAsteroids, onCommand }: EngineTargetSelectorProps) {
+function EngineTargetSelector({
+  asteroidId,
+  otherAsteroids,
+  onCommand,
+}: EngineTargetSelectorProps) {
   const handleLaunch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -283,9 +294,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
 
   const isOwnedByHuman = asteroid.ownerId === snapshot.humanPlayerId;
 
-  const gridDims =
-    (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[asteroid.sizeClass] ??
-    { width: 7, height: 7 };
+  const gridDims = (SIZE_CLASS_GRID as Record<string, { width: number; height: number }>)[
+    asteroid.sizeClass
+  ] ?? { width: 7, height: 7 };
 
   const CELL_SIZE = Math.min(56, Math.floor(300 / gridDims.width));
 
@@ -308,7 +319,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   const otherAsteroids = snapshot.asteroids.filter((a) => a.id !== asteroid.id);
 
   const selectedCellKey = selectedCell ? `${selectedCell.x},${selectedCell.y}` : null;
-  const selectedCellBuilding = selectedCellKey ? (occupiedCells.get(selectedCellKey) ?? null) : null;
+  const selectedCellBuilding = selectedCellKey
+    ? (occupiedCells.get(selectedCellKey) ?? null)
+    : null;
 
   if (!isOwnedByHuman) {
     const ownerReputation =
@@ -331,7 +344,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         humanShips={humanShips}
         incomingMissile={asteroid.incomingMissile}
         onCommand={onCommand}
-        onClose={() => { selectAsteroid(null); }}
+        onClose={() => {
+          selectAsteroid(null);
+        }}
       />
     );
   }
@@ -374,7 +389,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
       >
         <button
           type="button"
-          onClick={() => { selectAsteroid(null); }}
+          onClick={() => {
+            selectAsteroid(null);
+          }}
           style={{
             background: "#0a1830",
             border: "1px solid #336",
@@ -389,7 +406,16 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           ← Back to Map
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: "bold", fontSize: 16, color: "#e0eeff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              fontWeight: "bold",
+              fontSize: 16,
+              color: "#e0eeff",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {asteroid.name}
           </div>
           <div style={{ color: "#8899bb", fontSize: 11 }}>
@@ -401,7 +427,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           </div>
         </div>
         {isOwnedByHuman && (
-          <div style={{ color: "#44aa66", fontSize: 10, border: "1px solid #224", padding: "2px 6px" }}>
+          <div
+            style={{ color: "#44aa66", fontSize: 10, border: "1px solid #224", padding: "2px 6px" }}
+          >
             OWNED
           </div>
         )}
@@ -409,16 +437,18 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
 
       {/* ── Incoming missile warning ── */}
       {asteroid.incomingMissile !== null && (
-        <div style={{
-          padding: "8px 12px",
-          background: "rgba(200,40,20,0.15)",
-          border: "1px solid #cc3322",
-          color: "#ff6655",
-          fontFamily: "var(--font-data)",
-          fontSize: 11,
-          flexShrink: 0,
-          letterSpacing: 0.5,
-        }}>
+        <div
+          style={{
+            padding: "8px 12px",
+            background: "rgba(200,40,20,0.15)",
+            border: "1px solid #cc3322",
+            color: "#ff6655",
+            fontFamily: "var(--font-data)",
+            fontSize: 11,
+            flexShrink: 0,
+            letterSpacing: 0.5,
+          }}
+        >
           ⚠ INCOMING MISSILE — ETA tick {asteroid.incomingMissile.arrivalTick}
         </div>
       )}
@@ -454,17 +484,24 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
             flexShrink: 0,
           }}
         >
-          <div style={{ fontSize: 10, color: "#8899bb", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+          <div
+            style={{
+              fontSize: 10,
+              color: "#8899bb",
+              marginBottom: 4,
+              textTransform: "uppercase",
+              letterSpacing: 1,
+            }}
+          >
             Build Queue
           </div>
           {asteroid.buildQueue.map((item, i) => {
             const pct =
-              item.totalTicks > 0
-                ? Math.round((item.progressTicks / item.totalTicks) * 100)
-                : 0;
+              item.totalTicks > 0 ? Math.round((item.progressTicks / item.totalTicks) * 100) : 0;
             const label =
               findBuildingDef(item.buildingKind)?.label ?? formatKind(item.buildingKind);
             return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: the queue carries no stable id and build templates can enqueue the same kind on the same tick, so position is the only identity
               <div key={`${item.buildingKind}-${i}`} style={{ marginBottom: 5 }}>
                 <div
                   style={{
@@ -524,7 +561,9 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
             gap: 8,
           }}
         >
-          <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1 }}>
+          <div
+            style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1 }}
+          >
             Surface
           </div>
           <div
@@ -551,11 +590,7 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                     : isHovered
                       ? "#0c1c30"
                       : "#0a1420";
-                const borderColor = isSelected
-                  ? "#4488cc"
-                  : buildingKind
-                    ? "#2a4060"
-                    : "#1a2840";
+                const borderColor = isSelected ? "#4488cc" : buildingKind ? "#2a4060" : "#1a2840";
 
                 return (
                   <button
@@ -571,9 +606,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                         ? `${findBuildingDef(buildingKind)?.label ?? formatKind(buildingKind)} at ${x},${y}`
                         : `Empty cell ${x},${y}`
                     }
-                    onClick={() => { selectCell({ x, y }); }}
-                    onMouseEnter={() => { setHoveredCell({ x, y }); }}
-                    onMouseLeave={() => { setHoveredCell(null); }}
+                    onClick={() => {
+                      selectCell({ x, y });
+                    }}
+                    onMouseEnter={() => {
+                      setHoveredCell({ x, y });
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredCell(null);
+                    }}
                     style={{
                       width: CELL_SIZE,
                       height: CELL_SIZE,
@@ -594,26 +635,44 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                       outlineOffset: -2,
                     }}
                   >
-                    {buildingKind && (
-                      <>
-                        {BUILDING_ICON[buildingKind] ? (
-                          <img
-                            src={BUILDING_ICON[buildingKind]}
-                            alt={abbr}
-                            style={{ width: CELL_SIZE >= 40 ? CELL_SIZE - 12 : CELL_SIZE - 6, height: CELL_SIZE >= 40 ? CELL_SIZE - 12 : CELL_SIZE - 6, objectFit: "contain", imageRendering: "pixelated" }}
-                          />
-                        ) : (
-                          <span style={{ fontSize: CELL_SIZE >= 40 ? 12 : 8, fontWeight: "bold", color: "var(--text-hi)" }}>
-                            {abbr}
-                          </span>
-                        )}
-                      </>
-                    )}
+                    {buildingKind &&
+                      (BUILDING_ICON[buildingKind] ? (
+                        <img
+                          src={BUILDING_ICON[buildingKind]}
+                          alt={abbr}
+                          style={{
+                            width: CELL_SIZE >= 40 ? CELL_SIZE - 12 : CELL_SIZE - 6,
+                            height: CELL_SIZE >= 40 ? CELL_SIZE - 12 : CELL_SIZE - 6,
+                            objectFit: "contain",
+                            imageRendering: "pixelated",
+                          }}
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            fontSize: CELL_SIZE >= 40 ? 12 : 8,
+                            fontWeight: "bold",
+                            color: "var(--text-hi)",
+                          }}
+                        >
+                          {abbr}
+                        </span>
+                      ))}
                     {!buildingKind && isOwnedByHuman && (
-                      <span style={{ fontSize: CELL_SIZE >= 40 ? 16 : 10, color: "rgba(0,196,224,0.25)", lineHeight: 1 }}>+</span>
+                      <span
+                        style={{
+                          fontSize: CELL_SIZE >= 40 ? 16 : 10,
+                          color: "rgba(0,196,224,0.25)",
+                          lineHeight: 1,
+                        }}
+                      >
+                        +
+                      </span>
                     )}
                     {!buildingKind && !isOwnedByHuman && CELL_SIZE >= 40 && (
-                      <span style={{ fontSize: 8, color: "var(--text-lo)" }}>{x},{y}</span>
+                      <span style={{ fontSize: 8, color: "var(--text-lo)" }}>
+                        {x},{y}
+                      </span>
                     )}
                   </button>
                 );
@@ -622,8 +681,7 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           </div>
           {selectedCell && (
             <div style={{ fontSize: 10, color: "#8899bb", marginTop: 2 }}>
-              Selected: ({selectedCell.x},{selectedCell.y})
-              {" — "}
+              Selected: ({selectedCell.x},{selectedCell.y}){" — "}
               {selectedCellBuilding
                 ? (findBuildingDef(selectedCellBuilding)?.label ?? formatKind(selectedCellBuilding))
                 : "empty"}
@@ -643,7 +701,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           {/* Deposits */}
           {deposits.length > 0 && (
             <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
+              >
                 Ore Deposits
               </div>
               {deposits.map(([kind, amount]) => {
@@ -668,7 +734,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
 
           {/* Ships present */}
           <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-            <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: "#8899bb",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                marginBottom: 6,
+              }}
+            >
               Ships Present ({shipsHere.length})
             </div>
             {shipsHere.length === 0 ? (
@@ -687,7 +761,10 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                       {isHuman && (
                         <button
                           type="button"
-                          onClick={() => { setOrderingShipId(isOrdering ? null : s.id); setShipOrderTarget(""); }}
+                          onClick={() => {
+                            setOrderingShipId(isOrdering ? null : s.id);
+                            setShipOrderTarget("");
+                          }}
                           style={{
                             background: isOrdering ? "#1a2840" : "#0a1428",
                             border: `1px solid ${isOrdering ? "#4488cc" : "#224"}`,
@@ -703,19 +780,59 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                       )}
                     </div>
                     {isHuman && isOrdering && (
-                      <div style={{ marginTop: 4, padding: "6px 8px", background: "#060e1c", border: "1px solid #224", display: "flex", flexDirection: "column", gap: 5 }}>
+                      <div
+                        style={{
+                          marginTop: 4,
+                          padding: "6px 8px",
+                          background: "#060e1c",
+                          border: "1px solid #224",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 5,
+                        }}
+                      >
                         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                           <button
                             type="button"
-                            onClick={() => { onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "idle" } }); setOrderingShipId(null); }}
-                            style={{ background: "#0a1428", border: "1px solid #224", color: "#aabbcc", fontFamily: "monospace", fontSize: 10, cursor: "pointer", padding: "2px 8px" }}
+                            onClick={() => {
+                              onCommand({
+                                kind: "orderShip",
+                                shipId: mkShipId(s.id),
+                                order: { kind: "idle" },
+                              });
+                              setOrderingShipId(null);
+                            }}
+                            style={{
+                              background: "#0a1428",
+                              border: "1px solid #224",
+                              color: "#aabbcc",
+                              fontFamily: "monospace",
+                              fontSize: 10,
+                              cursor: "pointer",
+                              padding: "2px 8px",
+                            }}
                           >
                             Idle
                           </button>
                           <button
                             type="button"
-                            onClick={() => { onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "defend", target: mkAsteroidId(asteroid.id) } }); setOrderingShipId(null); }}
-                            style={{ background: "#0a1428", border: "1px solid #224", color: "#aabbcc", fontFamily: "monospace", fontSize: 10, cursor: "pointer", padding: "2px 8px" }}
+                            onClick={() => {
+                              onCommand({
+                                kind: "orderShip",
+                                shipId: mkShipId(s.id),
+                                order: { kind: "defend", target: mkAsteroidId(asteroid.id) },
+                              });
+                              setOrderingShipId(null);
+                            }}
+                            style={{
+                              background: "#0a1428",
+                              border: "1px solid #224",
+                              color: "#aabbcc",
+                              fontFamily: "monospace",
+                              fontSize: 10,
+                              cursor: "pointer",
+                              padding: "2px 8px",
+                            }}
                           >
                             Defend Here
                           </button>
@@ -724,11 +841,23 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                           <select
                             value={shipOrderTarget}
                             onChange={(e) => setShipOrderTarget(e.target.value)}
-                            style={{ background: "#0a1428", border: "1px solid #224", color: "#c8d8ff", fontFamily: "monospace", fontSize: 10, flex: 1, padding: "2px 4px" }}
+                            style={{
+                              background: "#0a1428",
+                              border: "1px solid #224",
+                              color: "#c8d8ff",
+                              fontFamily: "monospace",
+                              fontSize: 10,
+                              flex: 1,
+                              padding: "2px 4px",
+                            }}
                           >
-                            <option value="" disabled>Target asteroid...</option>
+                            <option value="" disabled>
+                              Target asteroid...
+                            </option>
                             {otherAsteroids.map((a) => (
-                              <option key={a.id} value={a.id}>{a.name}</option>
+                              <option key={a.id} value={a.id}>
+                                {a.name}
+                              </option>
                             ))}
                           </select>
                           <button
@@ -737,10 +866,22 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                             onClick={() => {
                               const tgt = snapshot.asteroids.find((a) => a.id === shipOrderTarget);
                               if (!tgt) return;
-                              onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "scout", target: tgt.sector } });
+                              onCommand({
+                                kind: "orderShip",
+                                shipId: mkShipId(s.id),
+                                order: { kind: "scout", target: tgt.sector },
+                              });
                               setOrderingShipId(null);
                             }}
-                            style={{ background: "#0a1428", border: "1px solid #224", color: shipOrderTarget ? "#aabbcc" : "#334", fontFamily: "monospace", fontSize: 10, cursor: shipOrderTarget ? "pointer" : "default", padding: "2px 8px" }}
+                            style={{
+                              background: "#0a1428",
+                              border: "1px solid #224",
+                              color: shipOrderTarget ? "#aabbcc" : "#334",
+                              fontFamily: "monospace",
+                              fontSize: 10,
+                              cursor: shipOrderTarget ? "pointer" : "default",
+                              padding: "2px 8px",
+                            }}
                           >
                             Scout
                           </button>
@@ -749,10 +890,25 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                             disabled={!shipOrderTarget}
                             onClick={() => {
                               if (!shipOrderTarget) return;
-                              onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "attackAsteroid", target: mkAsteroidId(shipOrderTarget) } });
+                              onCommand({
+                                kind: "orderShip",
+                                shipId: mkShipId(s.id),
+                                order: {
+                                  kind: "attackAsteroid",
+                                  target: mkAsteroidId(shipOrderTarget),
+                                },
+                              });
                               setOrderingShipId(null);
                             }}
-                            style={{ background: "#0a1428", border: "1px solid #224", color: shipOrderTarget ? "#ff6655" : "#334", fontFamily: "monospace", fontSize: 10, cursor: shipOrderTarget ? "pointer" : "default", padding: "2px 8px" }}
+                            style={{
+                              background: "#0a1428",
+                              border: "1px solid #224",
+                              color: shipOrderTarget ? "#ff6655" : "#334",
+                              fontFamily: "monospace",
+                              fontSize: 10,
+                              cursor: shipOrderTarget ? "pointer" : "default",
+                              padding: "2px 8px",
+                            }}
                           >
                             Attack
                           </button>
@@ -766,62 +922,101 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           </section>
 
           {/* Ship Bay (human-owned only) */}
-          {isOwnedByHuman && (() => {
-            const hasShipYard = asteroid.buildingsGrid.some((b) => b.kind === "shipYard");
-            const shipDefs = getAllShipDefs();
-            return (
-              <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-                <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                  Ship Bay
-                </div>
-                {!hasShipYard ? (
-                  <div style={{ color: "#445566", fontSize: 11 }}>Build a Ship Yard to launch ships from this asteroid.</div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    {shipDefs.map((def) => (
-                      <button
-                        key={def.kind}
-                        type="button"
-                        onClick={() => onCommand({ kind: "launchShip", asteroidId: mkAsteroidId(asteroid.id), shipKind: def.kind })}
-                        style={{
-                          background: "#0a1428",
-                          border: "1px solid #224466",
-                          color: "#c8d8ff",
-                          fontFamily: "monospace",
-                          fontSize: 11,
-                          cursor: "pointer",
-                          padding: "5px 8px",
-                          textAlign: "left",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span>⬡ {def.label}</span>
-                        <span style={{ color: "#8899bb", fontSize: 10 }}>{def.costCredits.toLocaleString()}¢ · {def.buildTimeTicks}t</span>
-                      </button>
-                    ))}
+          {isOwnedByHuman &&
+            (() => {
+              const hasShipYard = asteroid.buildingsGrid.some((b) => b.kind === "shipYard");
+              const shipDefs = getAllShipDefs();
+              return (
+                <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: "#8899bb",
+                      textTransform: "uppercase",
+                      letterSpacing: 1,
+                      marginBottom: 6,
+                    }}
+                  >
+                    Ship Bay
                   </div>
-                )}
-              </section>
-            );
-          })()}
+                  {!hasShipYard ? (
+                    <div style={{ color: "#445566", fontSize: 11 }}>
+                      Build a Ship Yard to launch ships from this asteroid.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {shipDefs.map((def) => (
+                        <button
+                          key={def.kind}
+                          type="button"
+                          onClick={() =>
+                            onCommand({
+                              kind: "launchShip",
+                              asteroidId: mkAsteroidId(asteroid.id),
+                              shipKind: def.kind,
+                            })
+                          }
+                          style={{
+                            background: "#0a1428",
+                            border: "1px solid #224466",
+                            color: "#c8d8ff",
+                            fontFamily: "monospace",
+                            fontSize: 11,
+                            cursor: "pointer",
+                            padding: "5px 8px",
+                            textAlign: "left",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span>⬡ {def.label}</span>
+                          <span style={{ color: "#8899bb", fontSize: 10 }}>
+                            {def.costCredits.toLocaleString()}¢ · {def.buildTimeTicks}t
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
 
           {/* Missile Bay (human-owned only, silo present) */}
           {isOwnedByHuman && asteroid.buildingsGrid.some((b) => b.kind === "missileSilo") && (
             <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
+              >
                 Missile Bay
               </div>
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <select
                   value={missileTarget}
                   onChange={(e) => setMissileTarget(e.target.value)}
-                  style={{ background: "#0a1428", border: "1px solid #224", color: "#c8d8ff", fontFamily: "monospace", fontSize: 11, flex: 1, padding: "2px 4px" }}
+                  style={{
+                    background: "#0a1428",
+                    border: "1px solid #224",
+                    color: "#c8d8ff",
+                    fontFamily: "monospace",
+                    fontSize: 11,
+                    flex: 1,
+                    padding: "2px 4px",
+                  }}
                 >
-                  <option value="" disabled>Select target...</option>
+                  <option value="" disabled>
+                    Select target...
+                  </option>
                   {otherAsteroids.map((a) => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
                   ))}
                 </select>
                 <button
@@ -829,7 +1024,11 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                   disabled={!missileTarget}
                   onClick={() => {
                     if (!missileTarget) return;
-                    onCommand({ kind: "fireMissile", sourceAsteroidId: mkAsteroidId(asteroid.id), targetAsteroidId: mkAsteroidId(missileTarget) });
+                    onCommand({
+                      kind: "fireMissile",
+                      sourceAsteroidId: mkAsteroidId(asteroid.id),
+                      targetAsteroidId: mkAsteroidId(missileTarget),
+                    });
                     setMissileTarget("");
                   }}
                   style={{
@@ -852,7 +1051,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           {/* Engines (human-owned only) */}
           {isOwnedByHuman && asteroid.engines.count > 0 && (
             <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
+              >
                 Engines ({asteroid.engines.count})
               </div>
               {asteroid.engines.chargeTick !== null && asteroid.engines.etaTick === null && (
@@ -897,7 +1104,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           {/* Build templates (human-owned only) */}
           {isOwnedByHuman && (
             <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
+              >
                 Build Templates
               </div>
               <BuildTemplates
@@ -912,7 +1127,12 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                         const key = `${x},${y}`;
                         if (!occupied.has(key)) {
                           occupied.add(key);
-                          onCommand({ kind: "placeBuilding", asteroidId: asteroid.id, buildingKind, cell: { x, y } });
+                          onCommand({
+                            kind: "placeBuilding",
+                            asteroidId: asteroid.id,
+                            buildingKind,
+                            cell: { x, y },
+                          });
                           continue outer;
                         }
                       }
@@ -927,7 +1147,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           {/* Auto-hire (human-owned only) */}
           {isOwnedByHuman && (
             <section style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
+              >
                 Workforce
               </div>
               <label
@@ -960,7 +1188,14 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                     onChange={(e) => setAutoHireBudget(asteroid.id, Number(e.target.value))}
                     style={{ flex: 1 }}
                   />
-                  <span style={{ fontSize: 10, color: "var(--text-lo)", minWidth: 46, fontFamily: "var(--font-data)" }}>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "var(--text-lo)",
+                      minWidth: 46,
+                      fontFamily: "var(--font-data)",
+                    }}
+                  >
                     {((autoHireBudgets[asteroid.id] ?? 0) / 1000).toFixed(1)}k¢
                   </span>
                 </div>
@@ -971,15 +1206,23 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           {/* Buildings list */}
           {asteroid.buildingsGrid.length > 0 && (
             <section style={{ padding: "10px 12px" }}>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
+              >
                 Installed ({asteroid.buildingsGrid.length})
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {asteroid.buildingsGrid.map((b, i) => {
+                {asteroid.buildingsGrid.map((b) => {
                   const label = findBuildingDef(b.kind)?.label ?? formatKind(b.kind);
                   return (
                     <div
-                      key={`${b.kind}-${i}`}
+                      key={`${b.cell.x},${b.cell.y}`}
                       style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}
                     >
                       <span style={{ color: "#aabbcc" }}>{label}</span>
@@ -996,18 +1239,21 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
       </div>
 
       {isOwnedByHuman && selectedCell === null && (
-        <div style={{
-          borderTop: "1px solid var(--border)",
-          padding: "10px 12px",
-          background: "rgba(0,196,224,0.04)",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          flexShrink: 0,
-        }}>
+        <div
+          style={{
+            borderTop: "1px solid var(--border)",
+            padding: "10px 12px",
+            background: "rgba(0,196,224,0.04)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
           <span style={{ color: "var(--accent)", fontSize: 14 }}>⬆</span>
           <span style={{ fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--text-lo)" }}>
-            Click any empty cell <span style={{ color: "var(--accent)" }}>+</span> on the grid above to place a building
+            Click any empty cell <span style={{ color: "var(--accent)" }}>+</span> on the grid above
+            to place a building
           </span>
         </div>
       )}
@@ -1024,8 +1270,17 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         >
           {selectedCellBuilding ? (
             <div>
-              <div style={{ fontSize: 10, color: "#8899bb", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                Occupied — {findBuildingDef(selectedCellBuilding)?.label ?? formatKind(selectedCellBuilding)}
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#8899bb",
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 4,
+                }}
+              >
+                Occupied —{" "}
+                {findBuildingDef(selectedCellBuilding)?.label ?? formatKind(selectedCellBuilding)}
               </div>
               <div style={{ fontSize: 11, color: "#445566" }}>
                 Cell ({selectedCell.x},{selectedCell.y}) is occupied. Select an empty cell to build.
@@ -1033,7 +1288,16 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
             </div>
           ) : (
             <div>
-              <div style={{ fontSize: 11, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, fontFamily: "var(--font-head)" }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "var(--accent)",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.5,
+                  marginBottom: 8,
+                  fontFamily: "var(--font-head)",
+                }}
+              >
                 Build at cell ({selectedCell.x},{selectedCell.y})
               </div>
               <div
@@ -1080,14 +1344,41 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                         opacity: isLocked ? 0.45 : 1,
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
                         {BUILDING_ICON[def.kind] && (
-                          <img src={BUILDING_ICON[def.kind]} alt="" style={{ width: 24, height: 24, objectFit: "contain", imageRendering: "pixelated", opacity: isLocked ? 0.3 : 0.9 }} />
+                          <img
+                            src={BUILDING_ICON[def.kind]}
+                            alt=""
+                            style={{
+                              width: 24,
+                              height: 24,
+                              objectFit: "contain",
+                              imageRendering: "pixelated",
+                              opacity: isLocked ? 0.3 : 0.9,
+                            }}
+                          />
                         )}
-                        <span style={{ fontWeight: "bold", fontSize: 11, flex: 1, marginLeft: BUILDING_ICON[def.kind] ? 6 : 0 }}>{def.label}</span>
+                        <span
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: 11,
+                            flex: 1,
+                            marginLeft: BUILDING_ICON[def.kind] ? 6 : 0,
+                          }}
+                        >
+                          {def.label}
+                        </span>
                         {isLocked && <span style={{ fontSize: 9, color: "#554466" }}>🔒</span>}
                       </div>
-                      <span style={{ color: "#8899bb" }}>{def.costCredits.toLocaleString()} cr</span>
+                      <span style={{ color: "#8899bb" }}>
+                        {def.costCredits.toLocaleString()} cr
+                      </span>
                     </button>
                   );
                 })}
@@ -1113,7 +1404,7 @@ const PORTRAIT_SETS = ["civpro", "matreKhan", "terran"] as const;
 function getPortrait(raceId: string, reputation: number): string {
   const set = PORTRAIT_SETS[hashStr(raceId) % 3];
   const mood = reputation <= -10 ? "hostile" : "neutral";
-  return `/assets/portraits/${set}-${mood}.png`;
+  return assetUrl(`/assets/portraits/${set}-${mood}.png`);
 }
 
 // ── AsteroidIntelPanel ───────────────────────────────────────────────────────
@@ -1155,7 +1446,9 @@ function AsteroidIntelPanel({
   onCommand,
   onClose,
 }: AsteroidIntelPanelProps) {
-  const idleAssault = humanShips.filter((s) => s.defKind === "assaultCraft" && s.orderKind === "idle");
+  const idleAssault = humanShips.filter(
+    (s) => s.defKind === "assaultCraft" && s.orderKind === "idle",
+  );
   const allScouts = humanShips.filter((s) => s.defKind === "scout");
   const repColor =
     ownerReputation === null
@@ -1167,9 +1460,7 @@ function AsteroidIntelPanel({
           : "var(--amber)";
 
   const repBarWidth =
-    ownerReputation !== null
-      ? `${Math.max(0, Math.min(100, (ownerReputation + 100) / 2))}%`
-      : "0%";
+    ownerReputation !== null ? `${Math.max(0, Math.min(100, (ownerReputation + 100) / 2))}%` : "0%";
 
   const isUnclaimed = ownerRaceId === null;
 
@@ -1241,7 +1532,15 @@ function AsteroidIntelPanel({
           </div>
         </div>
         {!isUnclaimed && ownerRaceId !== null && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 4,
+              flexShrink: 0,
+            }}
+          >
             <img
               src={getPortrait(ownerRaceId, ownerReputation ?? 0)}
               alt={ownerName}
@@ -1265,16 +1564,18 @@ function AsteroidIntelPanel({
 
       {/* ── Incoming missile warning ── */}
       {incomingMissile !== null && (
-        <div style={{
-          padding: "8px 12px",
-          background: "rgba(200,40,20,0.15)",
-          border: "1px solid #cc3322",
-          color: "#ff6655",
-          fontFamily: "var(--font-data)",
-          fontSize: 11,
-          flexShrink: 0,
-          letterSpacing: 0.5,
-        }}>
+        <div
+          style={{
+            padding: "8px 12px",
+            background: "rgba(200,40,20,0.15)",
+            border: "1px solid #cc3322",
+            color: "#ff6655",
+            fontFamily: "var(--font-data)",
+            fontSize: 11,
+            flexShrink: 0,
+            letterSpacing: 0.5,
+          }}
+        >
           ⚠ INCOMING MISSILE — ETA tick {incomingMissile.arrivalTick}
         </div>
       )}
@@ -1320,8 +1621,17 @@ function AsteroidIntelPanel({
                 }}
               />
             </div>
-            <span style={{ fontSize: 12, color: repColor, fontWeight: "bold", minWidth: 32, textAlign: "right" }}>
-              {ownerReputation > 0 ? "+" : ""}{ownerReputation}
+            <span
+              style={{
+                fontSize: 12,
+                color: repColor,
+                fontWeight: "bold",
+                minWidth: 32,
+                textAlign: "right",
+              }}
+            >
+              {ownerReputation > 0 ? "+" : ""}
+              {ownerReputation}
             </span>
           </div>
         </div>
@@ -1380,12 +1690,12 @@ function AsteroidIntelPanel({
           <div style={{ color: "var(--text-lo)", fontSize: 11 }}>No structures detected</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {buildingsGrid.map((b, i) => {
+            {buildingsGrid.map((b) => {
               const label = findBuildingDef(b.kind)?.label ?? formatKind(b.kind);
               const icon = BUILDING_ICON[b.kind];
               return (
                 <div
-                  key={`${b.kind}-${i}`}
+                  key={`${b.cell.x},${b.cell.y}`}
                   style={{ display: "flex", alignItems: "center", gap: 6 }}
                 >
                   {icon ? (
@@ -1466,7 +1776,11 @@ function AsteroidIntelPanel({
                     key={s.id}
                     type="button"
                     onClick={() =>
-                      onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "scout", target: sector } })
+                      onCommand({
+                        kind: "orderShip",
+                        shipId: mkShipId(s.id),
+                        order: { kind: "scout", target: sector },
+                      })
                     }
                     style={{
                       background: "#0a1428",
@@ -1504,7 +1818,11 @@ function AsteroidIntelPanel({
                   key={s.id}
                   type="button"
                   onClick={() =>
-                    onCommand({ kind: "orderShip", shipId: mkShipId(s.id), order: { kind: "attackAsteroid", target: mkAsteroidId(asteroidId) } })
+                    onCommand({
+                      kind: "orderShip",
+                      shipId: mkShipId(s.id),
+                      order: { kind: "attackAsteroid", target: mkAsteroidId(asteroidId) },
+                    })
                   }
                   style={{
                     background: "#200a0a",
@@ -1529,14 +1847,16 @@ function AsteroidIntelPanel({
           {/* Settle button — unclaimed + human scout in orbit */}
           {(() => {
             const humanScoutHere = shipsHere.some(
-              (s) => s.ownerId === humanPlayerId && s.defKind === "scout"
+              (s) => s.ownerId === humanPlayerId && s.defKind === "scout",
             );
             if (!isUnclaimed || !humanScoutHere) return null;
             return (
               <div style={{ marginTop: 8 }}>
                 <button
                   type="button"
-                  onClick={() => onCommand({ kind: "settleAsteroid", asteroidId: mkAsteroidId(asteroidId) })}
+                  onClick={() =>
+                    onCommand({ kind: "settleAsteroid", asteroidId: mkAsteroidId(asteroidId) })
+                  }
                   style={{
                     width: "100%",
                     background: "rgba(0,204,102,0.12)",
@@ -1558,9 +1878,17 @@ function AsteroidIntelPanel({
 
           {/* Claim hint for unclaimed */}
           {isUnclaimed && (
-            <div style={{ fontSize: 10, color: "var(--text-lo)", fontStyle: "italic", lineHeight: 1.5 }}>
+            <div
+              style={{
+                fontSize: 10,
+                color: "var(--text-lo)",
+                fontStyle: "italic",
+                lineHeight: 1.5,
+              }}
+            >
               To claim this asteroid: hire an Espionage agent and assign a{" "}
-              <span style={{ color: "var(--amber)" }}>Liberate</span> mission targeting this location.
+              <span style={{ color: "var(--amber)" }}>Liberate</span> mission targeting this
+              location.
             </div>
           )}
         </section>
@@ -1568,7 +1896,9 @@ function AsteroidIntelPanel({
 
       {/* ── Footer note ── */}
       <div style={{ padding: "10px 12px", marginTop: "auto", flexShrink: 0 }}>
-        <div style={{ fontSize: 10, color: "var(--text-lo)", fontStyle: "italic", lineHeight: 1.5 }}>
+        <div
+          style={{ fontSize: 10, color: "var(--text-lo)", fontStyle: "italic", lineHeight: 1.5 }}
+        >
           Intel may be incomplete. Send scouts for full reconnaissance.
         </div>
       </div>
@@ -1596,7 +1926,9 @@ function StatPill({ label, value, valueColor = "#c8d8ff" }: StatPillProps) {
         borderRight: "1px solid #1a2840",
       }}
     >
-      <span style={{ fontSize: 9, color: "#445566", textTransform: "uppercase", letterSpacing: 0.5 }}>
+      <span
+        style={{ fontSize: 9, color: "#445566", textTransform: "uppercase", letterSpacing: 0.5 }}
+      >
         {label}
       </span>
       <span style={{ fontSize: 13, color: valueColor, fontWeight: "bold" }}>{value}</span>

@@ -14,7 +14,13 @@ const MISSION_LABELS: Record<AgentMissionKind, string> = {
   liberate: "Liberate",
 };
 
-const ALL_MISSIONS: AgentMissionKind[] = ["recon", "techSteal", "sabotage", "blackmail", "liberate"];
+const ALL_MISSIONS: AgentMissionKind[] = [
+  "recon",
+  "techSteal",
+  "sabotage",
+  "blackmail",
+  "liberate",
+];
 
 interface Props {
   onCommand: (cmd: Command) => void;
@@ -34,11 +40,20 @@ function AgentRow({
 
   if (!agent.owned) {
     return (
-      <div style={{ marginBottom: 8, padding: "6px 8px", border: "1px solid #224", background: "#060e20" }}>
+      <div
+        style={{
+          marginBottom: 8,
+          padding: "6px 8px",
+          border: "1px solid #224",
+          background: "#060e20",
+        }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <span style={{ fontWeight: "bold" }}>{agent.name}</span>
-            <span style={{ fontSize: 11, color: "#7090b0", marginLeft: 8 }}>Stealth {agent.stealth}</span>
+            <span style={{ fontSize: 11, color: "#7090b0", marginLeft: 8 }}>
+              Stealth {agent.stealth}
+            </span>
           </div>
           <button
             type="button"
@@ -62,7 +77,14 @@ function AgentRow({
   }
 
   return (
-    <div style={{ marginBottom: 8, padding: "6px 8px", border: "1px solid #336", background: "#060e20" }}>
+    <div
+      style={{
+        marginBottom: 8,
+        padding: "6px 8px",
+        border: "1px solid #336",
+        background: "#060e20",
+      }}
+    >
       <div style={{ fontWeight: "bold", color: "#8af" }}>
         {agent.name}
         <span style={{ fontSize: 11, color: "#7090b0", fontWeight: "normal", marginLeft: 8 }}>
@@ -158,7 +180,10 @@ export function EspionagePanel({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 8 }}>Espionage<HelpTip text="Deploy agents on espionage missions to steal tech, sabotage enemies, or gather intel." /></div>
+      <div style={{ fontWeight: "bold", marginBottom: 8 }}>
+        Espionage
+        <HelpTip text="Deploy agents on espionage missions to steal tech, sabotage enemies, or gather intel." />
+      </div>
       {ownedAgents.length > 0 && (
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: "#7090b0", marginBottom: 4 }}>

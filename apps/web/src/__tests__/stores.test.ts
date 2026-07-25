@@ -1,7 +1,7 @@
-import type { HudSnapshot } from "@fa/sim";
 import { describe, expect, it } from "vitest";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
+import { makeTestSnapshot } from "./testSnapshot.ts";
 
 describe("gameStore", () => {
   it("starts with null snapshot", () => {
@@ -10,25 +10,12 @@ describe("gameStore", () => {
   });
 
   it("setSnapshot updates the store", () => {
-    const mockSnap: HudSnapshot = {
+    const mockSnap = makeTestSnapshot({
       tick: 5,
       credits: 9000,
       federationStanding: 50,
-      suspicion: 0,
       humanPlayerId: "player-human",
-      traderActive: false,
-      oreInventory: {},
-      players: [],
-      asteroids: [],
-      ships: [],
-      events: [],
-      marketPrices: {},
-      combatFlashes: [],
-      diplomacy: [],
-      gameEndState: null,
-      blueprintsOwned: [],
-      agents: [],
-    };
+    });
     useGameStore.getState().setSnapshot(mockSnap);
     expect(useGameStore.getState().snapshot?.tick).toBe(5);
   });
@@ -65,23 +52,23 @@ describe("uiStore buildTemplates", () => {
 
   it("saves and retrieves a template", () => {
     useUiStore.getState().saveBuildTemplate("Test", ["airProcessor", "mineMk1"]);
-    expect(useUiStore.getState().buildTemplates["Test"]).toEqual(["airProcessor", "mineMk1"]);
+    expect(useUiStore.getState().buildTemplates.Test).toEqual(["airProcessor", "mineMk1"]);
   });
 
   it("deletes a template", () => {
     useUiStore.getState().saveBuildTemplate("ToDelete", ["airProcessor"]);
     useUiStore.getState().deleteBuildTemplate("ToDelete");
-    expect(useUiStore.getState().buildTemplates["ToDelete"]).toBeUndefined();
+    expect(useUiStore.getState().buildTemplates.ToDelete).toBeUndefined();
   });
 });
 
 describe("uiStore autoHire", () => {
   it("sets auto-hire budget for an asteroid", () => {
     useUiStore.getState().setAutoHireBudget("ast1", 5000);
-    expect(useUiStore.getState().autoHireBudgets["ast1"]).toBe(5000);
+    expect(useUiStore.getState().autoHireBudgets.ast1).toBe(5000);
   });
   it("defaults to empty", () => {
-    expect(useUiStore.getState().autoHireBudgets["nonexistent"]).toBeUndefined();
+    expect(useUiStore.getState().autoHireBudgets.nonexistent).toBeUndefined();
   });
 });
 

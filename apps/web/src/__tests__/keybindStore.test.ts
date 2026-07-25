@@ -1,5 +1,5 @@
-import { describe, expect, it, beforeEach } from "vitest";
-import { useKeybindStore, DEFAULT_KEYBINDS } from "../store/keybindStore";
+import { beforeEach, describe, expect, it } from "vitest";
+import { DEFAULT_KEYBINDS, useKeybindStore } from "../store/keybindStore";
 
 describe("keybindStore", () => {
   beforeEach(() => {

@@ -6,7 +6,13 @@ import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
 
-const DISCIPLINES: BlueprintDiscipline[] = ["mining", "infrastructure", "military", "science", "commerce"];
+const DISCIPLINES: BlueprintDiscipline[] = [
+  "mining",
+  "infrastructure",
+  "military",
+  "science",
+  "commerce",
+];
 const DISCIPLINE_LABELS: Record<BlueprintDiscipline, string> = {
   mining: "Mining",
   infrastructure: "Infrastructure",
@@ -51,7 +57,10 @@ export function BlueprintShop({ onCommand }: Props) {
         padding: 12,
       }}
     >
-      <div style={{ fontWeight: "bold", marginBottom: 10, fontSize: 14 }}>Research & Blueprints<HelpTip text="Purchase blueprints to unlock advanced buildings and ships. Tier-2 requires a tier-1 first." /></div>
+      <div style={{ fontWeight: "bold", marginBottom: 10, fontSize: 14 }}>
+        Research & Blueprints
+        <HelpTip text="Purchase blueprints to unlock advanced buildings and ships. Tier-2 requires a tier-1 first." />
+      </div>
       <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap" }}>
         {DISCIPLINES.map((d) => (
           <button
@@ -84,7 +93,9 @@ export function BlueprintShop({ onCommand }: Props) {
           return (
             <div key={bp.id}>
               {prevBp && (
-                <div style={{ color: "#446", fontSize: 11, marginBottom: 2, paddingLeft: 8 }}>↓</div>
+                <div style={{ color: "#446", fontSize: 11, marginBottom: 2, paddingLeft: 8 }}>
+                  ↓
+                </div>
               )}
               <div
                 style={{
@@ -94,12 +105,20 @@ export function BlueprintShop({ onCommand }: Props) {
                   opacity: !prereqMet ? 0.5 : 1,
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
                   <div>
                     <div style={{ fontWeight: "bold", color: isOwned ? "#4d8" : "#c8d8ff" }}>
                       T{bp.tier} {bp.label}
                     </div>
-                    <div style={{ color: "#7090b0", fontSize: 11, marginTop: 2 }}>{bp.description}</div>
+                    <div style={{ color: "#7090b0", fontSize: 11, marginTop: 2 }}>
+                      {bp.description}
+                    </div>
                   </div>
                   <div style={{ textAlign: "right", minWidth: 70, marginLeft: 8 }}>
                     {isOwned ? (

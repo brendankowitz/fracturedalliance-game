@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { DEFAULT_KEYBINDS, useKeybindStore } from "../store/keybindStore.ts";
 import type { KeybindAction } from "../store/keybindStore.ts";
+import { DEFAULT_KEYBINDS, useKeybindStore } from "../store/keybindStore.ts";
 
 const ACTION_LABELS: Record<KeybindAction, string> = {
   pause: "Pause",

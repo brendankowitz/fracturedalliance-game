@@ -31,7 +31,7 @@ export function detectAchievements(snap: HudSnapshot): void {
     unlock("diplomat");
   }
 
-  const purchases = (blackMarketCount.get(humanId) ?? 0);
+  const purchases = blackMarketCount.get(humanId) ?? 0;
   const newPurchases = snap.events.filter((e) => e.kind === "blackmarket.purchase").length;
   const updatedPurchases = purchases + newPurchases;
   if (newPurchases > 0) blackMarketCount.set(humanId, updatedPurchases);
@@ -45,11 +45,21 @@ export function detectAchievements(snap: HudSnapshot): void {
     unlock("first_win");
     useUiStore.getState().unlockScenario("advanced-primer");
 
-    if (snap.gameEndState === "victory:independence") { unlock("independence_win"); useMegacorpStore.getState().addRep(10); }
-    else if (snap.gameEndState === "victory:military") { unlock("military_win"); useMegacorpStore.getState().addRep(10); }
-    else if (snap.gameEndState === "victory:economic") { unlock("economic_win"); useMegacorpStore.getState().addRep(10); }
-    else if (snap.gameEndState === "victory:science") { unlock("science_win"); useMegacorpStore.getState().addRep(10); }
-    else if (snap.gameEndState === "defeat") { useMegacorpStore.getState().addRep(-5); }
+    if (snap.gameEndState === "victory:independence") {
+      unlock("independence_win");
+      useMegacorpStore.getState().addRep(10);
+    } else if (snap.gameEndState === "victory:military") {
+      unlock("military_win");
+      useMegacorpStore.getState().addRep(10);
+    } else if (snap.gameEndState === "victory:economic") {
+      unlock("economic_win");
+      useMegacorpStore.getState().addRep(10);
+    } else if (snap.gameEndState === "victory:science") {
+      unlock("science_win");
+      useMegacorpStore.getState().addRep(10);
+    } else if (snap.gameEndState === "defeat") {
+      useMegacorpStore.getState().addRep(-5);
+    }
 
     if (snap.tick <= 200) unlock("speed_run");
   }

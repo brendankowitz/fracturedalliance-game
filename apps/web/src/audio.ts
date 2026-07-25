@@ -1,10 +1,12 @@
+import { assetUrl } from "./assetUrl.ts";
+
 const sfxCache = new Map<string, HTMLAudioElement>();
 const lastPlayed = new Map<string, number>();
 const COOLDOWN_MS = 3000;
 
 export function playSound(url: string, volume = 0.5): void {
   const now = Date.now();
-  if ((now - (lastPlayed.get(url) ?? 0)) < COOLDOWN_MS) return;
+  if (now - (lastPlayed.get(url) ?? 0) < COOLDOWN_MS) return;
   lastPlayed.set(url, now);
   try {
     let audio = sfxCache.get(url);
@@ -14,7 +16,9 @@ export function playSound(url: string, volume = 0.5): void {
     }
     audio.volume = volume;
     audio.currentTime = 0;
-    audio.play().catch(() => {/* autoplay blocked */});
+    audio.play().catch(() => {
+      /* autoplay blocked */
+    });
   } catch {
     // ignore
   }
@@ -23,10 +27,10 @@ export function playSound(url: string, volume = 0.5): void {
 export type MusicTrack = "menu" | "exploration" | "combat" | "victory";
 
 const TRACK_URLS: Record<MusicTrack, string> = {
-  menu: "/audio/music/menu.mp3",
-  exploration: "/audio/music/exploration.mp3",
-  combat: "/audio/music/combat.mp3",
-  victory: "/audio/music/victory.mp3",
+  menu: assetUrl("/audio/music/menu.mp3"),
+  exploration: assetUrl("/audio/music/exploration.mp3"),
+  combat: assetUrl("/audio/music/combat.mp3"),
+  victory: assetUrl("/audio/music/victory.mp3"),
 };
 
 const FADE_DURATION_MS = 1500;
@@ -47,7 +51,9 @@ class MusicPlayer {
     const audio = new Audio(TRACK_URLS[track]);
     audio.loop = true;
     audio.volume = 0;
-    audio.play().catch(() => {/* autoplay blocked */});
+    audio.play().catch(() => {
+      /* autoplay blocked */
+    });
     this.fadeIn(audio);
     this.current = audio;
     this.currentTrack = track;
@@ -101,14 +107,14 @@ class MusicPlayer {
 export const musicPlayer = new MusicPlayer();
 
 export const SFX = {
-  buildComplete: "/audio/sfx/build_complete.wav",
-  attack: "/audio/sfx/attack.wav",
-  blackMarket: "/audio/sfx/black_market_visit.wav",
-  defeat: "/audio/sfx/defeat.wav",
-  espionage: "/audio/sfx/espionage_detected.wav",
-  notification: "/audio/sfx/notification.wav",
-  oreProduced: "/audio/sfx/ore_produced.wav",
-  treatySigned: "/audio/sfx/treaty_signed.wav",
-  victoryFanfare: "/audio/sfx/victory_fanfare.wav",
-  engineCharging: "/audio/sfx/asteroid_engine_charging.wav",
+  buildComplete: assetUrl("/audio/sfx/build_complete.wav"),
+  attack: assetUrl("/audio/sfx/attack.wav"),
+  blackMarket: assetUrl("/audio/sfx/black_market_visit.wav"),
+  defeat: assetUrl("/audio/sfx/defeat.wav"),
+  espionage: assetUrl("/audio/sfx/espionage_detected.wav"),
+  notification: assetUrl("/audio/sfx/notification.wav"),
+  oreProduced: assetUrl("/audio/sfx/ore_produced.wav"),
+  treatySigned: assetUrl("/audio/sfx/treaty_signed.wav"),
+  victoryFanfare: assetUrl("/audio/sfx/victory_fanfare.wav"),
+  engineCharging: assetUrl("/audio/sfx/asteroid_engine_charging.wav"),
 } as const;

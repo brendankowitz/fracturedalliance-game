@@ -1,6 +1,6 @@
 import type { EventPriority } from "@fa/domain";
 import { useEffect, useRef, useState } from "react";
-import { playSound } from "../audio.ts";
+import { playSound, SFX } from "../audio.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 
@@ -88,7 +88,9 @@ export function NotificationFeed() {
     if (newEntries.length === 0) return;
 
     const shouldPause = newEntries.some(
-      (e) => (e.priority === "red" && pauseOnPriority.red) || (e.priority === "amber" && pauseOnPriority.amber),
+      (e) =>
+        (e.priority === "red" && pauseOnPriority.red) ||
+        (e.priority === "amber" && pauseOnPriority.amber),
     );
     if (shouldPause && !paused) {
       setPaused(true);
@@ -99,15 +101,15 @@ export function NotificationFeed() {
 
     for (const entry of newEntries) {
       if (entry.kind === "construction.done") {
-        playSound("/audio/sfx/build_complete.wav");
+        playSound(SFX.buildComplete);
       } else if (entry.kind === "treaty.signed" || entry.kind === "treaty.broken") {
-        playSound("/audio/sfx/treaty_signed.wav");
+        playSound(SFX.treatySigned);
       } else if (entry.kind === "espionage.detected") {
-        playSound("/audio/sfx/espionage_detected.wav");
+        playSound(SFX.espionage);
       } else if (entry.priority === "red") {
-        playSound("/audio/sfx/notification.wav", 0.7);
+        playSound(SFX.notification, 0.7);
       } else if (entry.priority === "amber") {
-        playSound("/audio/sfx/notification.wav", 0.35);
+        playSound(SFX.notification, 0.35);
       }
     }
 
@@ -237,6 +239,7 @@ export function NotificationFeed() {
                       width: 12,
                       textAlign: "center",
                     }}
+                    role="img"
                     title={PRIORITY_LABELS[e.priority]}
                     aria-label={PRIORITY_LABELS[e.priority]}
                   >

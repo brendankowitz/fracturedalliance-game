@@ -1,20 +1,22 @@
-import type { DifficultyLevel } from "@fa/sim";
-import { DIFFICULTY_PRESETS } from "@fa/sim";
 import type { Scenario } from "@fa/content";
 import { SCENARIOS } from "@fa/content";
+import type { DifficultyLevel } from "@fa/sim";
+import { DIFFICULTY_PRESETS } from "@fa/sim";
 import { useState } from "react";
-import { DifficultySelector } from "./DifficultySelector.tsx";
-import { useUiStore } from "../store/uiStore.ts";
-import { useMegacorpStore, THEME_COLORS } from "../store/megacorpStore.ts";
-import type { HudTheme } from "../store/megacorpStore.ts";
 import { useAchievementStore } from "../store/achievementStore.ts";
+import type { HudTheme } from "../store/megacorpStore.ts";
+import { THEME_COLORS, useMegacorpStore } from "../store/megacorpStore.ts";
+import { useUiStore } from "../store/uiStore.ts";
+import { DifficultySelector } from "./DifficultySelector.tsx";
 
 const REQUIRES_WIN = new Set(["advanced-primer"]);
 
 function getWeeklySeed(): number {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7);
+  const week = Math.ceil(
+    ((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7,
+  );
   return now.getFullYear() * 100 + week;
 }
 
@@ -121,10 +123,10 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
                 }}
               >
                 <span style={{ fontWeight: "bold", fontSize: 13 }}>{scenario.name}</span>
-                {isLocked && (
-                  <span style={{ fontSize: 10, opacity: 0.7 }}>Unlock: win once</span>
-                )}
-                <span style={{ opacity: 0.8, fontSize: 11, lineHeight: 1.4 }}>{scenario.description}</span>
+                {isLocked && <span style={{ fontSize: 10, opacity: 0.7 }}>Unlock: win once</span>}
+                <span style={{ opacity: 0.8, fontSize: 11, lineHeight: 1.4 }}>
+                  {scenario.description}
+                </span>
                 <span style={{ opacity: 0.6, fontSize: 10, marginTop: 4 }}>
                   {DIFFICULTY_PRESETS[scenario.difficulty]!.label} · Seed {scenario.seed}
                 </span>

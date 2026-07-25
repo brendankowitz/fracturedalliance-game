@@ -4,8 +4,14 @@ import { TUTORIAL_STEPS, tutorialMachine } from "../machines/tutorialMachine.ts"
 import { useGameStore } from "../store/gameStore.ts";
 
 const STEP_NUMBERS: Record<string, number> = {
-  step1: 1, step2: 2, step3: 3, step4: 4, step5: 5,
+  step1: 1,
+  step2: 2,
+  step3: 3,
+  step4: 4,
+  step5: 5,
 };
+
+const PROGRESS_DOTS = [1, 2, 3, 4, 5] as const;
 
 export function TutorialTooltip() {
   const [state, send] = useMachine(tutorialMachine);
@@ -52,39 +58,109 @@ export function TutorialTooltip() {
         ...stepConfig.position,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: "1px solid rgba(255,146,0,0.2)", background: "rgba(255,146,0,0.06)" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          borderBottom: "1px solid rgba(255,146,0,0.2)",
+          background: "rgba(255,146,0,0.06)",
+        }}
+      >
         <div className="fa-tutorial-dot" />
-        <span style={{ fontFamily: "var(--font-head)", fontSize: 9, letterSpacing: 2, color: "var(--amber)", fontWeight: 700, flex: 1 }}>
+        <span
+          style={{
+            fontFamily: "var(--font-head)",
+            fontSize: 9,
+            letterSpacing: 2,
+            color: "var(--amber)",
+            fontWeight: 700,
+            flex: 1,
+          }}
+        >
           MISSION BRIEFING
         </span>
         <div style={{ display: "flex", gap: 4 }}>
-          {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: i < stepNumber ? "var(--amber)" : "var(--border)" }} />
+          {PROGRESS_DOTS.map((dot) => (
+            <div
+              key={dot}
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: dot <= stepNumber ? "var(--amber)" : "var(--border)",
+              }}
+            />
           ))}
         </div>
       </div>
 
       <div style={{ padding: "6px 12px 0" }}>
-        <span style={{ fontFamily: "var(--font-ui)", fontSize: 10, color: "var(--amber)", letterSpacing: 1, fontWeight: 600 }}>STEP {stepNumber} OF 5</span>
+        <span
+          style={{
+            fontFamily: "var(--font-ui)",
+            fontSize: 10,
+            color: "var(--amber)",
+            letterSpacing: 1,
+            fontWeight: 600,
+          }}
+        >
+          STEP {stepNumber} OF 5
+        </span>
       </div>
 
-      <div style={{ padding: "6px 12px 10px", fontSize: 13, lineHeight: 1.6, color: "var(--text-hi)", fontFamily: "var(--font-ui)", fontWeight: 500 }}>
+      <div
+        style={{
+          padding: "6px 12px 10px",
+          fontSize: 13,
+          lineHeight: 1.6,
+          color: "var(--text-hi)",
+          fontFamily: "var(--font-ui)",
+          fontWeight: 500,
+        }}
+      >
         {stepConfig.message}
       </div>
 
       {!predicateMet && (
-        <div style={{ padding: "0 12px 8px", fontSize: 11, color: "var(--text-lo)", fontStyle: "italic", fontFamily: "var(--font-ui)" }}>
+        <div
+          style={{
+            padding: "0 12px 8px",
+            fontSize: 11,
+            color: "var(--text-lo)",
+            fontStyle: "italic",
+            fontFamily: "var(--font-ui)",
+          }}
+        >
           Waiting for objective...
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, padding: "8px 12px", borderTop: "1px solid rgba(255,146,0,0.15)" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          padding: "8px 12px",
+          borderTop: "1px solid rgba(255,146,0,0.15)",
+        }}
+      >
         {isStep5 && predicateMet && (
-          <button type="button" onClick={() => send({ type: "ADVANCE" })} className="fa-btn fa-btn-primary" style={{ flex: 1 }}>
+          <button
+            type="button"
+            onClick={() => send({ type: "ADVANCE" })}
+            className="fa-btn fa-btn-primary"
+            style={{ flex: 1 }}
+          >
             Got it
           </button>
         )}
-        <button type="button" onClick={() => send({ type: "DISMISS" })} className="fa-btn" style={{ marginLeft: isStep5 && predicateMet ? 0 : "auto" }}>
+        <button
+          type="button"
+          onClick={() => send({ type: "DISMISS" })}
+          className="fa-btn"
+          style={{ marginLeft: isStep5 && predicateMet ? 0 : "auto" }}
+        >
           Skip Tutorial
         </button>
       </div>

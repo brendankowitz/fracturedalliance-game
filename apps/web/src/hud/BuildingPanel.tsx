@@ -55,7 +55,10 @@ export function BuildingPanel({ onCommand }: BuildingPanelProps) {
         zIndex: 10,
       }}
     >
-      <strong style={{ color: "#ffffff" }}>Place Building<HelpTip text="Place buildings on your asteroid to generate income, defense, and production." /></strong>
+      <strong style={{ color: "#ffffff" }}>
+        Place Building
+        <HelpTip text="Place buildings on your asteroid to generate income, defense, and production." />
+      </strong>
       {defs.map((def) => {
         const locked = def.blueprintRequired !== undefined;
         return (
