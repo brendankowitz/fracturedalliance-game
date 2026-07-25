@@ -9,11 +9,11 @@ import type {
   TreatyKind,
   World,
 } from "@fa/domain";
-import { formatSimDate, simDay } from "@fa/domain";
 import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 import { computeGrudgeScore } from "./systems/diplomacySystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
+import { formatSimDate, simDay } from "./time.ts";
 
 export interface AgentSnapshot {
   id: string;

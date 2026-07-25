@@ -1,7 +1,7 @@
 import type { AsteroidId } from "@fa/domain";
-import { TICKS_PER_SIM_DAY } from "@fa/domain";
 import type { SaveV1 } from "@fa/persistence";
 import type { Command, DifficultyLevel, SimApi } from "@fa/sim";
+import { TICKS_PER_SIM_DAY } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
 import { Assets } from "pixi.js";
