@@ -16,6 +16,7 @@
     "@fa/domain": "workspace:*",
     "@fa/persistence": "workspace:*",
     "@fa/sim": "workspace:*",
+    "@fa/sim-adapter": "workspace:*",
     "@xstate/react": "^4.0.0",
     "comlink": "^4.4.1",
     "pixi.js": "^8.0.0",

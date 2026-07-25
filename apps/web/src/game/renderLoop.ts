@@ -24,12 +24,24 @@ export interface RenderLoopHandle {
   setColorPalette: (p: ColorPalette) => void;
 }
 
+/**
+ * Phase C (Stage 1 adoption): the adopted engine (SimApiV2 over the vendored
+ * copilot-opus sim) is the default. `?sim=v1` selects the legacy sim — the
+ * documented rollback path until Phase E deletes it.
+ */
+function chooseSimWorker(LegacyWorkerClass: new () => Worker): Worker {
+  const wantsLegacy =
+    typeof location !== "undefined" && new URLSearchParams(location.search).get("sim") === "v1";
+  if (wantsLegacy) return new LegacyWorkerClass();
+  return new Worker(new URL("../workers/sim.worker.v2.ts", import.meta.url), { type: "module" });
+}
+
 export function startRenderLoop(
   WorkerClass: new () => Worker,
   seed: number,
   difficulty: DifficultyLevel = "manager",
 ): RenderLoopHandle {
-  const rawWorker = new WorkerClass();
+  const rawWorker = chooseSimWorker(WorkerClass);
   const RemoteSimApi = Comlink.wrap<typeof SimApi>(rawWorker);
 
   let instance: Remote<InstanceType<typeof SimApi>> | null = null;
