@@ -85,4 +85,6 @@ export type PlayerCommand =
       from: PlayerId;
       voteId: string;
       accept: boolean;
-    };
+    }
+  // ── opus Stage-1 delta — expansion (see systems/settlement.ts in @fab/sim) ──
+  | { kind: 'settleAsteroid'; from: PlayerId; asteroid: AsteroidId };

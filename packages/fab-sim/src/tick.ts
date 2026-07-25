@@ -60,6 +60,13 @@ export const setAiDriver = (driver: AiDriver | null): void => {
   aiDriver = driver;
 };
 
+/**
+ * opus Stage-1 delta — lets the worker bridge assert at boot that an AI
+ * driver was registered (the `@fab/ai` import side effect). Without it the
+ * sim ticks with no opponents and no pressure, silently.
+ */
+export const hasAiDriver = (): boolean => aiDriver !== null;
+
 /** Advance the world exactly one fixed step. */
 export const tickOnce = (world: World): void => {
   const reg = PrngRegistry.restore(world.rng);

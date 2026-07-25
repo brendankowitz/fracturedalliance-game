@@ -24,6 +24,7 @@ export * from './systems/population';
 export * from './systems/research';
 export * from './systems/satellites';
 export * from './systems/scenarioHooks';
+export * from './systems/settlement';
 export * from './systems/tutorial';
 export * from './systems/victory';
 export * from './tick';

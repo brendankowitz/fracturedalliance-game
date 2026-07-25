@@ -12,6 +12,8 @@ export type GameEvent =
       tick: number;
     }
   | { kind: 'colony.starved'; severity: 'red'; asteroidId: AsteroidId; tick: number }
+  // opus Stage-1 delta — emitted by the settleAsteroid command handler.
+  | { kind: 'asteroid.settled'; severity: 'grey'; asteroidId: AsteroidId; playerId: PlayerId; tick: number }
   | { kind: 'colony.seceded'; severity: 'red'; asteroidId: AsteroidId; toRaceId: string; tick: number }
   | { kind: 'trader.arrived'; severity: 'grey'; asteroidId: AsteroidId; tick: number }
   | {

@@ -27,6 +27,7 @@ import { emitEvent } from './events';
 import { handleCouncilVoteRespond } from './federalCouncil';
 import { startResearch } from './research';
 import { handleLaunchSatellite } from './satellites';
+import { handleSettleAsteroid } from './settlement';
 
 interface HandlerResult {
   readonly ok: boolean;
@@ -166,6 +167,10 @@ export const applyCommand = (world: World, cmd: PlayerCommand): void => {
       return;
     case 'councilVoteRespond':
       dispatch(world, 'councilVoteRespond', handleCouncilVoteRespond(world, cmd));
+      return;
+    // ── opus Stage-1 delta ──
+    case 'settleAsteroid':
+      dispatch(world, 'settleAsteroid', handleSettleAsteroid(world, cmd));
       return;
     default:
       // Legacy / stubbed commands — intentionally silent.
