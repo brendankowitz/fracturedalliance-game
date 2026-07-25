@@ -63,6 +63,24 @@ const FAB_TO_OPUS_MISSION: Readonly<Record<string, AgentSnapshot["missionKind"]>
   liberate: "liberate",
 };
 
+/**
+ * Display-contract rounding. The vendored engine accumulates float error
+ * (credits read 23799.999999755528 after 300 sim-days); the UI renders these
+ * numbers directly, so the projection rounds them — the world state is never
+ * touched. Credits/population/tonnage are whole numbers on screen; prices
+ * keep two decimals.
+ */
+const r0 = (n: number): number => Math.round(n);
+const flr = (n: number): number => Math.floor(n);
+const r2 = (n: number): number => Math.round(n * 100) / 100;
+
+const floorOres = (ores: Partial<Record<string, number>>): Partial<Record<string, number>> =>
+  Object.fromEntries(
+    Object.entries(ores)
+      .filter((e): e is [string, number] => e[1] != null && e[1] >= 1)
+      .map(([k, v]) => [k, flr(v)]),
+  );
+
 /** Pull the most useful human-readable fragment off an event payload. */
 const eventDetail = (e: GameEvent): string | undefined => {
   const raw = e as Record<string, unknown>;
@@ -112,16 +130,16 @@ export function takeHudSnapshot(
   const asteroids: HudSnapshot["asteroids"] = [...world.asteroids.values()].map((a) => {
     if (a.ownerId === human.id) {
       for (const [ore, tonnes] of Object.entries(a.stocks.ores)) {
-        if (tonnes && tonnes > 0) oreInventory[ore] = (oreInventory[ore] ?? 0) + tonnes;
+        if (tonnes && tonnes >= 1) oreInventory[ore] = (oreInventory[ore] ?? 0) + flr(tonnes);
       }
     }
     colonyExtras[a.id] = {
-      population: a.population,
+      population: flr(a.population),
       stocks: {
-        food: a.stocks.food,
-        water: a.stocks.water,
-        air: a.stocks.air,
-        ores: { ...a.stocks.ores },
+        food: r0(a.stocks.food),
+        water: r0(a.stocks.water),
+        air: r0(a.stocks.air),
+        ores: floorOres(a.stocks.ores),
       },
     };
 
@@ -134,7 +152,13 @@ export function takeHudSnapshot(
       const opusKind = unmapBuildingKind(b.defKind);
       buildingKinds.push(opusKind);
       if (b.constructionProgress >= 1) {
-        buildingsGrid.push({ kind: opusKind, cell: { x: b.cell.x, y: b.cell.y } });
+        buildingsGrid.push({
+          kind: opusKind,
+          cell: { x: b.cell.x, y: b.cell.y },
+          damage: b.damage,
+          hp: b.hp,
+          maxHp: b.maxHp,
+        });
         if (b.active) {
           const def = (BUILDINGS as Record<string, { powerDelta?: number } | undefined>)[b.defKind];
           powerBalance += def?.powerDelta ?? 0;
@@ -150,9 +174,7 @@ export function takeHudSnapshot(
       ownerId: a.ownerId,
       sector: { x: a.sector.x / POSITION_SCALE, y: a.sector.y / POSITION_SCALE },
       sizeClass: a.sizeClass,
-      deposits: Object.fromEntries(
-        Object.entries(a.deposits).filter((e): e is [string, number] => e[1] != null && e[1] > 0),
-      ),
+      deposits: floorOres(a.deposits),
       // Scale collision guard: the vendored sim runs radiation/stability/
       // happiness on 0–100; opus's HUD contract is 0–1 fractions rendered
       // with `* 100` (AsteroidInspector.tsx:114-116, SurfaceView.tsx:467-468).
@@ -168,6 +190,7 @@ export function takeHudSnapshot(
         progressTicks: q.progressTicks,
         totalTicks: q.totalTicks,
         queuedAt: 0,
+        cell: { x: q.cell.x, y: q.cell.y },
       })),
       powerBalance,
       engines: {
@@ -218,9 +241,9 @@ export function takeHudSnapshot(
     tick: world.tick,
     seed: world.seed,
     difficulty,
-    credits: human.credits,
-    federationStanding: human.federationStanding,
-    suspicion: human.suspicion,
+    credits: r0(human.credits),
+    federationStanding: r0(human.federationStanding),
+    suspicion: r0(human.suspicion),
     humanPlayerId: human.id,
     traderActive:
       world.tick % FED_TRANSPORTER_INTERVAL_TICKS >= FED_TRANSPORTER_INTERVAL_TICKS - 600,
@@ -230,7 +253,7 @@ export function takeHudSnapshot(
       raceId: p.raceId,
       isHuman: p.isHuman,
       alive: p.alive,
-      credits: p.credits,
+      credits: r0(p.credits),
     })),
     asteroids,
     ships: [...world.ships.values()].map((s) => ({
@@ -246,7 +269,9 @@ export function takeHudSnapshot(
         ? { kind: e.kind, priority: e.severity, detail }
         : { kind: e.kind, priority: e.severity };
     }),
-    marketPrices: { ...world.market.current },
+    marketPrices: Object.fromEntries(
+      Object.entries(world.market.current).map(([k, v]) => [k, r2(v)]),
+    ),
     combatFlashes: [...world.ships.values()].flatMap((ship) => {
       if (ship.order.kind !== "attackAsteroid") return [];
       const target = world.asteroids.get(ship.order.target);
@@ -287,7 +312,7 @@ export function takeHudSnapshot(
     queuedOrders: human.marketOrders.map((o) => ({
       side: o.side,
       ore: o.ore,
-      tonnes: o.tonnes,
+      tonnes: flr(o.tonnes),
       asteroidId: o.asteroid,
     })),
     colonyExtras,

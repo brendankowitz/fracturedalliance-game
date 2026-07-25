@@ -130,7 +130,13 @@ describe("TUTORIAL_STEPS predicates", () => {
           ownerId: "player-1",
           buildingKinds: [],
           buildQueue: [
-            { buildingKind: "airProcessor", progressTicks: 0, totalTicks: 1, queuedAt: 0 },
+            {
+              buildingKind: "airProcessor",
+              progressTicks: 0,
+              totalTicks: 1,
+              queuedAt: 0,
+              cell: { x: 0, y: 0 },
+            },
           ],
         }),
       ],
@@ -169,7 +175,15 @@ describe("TUTORIAL_STEPS predicates", () => {
         makeTestAsteroid({
           ownerId: "player-1",
           buildingKinds: [],
-          buildQueue: [{ buildingKind: "mineMk1", progressTicks: 0, totalTicks: 1, queuedAt: 0 }],
+          buildQueue: [
+            {
+              buildingKind: "mineMk1",
+              progressTicks: 0,
+              totalTicks: 1,
+              queuedAt: 0,
+              cell: { x: 0, y: 0 },
+            },
+          ],
         }),
       ],
     });

@@ -53,6 +53,8 @@ describe("headless ten-sim-minute session through SimApiV2", () => {
     expect(colony0.stability).toBeLessThanOrEqual(1);
     expect(colony0.radiation).toBeLessThanOrEqual(1);
     const startingCredits = snap.credits;
+    // Display contract: no raw float leaks — credits are whole numbers.
+    expect(Number.isInteger(snap.credits)).toBe(true);
 
     // ── Queue a mine on the starting colony ──────────────────────────────
     api.enqueueCommand({
