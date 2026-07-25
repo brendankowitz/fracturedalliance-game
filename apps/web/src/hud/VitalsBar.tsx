@@ -18,10 +18,20 @@ export interface ColonyStocks {
 export interface VitalsBarProps {
   asteroid: AsteroidSnapshot;
   day: number;
+  /** Identifies the running world. A new game or a reload must not read as a flow. */
+  worldKey: string;
   population: number | null;
   populationCap: number | null;
   stocks: ColonyStocks | null;
 }
+
+/**
+ * Happiness thresholds. Both simulations agree on these once the adapter has normalised
+ * its 0-100 scale to the HUD's 0-1: below UNREST productivity halves, below SECESSION the
+ * colony rolls to leave every sim-day.
+ */
+const HAPPINESS_UNREST = 0.3;
+const HAPPINESS_SECESSION = 0.1;
 
 interface Vital {
   readonly label: string;
@@ -29,6 +39,10 @@ interface Vital {
   /** 0–1, drives the bar under the reading; null hides the bar. */
   readonly fill: number | null;
   readonly tone: string;
+  /** Short state word under the reading, for vitals with named thresholds. */
+  readonly status?: string;
+  /** Fractions along the bar to mark, so proximity to a threshold is visible. */
+  readonly marks?: ReadonlyArray<number>;
 }
 
 const TONE = {
@@ -38,6 +52,22 @@ const TONE = {
   cool: "#5c9bb8",
   idle: "#556680",
 } as const;
+
+/**
+ * Happiness decides whether the colony is still yours, so it is reported against its
+ * thresholds rather than as a bare number on a generic good-to-bad ramp.
+ */
+function happinessStatus(happiness: number): string {
+  if (happiness < HAPPINESS_SECESSION) return "SECEDING";
+  if (happiness < HAPPINESS_UNREST) return "UNREST";
+  return "STABLE";
+}
+
+function happinessTone(happiness: number): string {
+  if (happiness < HAPPINESS_SECESSION) return TONE.bad;
+  if (happiness < HAPPINESS_UNREST) return TONE.warn;
+  return TONE.ok;
+}
 
 function tone(fraction: number): string {
   if (fraction >= 0.6) return TONE.ok;
@@ -60,13 +90,21 @@ interface StockRates {
 
 const NO_RATES: StockRates = { food: null, water: null, air: null };
 
+/** Units per sim-day beyond which a delta is a discontinuity, not production. */
+const IMPLAUSIBLE_RATE = 10_000;
+
 /**
  * Per-day flow derived from how the stock actually moved between samples, rather than
  * from summing building deltas. Summing would mean reading whichever content package is
  * live, and that package is being swapped underneath this component.
  */
-function useStockRates(asteroidId: string, day: number, stocks: ColonyStocks | null): StockRates {
-  const sample = useRef<{ id: string; day: number; stocks: ColonyStocks } | null>(null);
+function useStockRates(
+  worldKey: string,
+  asteroidId: string,
+  day: number,
+  stocks: ColonyStocks | null,
+): StockRates {
+  const sample = useRef<{ key: string; day: number; stocks: ColonyStocks } | null>(null);
   const [rates, setRates] = useState<StockRates>(NO_RATES);
 
   const food = stocks?.food ?? null;
@@ -82,28 +120,42 @@ function useStockRates(asteroidId: string, day: number, stocks: ColonyStocks | n
       return;
     }
     const current = { food, water, air };
+    const key = `${worldKey}:${asteroidId}`;
     const previous = sample.current;
-    if (!previous || previous.id !== asteroidId) {
-      sample.current = { id: asteroidId, day, stocks: current };
+    // A different world, a different colony, or a clock that moved backwards means the
+    // two samples are not comparable — resample rather than render the jump as a flow.
+    if (!previous || previous.key !== key || day < previous.day) {
+      sample.current = { key, day, stocks: current };
       setRates(NO_RATES);
       return;
     }
     const elapsed = day - previous.day;
     // Sub-day deltas are dominated by rounding, so wait for a whole sim-day.
     if (elapsed < 1) return;
-    setRates({
+    sample.current = { key, day, stocks: current };
+    const next = {
       food: (current.food - previous.stocks.food) / elapsed,
       water: (current.water - previous.stocks.water) / elapsed,
       air: (current.air - previous.stocks.air) / elapsed,
-    });
-    sample.current = { id: asteroidId, day, stocks: current };
-  }, [asteroidId, day, food, water, air]);
+    };
+    // A restored save can move a stock by more in one step than any colony could
+    // plausibly produce; discard that sample instead of reporting a spike.
+    const plausible = Object.values(next).every((rate) => Math.abs(rate) < IMPLAUSIBLE_RATE);
+    setRates(plausible ? next : NO_RATES);
+  }, [worldKey, asteroidId, day, food, water, air]);
 
   return rates;
 }
 
-export function VitalsBar({ asteroid, day, population, populationCap, stocks }: VitalsBarProps) {
-  const rates = useStockRates(asteroid.id, day, stocks);
+export function VitalsBar({
+  asteroid,
+  day,
+  worldKey,
+  population,
+  populationCap,
+  stocks,
+}: VitalsBarProps) {
+  const rates = useStockRates(worldKey, asteroid.id, day, stocks);
 
   const popFraction =
     population !== null && populationCap !== null && populationCap > 0
@@ -124,7 +176,9 @@ export function VitalsBar({ asteroid, day, population, populationCap, stocks }: 
       label: "Happiness",
       value: `${Math.round(asteroid.happiness * 100)}`,
       fill: asteroid.happiness,
-      tone: tone(asteroid.happiness),
+      tone: happinessTone(asteroid.happiness),
+      status: happinessStatus(asteroid.happiness),
+      marks: [HAPPINESS_SECESSION, HAPPINESS_UNREST],
     },
     {
       label: "Stability",
@@ -198,7 +252,7 @@ export function VitalsBar({ asteroid, day, population, populationCap, stocks }: 
           >
             {vital.value}
           </div>
-          <div style={{ height: 3, background: "#0e1a2c", marginTop: 3 }}>
+          <div style={{ position: "relative", height: 3, background: "#0e1a2c", marginTop: 3 }}>
             {vital.fill !== null && (
               <div
                 style={{
@@ -209,7 +263,34 @@ export function VitalsBar({ asteroid, day, population, populationCap, stocks }: 
                 }}
               />
             )}
+            {vital.marks?.map((mark) => (
+              <div
+                key={mark}
+                style={{
+                  position: "absolute",
+                  left: `${mark * 100}%`,
+                  top: -1,
+                  width: 1,
+                  height: 5,
+                  background: "#c8d8ff",
+                  opacity: 0.55,
+                }}
+              />
+            ))}
           </div>
+          {vital.status && (
+            <div
+              style={{
+                fontFamily: "var(--font-ui)",
+                fontSize: 8,
+                letterSpacing: 1,
+                color: vital.tone,
+                marginTop: 2,
+              }}
+            >
+              {vital.status}
+            </div>
+          )}
         </div>
       ))}
     </div>
