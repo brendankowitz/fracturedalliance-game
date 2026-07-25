@@ -21,15 +21,15 @@ import { expect, type Page, test } from "@playwright/test";
 
 const VIEWPORT = { width: 1280, height: 800 };
 
-// Seed 9 places the human home asteroid at sector (4,4) — verified with
-// `new SimApi({ seed: 9, humanPlayerRaceId: "helionCorp", difficulty: "manager" })`
-// from @fa/sim (humanPlayerRaceId and the default "manager" difficulty come
-// from apps/web/src/game/renderLoop.ts and the uiStore default respectively).
-// SectorView centres the camera on sector (3,3) at 1:1 scale on load with no
-// drag/zoom (apps/web/src/game/views/sectorView.ts, SECTOR_SCALE = 80px per
-// sector unit), so at this viewport the asteroid renders at screen
-// (640 + 80, 400 + 80) = (720, 480). Re-derive both numbers together if the
-// world generator or SECTOR_SCALE ever changes.
+// Seed 9 places the human home asteroid (Egeria) at sector (4,4) — verified
+// with `new SimApi({ seed: 9, humanPlayerRaceId: "helionCorp", difficulty:
+// "manager" })` from @fa/sim (humanPlayerRaceId and the default "manager"
+// difficulty come from apps/web/src/game/renderLoop.ts and the uiStore
+// default respectively). SectorView centres the camera on sector (3,3) at
+// 1:1 scale on load with no drag/zoom (apps/web/src/game/views/sectorView.ts,
+// SECTOR_SCALE = 80px per sector unit), so at this viewport the asteroid
+// renders at screen (640 + 80, 400 + 80) = (720, 480). Re-derive both numbers
+// together if the world generator or SECTOR_SCALE ever changes.
 const SEED = "9";
 const HOME_ASTEROID = { x: VIEWPORT.width / 2 + 80, y: VIEWPORT.height / 2 + 80 };
 
@@ -40,7 +40,7 @@ const MAP_PROBE_POINTS = [
   { x: 120, y: 150 },
   { x: 640, y: 400 },
   { x: 1150, y: 200 },
-  { x: 300, y: 700 },
+  { x: 500, y: 700 },
   { x: 950, y: 650 },
 ];
 
@@ -58,13 +58,24 @@ test.describe("map click-through", () => {
     await page.getByLabel("Seed").fill(SEED);
     await page.getByRole("button", { name: "Launch Game" }).click();
 
-    // Tick 1 auto-selects the human colony (renderLoop.ts), opening the
-    // surface/colony panel without any click. Wait for it, then close it so
-    // every test starts from a known, panel-free map view.
+    // The mission-briefing tutorial tooltip is the first thing to render once
+    // the sim has produced a snapshot — use it as the "game has started"
+    // signal, then dismiss it so every test starts from a clean, panel-free
+    // and tooltip-free map view.
+    const skipTutorial = page.getByRole("button", { name: "Skip Tutorial" });
+    await skipTutorial.waitFor({ timeout: 15_000 });
+    await skipTutorial.click();
+    await expect(skipTutorial).toBeHidden();
+
+    // The sim auto-selects the human colony on its first tick (renderLoop.ts),
+    // which can beat or lose the race against the steps above depending on
+    // frame timing. Close it defensively so every test starts from the same
+    // panel-free map, regardless of that race's outcome.
     const backToMap = page.getByRole("button", { name: "← Back to Map" });
-    await backToMap.waitFor({ timeout: 15_000 });
-    await backToMap.click();
-    await expect(backToMap).toBeHidden();
+    if (await backToMap.isVisible()) {
+      await backToMap.click();
+      await expect(backToMap).toBeHidden();
+    }
   });
 
   test("canvas is topmost across the map, and HUD chrome stays clickable", async ({ page }) => {
@@ -92,5 +103,6 @@ test.describe("map click-through", () => {
     await page.mouse.click(HOME_ASTEROID.x, HOME_ASTEROID.y);
 
     await expect(page.getByRole("button", { name: "← Back to Map" })).toBeVisible();
+    await expect(page.getByText("Egeria", { exact: true })).toBeVisible();
   });
 });
