@@ -103,6 +103,18 @@
         to   { box-shadow: var(--glow-blue); }
       }
 
+      /* ── HUD overlay ────────────────────────────────────────
+         The overlay spans the viewport so panels can position
+         against it, but must not swallow pointer events bound for
+         the map canvas underneath. Each HUD element opts back in. */
+      .fa-hud-root {
+        pointer-events: none;
+      }
+
+      .fa-hud-root > * {
+        pointer-events: auto;
+      }
+
       /* ── HUD panel base ─────────────────────────────────── */
       .fa-panel {
         background: var(--bg-panel);
