@@ -1,6 +1,8 @@
 import { getRaceDef } from "@fa/content";
 import type { TreatyKind } from "@fa/domain";
 import type { Command, DiplomacyEntry, HudSnapshot } from "@fa/sim";
+import type { HudSnapshotV2 } from "@fa/sim-adapter";
+import { isV2Snapshot, RACE_LABELS } from "@fa/sim-adapter";
 import { assetUrl } from "../assetUrl.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { HelpTip } from "./HelpTip.tsx";
@@ -69,7 +71,7 @@ function DiplomacyRow({
   onCommand: (cmd: Command) => void;
 }) {
   const raceDef = getRaceDef(entry.raceId);
-  const raceName = raceDef?.name ?? entry.raceId;
+  const raceName = RACE_LABELS[entry.raceId] ?? raceDef?.name ?? entry.raceId;
   const activeKinds = new Set(entry.activeTreaties.map((t) => t.kind));
 
   const portraitImg = getPortrait(entry.raceId, entry.reputation);
@@ -173,7 +175,7 @@ function DiplomacyRow({
         </div>
       )}
 
-      {/* Active treaties */}
+      {/* Active treaties — breakable, with visible expiry */}
       {entry.activeTreaties.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
           {entry.activeTreaties.map((t) => (
@@ -188,10 +190,36 @@ function DiplomacyRow({
                 borderRadius: 2,
                 fontFamily: "var(--font-data)",
                 letterSpacing: 0.3,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
               }}
               title={t.expiresTick !== null ? `Expires T${t.expiresTick}` : "Permanent"}
             >
               ✓ {TREATY_LABELS[t.kind]}
+              <button
+                type="button"
+                aria-label={`Break ${TREATY_LABELS[t.kind]}`}
+                title="Break treaty — costs reputation"
+                onClick={() =>
+                  onCommand({
+                    kind: "breakTreaty",
+                    targetPlayerId: entry.playerId,
+                    treatyKind: t.kind,
+                  })
+                }
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--red)",
+                  cursor: "pointer",
+                  fontSize: 10,
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                ✕
+              </button>
             </span>
           ))}
         </div>
@@ -220,6 +248,68 @@ function DiplomacyRow({
 interface Props {
   snapshot: HudSnapshot;
   onCommand: (cmd: Command) => void;
+}
+
+function CouncilSection({
+  snapshot,
+  onCommand,
+}: {
+  snapshot: HudSnapshotV2;
+  onCommand: (cmd: Command) => void;
+}) {
+  const { embargoes, tariffs, openVotes } = snapshot.council;
+  if (embargoes.length === 0 && tariffs.length === 0 && openVotes.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        padding: "8px 14px",
+        borderBottom: "1px solid var(--border)",
+        flexShrink: 0,
+        fontFamily: "var(--font-data)",
+      }}
+    >
+      <div style={{ fontSize: 10, color: "var(--amber)", letterSpacing: 1.5, marginBottom: 6 }}>
+        FEDERAL COUNCIL
+      </div>
+      {embargoes.map((e) => (
+        <div key={`${e.target}-${e.expiresTick}`} style={{ fontSize: 11, color: "var(--red)" }}>
+          ⛔ Embargo on {RACE_LABELS[e.target] ?? e.target} — until T{e.expiresTick}
+        </div>
+      ))}
+      {tariffs.map((t) => (
+        <div key={`${t.ore}-${t.expiresTick}`} style={{ fontSize: 11, color: "var(--amber)" }}>
+          ⇩ Tariff: {t.ore} ×{t.multiplier} — until T{t.expiresTick}
+        </div>
+      ))}
+      {openVotes.map((v) => (
+        <div key={v.id} style={{ fontSize: 11, marginTop: 4 }}>
+          <div style={{ color: "var(--text-hi)" }}>🗳 {v.description}</div>
+          <div style={{ display: "flex", gap: 6, marginTop: 3 }}>
+            <button
+              type="button"
+              className="fa-btn"
+              style={{ fontSize: 10, padding: "1px 8px" }}
+              onClick={() => onCommand({ kind: "councilVoteRespond", voteId: v.id, accept: true })}
+            >
+              Support
+            </button>
+            <button
+              type="button"
+              className="fa-btn"
+              style={{ fontSize: 10, padding: "1px 8px" }}
+              onClick={() => onCommand({ kind: "councilVoteRespond", voteId: v.id, accept: false })}
+            >
+              Oppose
+            </button>
+            <span style={{ color: "var(--text-lo)", fontSize: 10, alignSelf: "center" }}>
+              auto-passes T{v.resolveTick}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function DiplomacyPanel({ snapshot, onCommand }: Props) {
@@ -278,6 +368,9 @@ export function DiplomacyPanel({ snapshot, onCommand }: Props) {
           ✕
         </button>
       </div>
+
+      {/* Federal Council — sanctions and open votes (adopted sim only) */}
+      {isV2Snapshot(snapshot) && <CouncilSection snapshot={snapshot} onCommand={onCommand} />}
 
       {/* Entries */}
       <div style={{ flex: 1, overflowY: "auto", padding: "0 14px" }}>

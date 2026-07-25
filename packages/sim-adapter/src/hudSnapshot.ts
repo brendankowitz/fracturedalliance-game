@@ -29,6 +29,12 @@ export interface CouncilSummary {
 }
 
 export interface HudSnapshotV2 extends HudSnapshot {
+  /** Events gain a human-readable detail line (e.g. rejection reasons). */
+  events: Array<{
+    kind: string;
+    priority: HudSnapshot["events"][number]["priority"];
+    detail?: string;
+  }>;
   /** Tick on which the Federal Transporter next drains queued orders. */
   transporterNextTick: number;
   /** The human player's queued Federal Transporter orders. */
@@ -55,6 +61,16 @@ const FAB_TO_OPUS_MISSION: Readonly<Record<string, AgentSnapshot["missionKind"]>
   plantVirus: "sabotage",
   blackmail: "blackmail",
   liberate: "liberate",
+};
+
+/** Pull the most useful human-readable fragment off an event payload. */
+const eventDetail = (e: GameEvent): string | undefined => {
+  const raw = e as Record<string, unknown>;
+  if (typeof raw.reason === "string") return raw.reason;
+  if (typeof raw.treaty === "string") return raw.treaty;
+  if (typeof raw.ore === "string") return String(raw.ore);
+  if (typeof raw.resource === "string") return raw.resource;
+  return undefined;
 };
 
 const mapGameEnd = (world: World, humanId: string): HudSnapshot["gameEndState"] => {
@@ -224,7 +240,12 @@ export function takeHudSnapshot(
       position: { x: s.position.x / POSITION_SCALE, y: s.position.y / POSITION_SCALE },
       orderKind: s.order.kind,
     })),
-    events: events.map((e) => ({ kind: e.kind, priority: e.severity })),
+    events: events.map((e) => {
+      const detail = eventDetail(e);
+      return detail !== undefined
+        ? { kind: e.kind, priority: e.severity, detail }
+        : { kind: e.kind, priority: e.severity };
+    }),
     marketPrices: { ...world.market.current },
     combatFlashes: [...world.ships.values()].flatMap((ship) => {
       if (ship.order.kind !== "attackAsteroid") return [];

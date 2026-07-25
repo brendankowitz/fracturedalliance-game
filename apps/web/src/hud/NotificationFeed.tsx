@@ -64,6 +64,7 @@ export function NotificationFeed() {
       if (snapshot.tick - lastTick < DEDUP_TICKS) continue; // suppress repeat
       seenKindsThisBatch.add(ev.kind);
       lastShownTickByKind.current.set(ev.kind, snapshot.tick);
+      const detail = (ev as { detail?: string }).detail;
       newEntries.push({
         id: idRef.current++,
         tick: snapshot.tick,
@@ -71,7 +72,7 @@ export function NotificationFeed() {
         priority: ev.priority,
         // Unknown kinds pass through with their raw kind string — an event
         // must never vanish because a table missed it (spec §5).
-        label: eventLabel(ev.kind),
+        label: detail ? `${eventLabel(ev.kind)} — ${detail}` : eventLabel(ev.kind),
       });
     }
     if (newEntries.length === 0) return;

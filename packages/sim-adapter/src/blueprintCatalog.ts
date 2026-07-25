@@ -3,7 +3,7 @@
  * off @fab/content directly — the adapter package remains the only seam.
  */
 
-import { BLUEPRINTS_LIST } from "@fab/content";
+import { BLUEPRINTS_LIST, RACES } from "@fab/content";
 
 export interface BlueprintCatalogEntry {
   id: string;
@@ -30,3 +30,8 @@ export const BLUEPRINT_CATALOG: readonly BlueprintCatalogEntry[] = BLUEPRINTS_LI
 export const BLUEPRINT_DISCIPLINES: readonly string[] = [
   ...new Set(BLUEPRINT_CATALOG.map((b) => b.discipline)),
 ];
+
+/** Race id → display name for the vendored race roster. */
+export const RACE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(
+  RACES.map((r) => [r.id, r.name]),
+);

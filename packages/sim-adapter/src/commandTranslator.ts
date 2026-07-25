@@ -165,6 +165,20 @@ export function translateCommand(
         from: humanId,
         asteroid: asFabAsteroidId(cmd.asteroidId),
       };
+    case "breakTreaty":
+      return {
+        kind: "breakTreaty",
+        from: humanId,
+        with: asFabPlayerId(cmd.targetPlayerId),
+        treaty: cmd.treatyKind as Extract<PlayerCommand, { kind: "breakTreaty" }>["treaty"],
+      };
+    case "councilVoteRespond":
+      return {
+        kind: "councilVoteRespond",
+        from: humanId,
+        voteId: cmd.voteId,
+        accept: cmd.accept,
+      };
     // ── Dropped in Phase B (documented scope cuts) ────────────────────────
     // cancelAsteroidEngine: no vendored abort path yet (abortEngine is a
     //   legacy stub upstream); engine UI is unreachable until Phase C.

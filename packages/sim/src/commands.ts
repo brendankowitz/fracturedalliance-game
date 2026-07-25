@@ -40,4 +40,7 @@ export type Command =
   | { kind: "sellOre"; oreKind: OreKind; quantity: number; asteroidId?: AsteroidId }
   | { kind: "buyOre"; oreKind: OreKind; quantity: number; asteroidId?: AsteroidId }
   | { kind: "fireMissile"; sourceAsteroidId: AsteroidId; targetAsteroidId: AsteroidId }
-  | { kind: "settleAsteroid"; asteroidId: AsteroidId };
+  | { kind: "settleAsteroid"; asteroidId: AsteroidId }
+  // Adopted-sim commands (Stage 1); the legacy sim ignores them.
+  | { kind: "breakTreaty"; targetPlayerId: PlayerId; treatyKind: TreatyKind }
+  | { kind: "councilVoteRespond"; voteId: string; accept: boolean };

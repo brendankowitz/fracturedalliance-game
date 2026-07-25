@@ -2,6 +2,7 @@ export {
   BLUEPRINT_CATALOG,
   BLUEPRINT_DISCIPLINES,
   type BlueprintCatalogEntry,
+  RACE_LABELS,
 } from "./blueprintCatalog.ts";
 export { mapBuildingKind, unmapBuildingKind } from "./buildingKindMap.ts";
 export { POSITION_SCALE, translateCommand } from "./commandTranslator.ts";
