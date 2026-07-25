@@ -58,8 +58,31 @@ const POP_STARVE_PER_TICK = 0.01; // ≈ 12 workers/day out of 100
  * water surplus" without giving figures, so whoever tunes these is choosing, not
  * correcting a mistake.
  */
-const SUPPLY_COMFORTABLE_DAYS = 30;
-const SUPPLY_STRAINED_DAYS = 10;
+const SUPPLY_COMFORTABLE_DAYS = 15;
+const SUPPLY_STRAINED_DAYS = 5;
+
+/**
+ * Solved to a principle, not tuned by eye: a *sustained total outage of any single*
+ * life-support resource must be able to reach unrest (30), and two simultaneous outages
+ * must reach secession (10). With the old numbers a permanent food outage landed at
+ * 50-20+5+5 = 35, so the spec's "productivity halves and strike events fire" could never
+ * trigger from starving a colony.
+ *
+ * Base 25 + three bonuses of 15 keeps a well-supplied colony at 70, where it used to sit
+ * permanently. Now it can fall:
+ *   food out   → 25 - 30 + 15 + 15 = 25   (unrest)
+ *   water out  → 25 + 15 - 28 + 15 = 27   (unrest)
+ *   air out    → 25 + 15 + 15 - 35 = 20   (unrest)
+ *   two out    → negative, clamped to 0   (secession)
+ * Air stays the harshest and water the mildest, as the original weighting had it.
+ */
+const HAPPINESS_BASE = 25;
+const FOOD_BONUS = 15;
+const FOOD_PENALTY = 30;
+const WATER_BONUS = 15;
+const WATER_PENALTY = 28;
+const AIR_BONUS = 15;
+const AIR_PENALTY = 35;
 
 const daysOfSupply = (stock: number, perPersonPerDay: number, population: number): number =>
   population <= 0 ? Number.POSITIVE_INFINITY : stock / (population * perPersonPerDay);
@@ -80,10 +103,22 @@ const gradeSupply = (days: number, bonus: number, penalty: number): number => {
  */
 const computeTargetHappiness = (asteroid: Asteroid): number => {
   const pop = asteroid.population;
-  let target = 50;
-  target += gradeSupply(daysOfSupply(asteroid.stocks.food, POP_FOOD_PER_DAY, pop), 10, 20);
-  target += gradeSupply(daysOfSupply(asteroid.stocks.water, POP_WATER_PER_DAY, pop), 5, 15);
-  target += gradeSupply(daysOfSupply(asteroid.stocks.air, POP_AIR_PER_DAY, pop), 5, 25);
+  let target = HAPPINESS_BASE;
+  target += gradeSupply(
+    daysOfSupply(asteroid.stocks.food, POP_FOOD_PER_DAY, pop),
+    FOOD_BONUS,
+    FOOD_PENALTY,
+  );
+  target += gradeSupply(
+    daysOfSupply(asteroid.stocks.water, POP_WATER_PER_DAY, pop),
+    WATER_BONUS,
+    WATER_PENALTY,
+  );
+  target += gradeSupply(
+    daysOfSupply(asteroid.stocks.air, POP_AIR_PER_DAY, pop),
+    AIR_BONUS,
+    AIR_PENALTY,
+  );
   // Radiation penalty (0..100).
   target -= asteroid.radiation * 0.2;
   return Math.max(0, Math.min(100, target));
@@ -140,10 +175,28 @@ const isStarving = (asteroid: Asteroid): boolean =>
   asteroid.population > 0 &&
   (asteroid.stocks.food <= 0 || asteroid.stocks.water <= 0 || asteroid.stocks.air <= 0);
 
+/**
+ * Happiness lost per 1% of the colony killed by famine.
+ *
+ * A famine has to be *remembered*, not merely observed. Culling population drops demand
+ * below production, so the stock is positive again within a tick or two and the
+ * state-based target barely dips — grading state is the wrong tool for an event. Scaling
+ * by the fraction lost rather than a flat hit keeps this independent of colony size.
+ */
+const STARVATION_HAPPINESS_PER_PERCENT_LOST = 3;
+
 const applyStarvation = (world: World, asteroid: Asteroid): void => {
   const loss = Math.max(1, Math.ceil(asteroid.population * POP_STARVE_PER_TICK));
   const prev = asteroid.population;
   asteroid.population = Math.max(0, asteroid.population - loss);
+
+  if (prev > 0) {
+    const percentLost = ((prev - asteroid.population) / prev) * 100;
+    asteroid.happiness = Math.max(
+      0,
+      asteroid.happiness - percentLost * STARVATION_HAPPINESS_PER_PERCENT_LOST,
+    );
+  }
   if (
     prev > 0 &&
     asteroid.population <= prev &&
