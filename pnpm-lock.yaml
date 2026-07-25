@@ -221,6 +221,34 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@26.1.1)(jsdom@29.0.2)(terser@5.46.1)
 
+  packages/sim-adapter:
+    dependencies:
+      '@fa/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@fa/sim':
+        specifier: workspace:*
+        version: link:../sim
+      '@fab/ai':
+        specifier: workspace:*
+        version: link:../fab-ai
+      '@fab/content':
+        specifier: workspace:*
+        version: link:../fab-content
+      '@fab/domain':
+        specifier: workspace:*
+        version: link:../fab-domain
+      '@fab/sim':
+        specifier: workspace:*
+        version: link:../fab-sim
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@26.1.1)(jsdom@29.0.2)(terser@5.46.1)
+
 packages:
 
   '@adobe/css-tools@4.4.4':
