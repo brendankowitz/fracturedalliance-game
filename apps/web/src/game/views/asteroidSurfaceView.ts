@@ -157,18 +157,33 @@ export class AsteroidSurfaceView {
 
   // ── layout ────────────────────────────────────────────────────────────────
 
+  /**
+   * Frames the rock so it runs to the edges rather than floating as an island in black.
+   *
+   * Fits the *buildable grid* rather than the rock's outline: the limb extends well past
+   * the grid, so scaling to cover the viewport by the limb would crop cells the player
+   * needs to reach. Fitting the grid and letting the limb overflow gives the original's
+   * cropped-terrain look while keeping every cell on screen.
+   */
   private layout(state: SurfaceState): void {
     const extent = gridExtent(state.gridWidth, state.gridHeight);
+    const margin = 0.9;
+    const scale = Math.min(
+      (this.viewWidth * margin) / extent.width,
+      (this.viewHeight * margin) / extent.height,
+    );
+    this.world.scale.set(scale);
     // Nudge the rock below centre: buildings grow upward, so the headroom is above.
-    this.world.x = this.viewWidth / 2 - extent.width / 2 + extent.originX;
-    this.world.y = this.viewHeight / 2 - extent.height / 2 + TILE_H * 1.6;
+    this.world.x = this.viewWidth / 2 - (extent.width / 2 - extent.originX) * scale;
+    this.world.y = this.viewHeight / 2 - (extent.height / 2 - TILE_H * 1.6) * scale;
   }
 
   private toLocal(clientX: number, clientY: number): { x: number; y: number } {
     const rect = this.app.canvas.getBoundingClientRect();
+    const scale = this.world.scale.x;
     return {
-      x: clientX - rect.left - this.world.x,
-      y: clientY - rect.top - this.world.y,
+      x: (clientX - rect.left - this.world.x) / scale,
+      y: (clientY - rect.top - this.world.y) / scale,
     };
   }
 
