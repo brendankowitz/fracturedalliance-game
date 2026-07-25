@@ -44,6 +44,8 @@ export interface BuildingDef {
   /** Hard cap per colony. `undefined` = unlimited, `1` = unique. */
   maxPerColony?: number;
   unique?: boolean;
+  /** Flat contribution to the colony's happiness target while active. */
+  happinessDelta?: number;
   flavour?: string;
 }
 

@@ -127,26 +127,18 @@ const computeTargetHappiness = (asteroid: Asteroid): number => {
 /**
  * Amenity buildings' contribution to the happiness target.
  *
- * This belongs on `BuildingDef` as a `happinessDelta` field, not in a lookup here — but
- * `BuildingDef` has no happiness field at all today, so the Pleasure Dome's "+10 happiness
- * in radius" lives only in its `flavour` prose and nothing reads it. A player can buy it
- * for 1,500cr and get a −5 power drain and no benefit whatsoever. This is the smallest
- * change that stops it being a purchasable no-op without editing the content packages.
- *
- * First cut is colony-wide rather than "in radius": radius needs a spatial query this
- * system does not otherwise do, and a dome that works everywhere is closer to the spec
- * than one that works nowhere.
+ * The Pleasure Dome was a purchasable no-op: 1,500cr and -5 power for a description, its
+ * "+10 happiness" living only in flavour prose because `BuildingDef` had no field to
+ * carry it. Colony-wide rather than "in radius" for now — a dome that works everywhere is
+ * closer to the spec than one that works nowhere, and radius needs a spatial query this
+ * system does not otherwise do.
  */
-const AMENITY_HAPPINESS: Readonly<Record<string, number>> = {
-  'bld.pleasure-dome': 10,
-};
-
 const amenityHappiness = (asteroid: Asteroid, world: World): number => {
   let total = 0;
   for (const id of asteroid.buildings) {
     const b = world.buildings.get(id);
     if (!b || b.constructionProgress < 1 || !b.active) continue;
-    total += AMENITY_HAPPINESS[b.defKind] ?? 0;
+    total += getDef(b.defKind)?.happinessDelta ?? 0;
   }
   return total;
 };

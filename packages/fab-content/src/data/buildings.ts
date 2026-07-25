@@ -527,6 +527,7 @@ export const BUILDINGS = {
     airDelta: 0,
     footprint: { width: 2, height: 2 },
     monthlyUpkeep: 180,
+    happinessDelta: 10,
     flavour: '+10 happiness in radius. Management calls it "retention".',
   },
   'bld.medical-centre': {
