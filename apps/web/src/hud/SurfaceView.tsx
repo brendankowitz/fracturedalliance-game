@@ -1,16 +1,11 @@
-import {
-  findBuildingDef,
-  getAllShipDefs,
-  getOreDef,
-  getRaceDef,
-} from "@fa/content";
+import { findBuildingDef, getAllShipDefs, getOreDef, getRaceDef } from "@fa/content";
 import { asteroidId as mkAsteroidId, shipId as mkShipId, SIZE_CLASS_GRID } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useState } from "react";
 import { assetUrl } from "../assetUrl.ts";
 import type { Cell } from "../game/views/surface/isoProjection.ts";
-import { useBuildStore } from "../store/buildStore.ts";
+import { selectPendingCells, useBuildStore } from "../store/buildStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildTemplates } from "./BuildTemplates.tsx";
@@ -182,9 +177,8 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   const armedKind = useBuildStore((s) => s.armedKind);
   const setArmedKind = useBuildStore((s) => s.armKind);
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
-  // Cells with a queued build. The snapshot's buildQueue does not carry its cell, so the
-  // scaffold position is tracked here until that field exists (see report to team-lead).
-  const [pendingByAsteroid, setPendingByAsteroid] = useState<Record<string, Cell[]>>({});
+  const pendingByAsteroid = useBuildStore((s) => s.pendingByAsteroid);
+  const addPending = useBuildStore((s) => s.addPending);
 
   if (!selectedId || !snapshot) return null;
 
@@ -227,16 +221,16 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
 
   // A pending cell survives only while the queue still holds work and nothing has been
   // built there yet; that keeps the scaffolds honest without any sim state.
-  const pendingCells = (pendingByAsteroid[asteroid.id] ?? []).filter(
-    (cell) => asteroid.buildQueue.length > 0 && !occupiedCells.has(`${cell.x},${cell.y}`),
+  const pendingCells = selectPendingCells(
+    pendingByAsteroid,
+    asteroid.id,
+    asteroid.buildQueue.length,
+    (cell) => occupiedCells.has(`${cell.x},${cell.y}`),
   );
 
   const placeBuilding = (kind: string, cell: Cell): void => {
     onCommand({ kind: "placeBuilding", asteroidId: asteroid.id, buildingKind: kind, cell });
-    setPendingByAsteroid((prev) => ({
-      ...prev,
-      [asteroid.id]: [...(prev[asteroid.id] ?? []), cell],
-    }));
+    addPending(asteroid.id, cell);
     setBlockedNotice(null);
   };
 

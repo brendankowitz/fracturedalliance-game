@@ -1,7 +1,7 @@
 import type { AsteroidId } from "@fa/domain";
-import type { AsteroidSnapshot, HudSnapshot } from "@fa/sim";
+import type { AsteroidSnapshot, Command, HudSnapshot } from "@fa/sim";
 import type { ReactNode } from "react";
-import { useBuildStore } from "../store/buildStore.ts";
+import { selectPendingCells, useBuildStore } from "../store/buildStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildPalette } from "./BuildPalette.tsx";
@@ -22,6 +22,7 @@ import { type ColonyStocks, VitalsBar } from "./VitalsBar.tsx";
 
 export interface ColonyConsoleProps {
   snapshot: HudSnapshot;
+  onCommand: (cmd: Command) => void;
   children: ReactNode;
 }
 
@@ -64,17 +65,46 @@ function StatusBar({
   );
 }
 
-export function ColonyConsole({ snapshot, children }: ColonyConsoleProps) {
+export function ColonyConsole({ snapshot, onCommand, children }: ColonyConsoleProps) {
   const selectedId = useUiStore((s) => s.selectedAsteroidId);
   const selectAsteroid = useUiStore((s) => s.selectAsteroid);
   const selectedCell = useUiStore((s) => s.selectedCell);
   const armedKind = useBuildStore((s) => s.armedKind);
   const armKind = useBuildStore((s) => s.armKind);
+  const addPending = useBuildStore((s) => s.addPending);
+  const pendingByAsteroid = useBuildStore((s) => s.pendingByAsteroid);
 
   const colony = snapshot.asteroids.find((a) => a.id === selectedId) ?? null;
   const ownColonies = snapshot.asteroids.filter((a) => a.ownerId === snapshot.humanPlayerId);
   const extras = colony ? readColonyExtras(snapshot, colony.id) : null;
   const stocks: ColonyStocks | null = extras ? extras.stocks : null;
+
+  const built = new Set((colony?.buildingsGrid ?? []).map((b) => `${b.cell.x},${b.cell.y}`));
+  const pending = colony
+    ? selectPendingCells(pendingByAsteroid, colony.id, colony.buildQueue.length, (cell) =>
+        built.has(`${cell.x},${cell.y}`),
+      )
+    : [];
+
+  /**
+   * Selecting a cell and then choosing a building is the more natural order, and it is
+   * what the tutorial instructs — so a palette click places directly when a free cell is
+   * already selected, and only arms for the click-cells-repeatedly flow when none is.
+   */
+  const handlePaletteChoice = (kind: string): void => {
+    armKind(kind);
+    if (!colony || !selectedCell) return;
+    const key = `${selectedCell.x},${selectedCell.y}`;
+    if (built.has(key)) return;
+    if (pending.some((c) => c.x === selectedCell.x && c.y === selectedCell.y)) return;
+    onCommand({
+      kind: "placeBuilding",
+      asteroidId: colony.id,
+      buildingKind: kind,
+      cell: selectedCell,
+    });
+    addPending(colony.id, selectedCell);
+  };
 
   const tabs: ConsoleTab[] = [
     {
@@ -125,7 +155,7 @@ export function ColonyConsole({ snapshot, children }: ColonyConsoleProps) {
           credits={snapshot.credits}
           canPlace={selectedCell !== null}
           selectedKind={armedKind}
-          onSelectKind={armKind}
+          onSelectKind={handlePaletteChoice}
         />
       }
       rightRail={<BuildQueueRail colony={colony} />}

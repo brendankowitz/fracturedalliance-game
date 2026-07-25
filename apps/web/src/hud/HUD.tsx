@@ -143,7 +143,7 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
   if (snapshot.gameEndState !== null) return <VictoryScreen condition={snapshot.gameEndState} />;
 
   return (
-    <ColonyConsole snapshot={snapshot}>
+    <ColonyConsole snapshot={snapshot} onCommand={onCommand}>
       <BlackMarketPanel onCommand={onCommand} />
       <TradePanel onCommand={onCommand} />
       <BuildingPanel onCommand={onCommand} />
