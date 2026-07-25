@@ -375,9 +375,8 @@ export class SectorView {
     }
 
     // Remove graphics for asteroids no longer in snapshot
-    const toRemove = [...this._asteroidGraphics.keys()].filter((id) => !seenIds.has(id));
-    for (const id of toRemove) {
-      const entry = this._asteroidGraphics.get(id)!;
+    for (const [id, entry] of [...this._asteroidGraphics]) {
+      if (seenIds.has(id)) continue;
       entry.container.destroy({ children: true });
       entry.label.destroy();
       this._asteroidGraphics.delete(id);
@@ -417,16 +416,18 @@ export class SectorView {
       sprite.tint = colour;
 
       // Feature 3: update pulsing engine glow
-      const glow = this._shipGlowGraphics.get(ship.id)!;
-      const pulse = 0.3 + Math.sin(Date.now() / 400 + ship.id.length) * 0.15;
-      glow.clear();
-      glow.circle(wx, wy, 9).fill({ color: colour, alpha: pulse });
+      const glow = this._shipGlowGraphics.get(ship.id);
+      if (glow) {
+        const pulse = 0.3 + Math.sin(Date.now() / 400 + ship.id.length) * 0.15;
+        glow.clear();
+        glow.circle(wx, wy, 9).fill({ color: colour, alpha: pulse });
+      }
     }
 
     // Remove stale ship graphics
-    const toRemoveShips = [...this._shipGraphics.keys()].filter((id) => !seenShipIds.has(id));
-    for (const id of toRemoveShips) {
-      this._shipGraphics.get(id)!.destroy();
+    for (const [id, sprite] of [...this._shipGraphics]) {
+      if (seenShipIds.has(id)) continue;
+      sprite.destroy();
       this._shipGraphics.delete(id);
       this._shipGlowGraphics.get(id)?.destroy();
       this._shipGlowGraphics.delete(id);
