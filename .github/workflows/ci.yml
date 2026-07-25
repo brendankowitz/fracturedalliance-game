@@ -25,35 +25,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck — domain
-        run: pnpm --filter @fa/domain typecheck
-
-      - name: Typecheck — sim
-        run: pnpm --filter @fa/sim typecheck
-
-      - name: Typecheck — content
-        run: pnpm --filter @fa/content typecheck
-
-      - name: Typecheck — persistence
-        run: pnpm --filter @fa/persistence typecheck
-
-      - name: Typecheck — web
-        run: pnpm --filter @fa/web typecheck
+      - name: Typecheck
+        run: pnpm -r typecheck
 
       - name: Lint (Biome)
         run: pnpm lint
 
-      - name: Test — domain
-        run: pnpm --filter @fa/domain test
-
-      - name: Test — sim
-        run: pnpm --filter @fa/sim test
-
-      - name: Test — content
-        run: pnpm --filter @fa/content test
-
-      - name: Test — persistence
-        run: pnpm --filter @fa/persistence test
-
-      - name: Test — web
-        run: pnpm --filter @fa/web test
+      - name: Test
+        run: pnpm -r test
