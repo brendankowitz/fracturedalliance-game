@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -F @fa/web dev",
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @fa/web... build",
+    "build:desktop": "pnpm -F @fa/desktop build",
     "test": "pnpm -r test",
     "lint": "biome check .",
     "format": "biome format --write ."

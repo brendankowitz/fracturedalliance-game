@@ -1,8 +1,29 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+dist-ssr/
 .turbo/
 *.tsbuildinfo
+apps/desktop/src-tauri/target/
+
+# Test & coverage
+coverage/
+
+# Environment
 .env
 .env.local
-coverage/
+.env.*.local
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# Agent & tooling scratch
 .worktrees/
+.playwright-mcp/
+.superpowers/
+test-results/
+playwright-report/

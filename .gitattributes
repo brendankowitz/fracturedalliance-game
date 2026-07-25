@@ -1,0 +1,14 @@
+# Biome formats to LF. Force LF in the working tree on every platform so a
+# Windows checkout with core.autocrlf=true doesn't flag every file as reformatted.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.woff binary
+*.woff2 binary
+
+pnpm-lock.yaml -diff linguist-generated
