@@ -1,10 +1,12 @@
 import type { DifficultyLevel } from "@fa/sim";
 import { HelpTip } from "./HelpTip.tsx";
+import { SpeedControl } from "./SpeedControl.tsx";
 
 interface ResourceBarProps {
   credits: number;
   federationStanding: number;
-  tick: number;
+  date: string;
+  day: number;
   seed: number;
   difficulty: DifficultyLevel;
 }
@@ -27,13 +29,11 @@ function standingColor(v: number): string {
 export function ResourceBar({
   credits,
   federationStanding,
-  tick,
+  date,
+  day,
   seed,
   difficulty,
 }: ResourceBarProps) {
-  const mins = Math.floor((tick * 50) / 60000);
-  const secs = Math.floor((tick * 50) / 1000) % 60;
-  const elapsed = `${String(mins).padStart(3, "0")}:${String(secs).padStart(2, "0")}`;
   const standingBar = Math.max(0, Math.min(100, (federationStanding + 100) / 2));
 
   return (
@@ -180,48 +180,7 @@ export function ResourceBar({
         </div>
       </div>
 
-      {/* Mission time */}
-      <div
-        style={{
-          padding: "0 16px",
-          borderRight: "1px solid var(--border)",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "var(--font-ui)",
-            fontSize: 10,
-            color: "var(--text-lo)",
-            letterSpacing: 1,
-          }}
-        >
-          TIME
-        </span>
-        <span
-          style={{
-            fontFamily: "var(--font-data)",
-            fontSize: 15,
-            color: "var(--text)",
-            letterSpacing: 2,
-          }}
-        >
-          {elapsed}
-        </span>
-        <span
-          style={{
-            fontFamily: "var(--font-data)",
-            fontSize: 10,
-            color: "var(--text-lo)",
-            marginLeft: 6,
-          }}
-        >
-          Tick {tick}
-        </span>
-      </div>
+      <SpeedControl date={date} day={day} />
 
       <div style={{ marginLeft: "auto", padding: "0 14px" }}>
         <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--text-lo)" }}>

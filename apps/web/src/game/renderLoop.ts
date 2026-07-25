@@ -1,4 +1,5 @@
 import type { AsteroidId } from "@fa/domain";
+import { TICKS_PER_SIM_DAY } from "@fa/domain";
 import type { SaveV1 } from "@fa/persistence";
 import type { Command, DifficultyLevel, SimApi } from "@fa/sim";
 import type { Remote } from "comlink";
@@ -7,6 +8,7 @@ import { Assets } from "pixi.js";
 import { musicPlayer, playSound, SFX } from "../audio.ts";
 import { detectAchievements } from "../store/achievementDetector.ts";
 import { useGameStore } from "../store/gameStore.ts";
+import { useTimeStore } from "../store/timeStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { getPixiApp } from "./pixiApp.ts";
 import type { ColorPalette } from "./views/sectorView.ts";
@@ -16,7 +18,6 @@ const FIXED_STEP_MS = 50;
 
 export interface RenderLoopHandle {
   stop: () => void;
-  setTimeScale: (scale: number) => void;
   sendCommand: (cmd: Command) => void;
   saveToSlot: (slot: number, label: string) => Promise<void>;
   loadFromSlot: (slot: number) => Promise<void>;
@@ -32,7 +33,6 @@ export function startRenderLoop(
   const RemoteSimApi = Comlink.wrap<typeof SimApi>(rawWorker);
 
   let instance: Remote<InstanceType<typeof SimApi>> | null = null;
-  let timeScale = 1;
   let accumulator = 0;
   let lastFrame = performance.now();
   let rafId = 0;
@@ -63,6 +63,7 @@ export function startRenderLoop(
       lastFrame = now;
 
       const uiState = useUiStore.getState();
+      const timeScale = useTimeStore.getState().timeScale;
       const shouldTick = !uiState.paused && (!uiState.slowSimMode || uiState.pendingEndTurn);
 
       if (instance !== null && timeScale > 0 && shouldTick) {
@@ -149,8 +150,8 @@ export function startRenderLoop(
           ) {
             musicPlayer.play("combat");
           }
-          // Autosave to slot -1 every 60 ticks (skip tick 0)
-          if (snap.tick > 0 && snap.tick % 60 === 0) {
+          // Autosave to slot -1 once per sim-day, so the cadence holds at any speed preset
+          if (snap.tick > 0 && snap.tick % TICKS_PER_SIM_DAY === 0) {
             void (async () => {
               try {
                 const blob = await instance.getSaveBlob();
@@ -181,9 +182,6 @@ export function startRenderLoop(
       sectorView = null;
       rawWorker.terminate();
       musicPlayer.stop();
-    },
-    setTimeScale(scale) {
-      timeScale = scale;
     },
     sendCommand(cmd) {
       pendingCommands.push(cmd);

@@ -9,6 +9,7 @@ import type {
   TreatyKind,
   World,
 } from "@fa/domain";
+import { formatSimDate, simDay } from "@fa/domain";
 import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 import { computeGrudgeScore } from "./systems/diplomacySystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
@@ -78,6 +79,10 @@ export interface DiplomacyEntry {
 
 export interface HudSnapshot {
   tick: number;
+  /** Elapsed sim-days since the campaign start. */
+  day: number;
+  /** In-fiction calendar date, `DD-MM-YYYY`. */
+  date: string;
   seed: number;
   difficulty: DifficultyLevel;
   credits: number;
@@ -143,8 +148,12 @@ export function takeSnapshot(world: World): HudSnapshot {
     })(),
   }));
 
+  const day = simDay(world.tick);
+
   return {
     tick: world.tick,
+    day,
+    date: formatSimDate(day),
     seed: world.seed,
     difficulty: world.difficulty,
     credits: human.credits,

@@ -2,6 +2,8 @@ import { create } from "zustand";
 
 export type KeybindAction =
   | "pause"
+  | "speedUp"
+  | "speedDown"
   | "openEspionage"
   | "openDiplomacy"
   | "openTrade"
@@ -11,6 +13,8 @@ export type KeybindAction =
 
 export const DEFAULT_KEYBINDS: Record<KeybindAction, string> = {
   pause: " ",
+  speedUp: "+",
+  speedDown: "-",
   openEspionage: "e",
   openDiplomacy: "d",
   openTrade: "t",

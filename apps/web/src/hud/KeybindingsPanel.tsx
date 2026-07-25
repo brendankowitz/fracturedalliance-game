@@ -4,6 +4,8 @@ import { DEFAULT_KEYBINDS, useKeybindStore } from "../store/keybindStore.ts";
 
 const ACTION_LABELS: Record<KeybindAction, string> = {
   pause: "Pause",
+  speedUp: "Speed +",
+  speedDown: "Speed −",
   openEspionage: "Espionage",
   openDiplomacy: "Diplomacy",
   openTrade: "Trade",

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ACHIEVEMENTS, useAchievementStore } from "../store/achievementStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useKeybindStore } from "../store/keybindStore.ts";
+import { useTimeStore } from "../store/timeStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { AchievementsPanel } from "./AchievementsPanel.tsx";
 import { BlackMarketPanel } from "./BlackMarketPanel.tsx";
@@ -434,7 +435,10 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
         return;
       }
       const s = useUiStore.getState();
-      const key = e.key === " " ? " " : e.key.toLowerCase();
+      // "+" and "−" sit behind Shift/numpad on most layouts; fold the unshifted twins in
+      // so the speed keys work without contortions.
+      const rawKey = e.key === " " ? " " : e.key.toLowerCase();
+      const key = rawKey === "=" ? "+" : rawKey === "_" ? "-" : rawKey;
 
       // Escape — deselect asteroid (close SurfaceView)
       if (e.key === "Escape") {
@@ -454,6 +458,13 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
 
       if (key === keybinds.pause) {
         s.setPaused(!s.paused);
+        e.preventDefault();
+      } else if (key === keybinds.speedUp) {
+        useTimeStore.getState().stepTimeScale(1);
+        s.setPaused(false);
+        e.preventDefault();
+      } else if (key === keybinds.speedDown) {
+        useTimeStore.getState().stepTimeScale(-1);
         e.preventDefault();
       } else if (key === keybinds.openEspionage) {
         s.toggleEspionagePanel();
@@ -513,7 +524,8 @@ export function HUD({ onSave, onLoad, onCommand }: HUDProps) {
       <ResourceBar
         credits={snapshot.credits}
         federationStanding={snapshot.federationStanding}
-        tick={snapshot.tick}
+        date={snapshot.date}
+        day={snapshot.day}
         seed={snapshot.seed}
         difficulty={snapshot.difficulty}
       />
