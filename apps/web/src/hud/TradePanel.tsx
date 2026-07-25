@@ -91,12 +91,12 @@ export function TradePanel({ onCommand }: Props) {
           <div style={{ fontSize: 11, color: "var(--amber)", marginBottom: 4 }}>
             QUEUED FOR TRANSPORTER
           </div>
-          {snapshot.queuedOrders.map((o, i) => {
+          {snapshot.queuedOrders.map((o) => {
             const colonyName =
               snapshot.asteroids.find((a) => a.id === o.asteroidId)?.name ?? o.asteroidId;
             return (
               <div
-                key={`${o.side}-${o.ore}-${i}`}
+                key={`${o.side}-${o.ore}-${o.asteroidId}-${o.tonnes}`}
                 style={{ fontSize: 11, display: "flex", justifyContent: "space-between" }}
               >
                 <span style={{ textTransform: "capitalize" }}>
