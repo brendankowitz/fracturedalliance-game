@@ -1,3 +1,8 @@
+export {
+  BLUEPRINT_CATALOG,
+  BLUEPRINT_DISCIPLINES,
+  type BlueprintCatalogEntry,
+} from "./blueprintCatalog.ts";
 export { mapBuildingKind, unmapBuildingKind } from "./buildingKindMap.ts";
 export { POSITION_SCALE, translateCommand } from "./commandTranslator.ts";
 export type { CouncilSummary, HudSnapshotV2 } from "./hudSnapshot.ts";
