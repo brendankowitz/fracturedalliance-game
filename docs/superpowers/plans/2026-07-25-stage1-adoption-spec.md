@@ -288,5 +288,48 @@ pipeline) and its own InMemoryBridge already drives it synchronously in tests.
 
 ---
 
-*Read-only analysis; the only file created is this spec. Companion review:
-`2026-07-25-playability-review.md` (v2.1).*
+## 8. Phase A/B execution notes (added after implementation)
+
+Phases A and B landed on `feature/playability` (`4307660`, `ad9fb3b`, `e85b5c3`,
+`01daea0`). Corrections and decisions made during execution, per `stage0-clock`'s
+time-model intel:
+
+1. **The vendored content rates are deliberately mixed-unit** (its `time.ts`
+   docblock): `powerDelta`/`popCapDelta` instantaneous; food/water/air per
+   sim-day; **`oreProduction` and `creditsProduction` per tick**; `monthlyUpkeep`
+   per sim-month; `buildTimeTicks` in ticks. The adapter **preserves per-field
+   units and never normalises rates** — a uniform per-day assumption would be
+   1,200× wrong on ore and credits. Corollary: **adoption does not fix mining
+   pacing by itself.** Life-support, upkeep and build times come tuned; ore
+   throughput is per-tick and remains a Stage-3 balance item. (Observed in the
+   headless run: one Mk1 mine ≈ 24 units/sim-day at pop 50 — sane, but deposit
+   lifetimes must still be tuned deliberately, not inherited.)
+2. **Scale collision fixed at the boundary**: the vendored sim runs
+   radiation/stability/happiness on 0–100; opus's HUD contract is 0–1 rendered
+   with `* 100` (`AsteroidInspector.tsx:114-116`, `SurfaceView.tsx:467-468`).
+   `takeHudSnapshot` divides all three by 100 — the one auditable site — and the
+   headless test pins the 0–1 range so a regression fails CI.
+3. **Transporter cadence decision**: the vendored
+   `FED_TRANSPORTER_INTERVAL_TICKS = 6000` (every 5 sim-days) is adopted as-is
+   for Phase B/C — a 5-day rhythm gives the sell-timing decision a beat the
+   player feels several times per session, versus opus's old 2.5-real-minute
+   "month". Revisit against the original's monthly transporter in Stage 3 when
+   market numbers are tuned from primary sources.
+4. **Calendar**: the vendored sim has no calendar; opus's `packages/sim/src/time.ts`
+   (`simDay`/`formatSimDate`, epoch 25 May 2496) is the single source and the
+   adapter feeds it from the tick. Deliberately the same path as the vendored
+   `time.ts` so Phase E lands cleanly.
+5. **Duplicate constant flagged for Phase E**: `TICKS_PER_SIM_DAY = 1200` is
+   declared independently in the vendored `sim/src/time.ts` and
+   `content/src/data/buildings.ts` (content cannot depend on sim). Harmless
+   today; unify when the packages are renamed.
+6. **Vendored deltas grew by one**: upstream treated `issueShipOrder` as a
+   legacy no-op (ships moved only via `launchFleet`). It is now a real handler
+   (`fab-sim/src/systems/shipOrders.ts`) because opus's UI drives individual
+   ships and settling requires a scout parked at the target. All three deltas
+   (settlement, `hasAiDriver`, ship orders) are comment-tagged
+   `opus Stage-1 delta`.
+
+*Companion review: `2026-07-25-playability-review.md` (v2.1). Sections 0–7 were
+written read-only before implementation; this section records where execution
+corrected the analysis.*

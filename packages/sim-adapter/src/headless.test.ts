@@ -46,6 +46,12 @@ describe("headless ten-sim-minute session through SimApiV2", () => {
     expect(snap.date).toBe("25-05-2496");
     const colony0 = humanColony(snap);
     expect(snap.colonyExtras[colony0.id]?.population).toBeGreaterThan(0);
+    // Scale contract: the HUD renders these as `value * 100`%. The vendored
+    // sim runs 0–100 internally; the adapter must emit 0–1 fractions.
+    expect(colony0.happiness).toBeGreaterThan(0);
+    expect(colony0.happiness).toBeLessThanOrEqual(1);
+    expect(colony0.stability).toBeLessThanOrEqual(1);
+    expect(colony0.radiation).toBeLessThanOrEqual(1);
     const startingCredits = snap.credits;
 
     // ── Queue a mine on the starting colony ──────────────────────────────

@@ -135,9 +135,14 @@ export function takeHudSnapshot(
       deposits: Object.fromEntries(
         Object.entries(a.deposits).filter((e): e is [string, number] => e[1] != null && e[1] > 0),
       ),
-      radiation: a.radiation,
-      stability: a.stability,
-      happiness: a.happiness,
+      // Scale collision guard: the vendored sim runs radiation/stability/
+      // happiness on 0–100; opus's HUD contract is 0–1 fractions rendered
+      // with `* 100` (AsteroidInspector.tsx:114-116, SurfaceView.tsx:467-468).
+      // Normalise here, at the boundary, so there is exactly one place to
+      // audit — do NOT change the UI sites.
+      radiation: a.radiation / 100,
+      stability: a.stability / 100,
+      happiness: a.happiness / 100,
       buildingKinds,
       buildingsGrid,
       buildQueue: a.buildQueue.map((q) => ({
