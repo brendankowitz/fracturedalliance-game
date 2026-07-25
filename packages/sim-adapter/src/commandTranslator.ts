@@ -21,6 +21,15 @@ const asFabAsteroidId = (id: string): AsteroidId => id as AsteroidId;
 const asFabShipId = (id: string): ShipId => id as ShipId;
 const asFabPlayerId = (id: string): PlayerId => id as PlayerId;
 
+/** opus mission kinds → vendored espionage mission kinds. */
+const OPUS_TO_FAB_MISSION: Readonly<Record<string, string>> = {
+  recon: "intelGather",
+  techSteal: "stealBlueprint",
+  sabotage: "sabotagePower",
+  blackmail: "blackmail",
+  liberate: "liberate",
+};
+
 const translateShipOrder = (order: {
   kind: string;
   target?: unknown;
@@ -179,16 +188,27 @@ export function translateCommand(
         voteId: cmd.voteId,
         accept: cmd.accept,
       };
-    // ── Dropped in Phase B (documented scope cuts) ────────────────────────
+    case "assignMission": {
+      // Vendored espionage hires per-mission: opus's assign becomes a
+      // dispatch against the target asteroid's owner.
+      const target = world.asteroids.get(asFabAsteroidId(cmd.targetAsteroidId));
+      if (!target?.ownerId) return null;
+      return {
+        kind: "dispatchAgent",
+        agentId: cmd.agentId,
+        targetPlayer: target.ownerId,
+        mission: OPUS_TO_FAB_MISSION[cmd.missionKind] ?? "intelGather",
+        targetAsteroid: asFabAsteroidId(cmd.targetAsteroidId),
+      };
+    }
+    // ── Dropped in Phase B/D (documented scope cuts) ──────────────────────
     // cancelAsteroidEngine: no vendored abort path yet (abortEngine is a
     //   legacy stub upstream); engine UI is unreachable until Phase C.
-    // hireAgent / assignMission: vendored espionage hires per-mission via
-    //   dispatchAgent; the panel is redesigned in Stage 3.
+    // hireAgent: no standing-hire concept — dispatchAgent pays per mission.
     // blackMarketBuy / bribeOfficial: the opus item shop has no vendored
     //   equivalent; replaced by the Stage-3 market redesign.
     case "cancelAsteroidEngine":
     case "hireAgent":
-    case "assignMission":
     case "blackMarketBuy":
     case "bribeOfficial":
       return null;

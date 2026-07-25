@@ -1,6 +1,7 @@
 import type { AgentMissionKind } from "@fa/domain";
 import { agentId, asteroidId } from "@fa/domain";
 import type { AgentSnapshot, Command, HudSnapshot } from "@fa/sim";
+import { isV2Snapshot } from "@fa/sim-adapter";
 import { useState } from "react";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
@@ -30,15 +31,21 @@ function AgentRow({
   agent,
   snapshot,
   onCommand,
+  perMissionHire,
 }: {
   agent: AgentSnapshot;
   snapshot: HudSnapshot;
   onCommand: (cmd: Command) => void;
+  /** V2 (adopted sim): agents are paid per mission — no standing hire step. */
+  perMissionHire: boolean;
 }) {
   const [selectedTarget, setSelectedTarget] = useState<string>("");
-  const targetAsteroids = snapshot.asteroids.filter((a) => a.ownerId !== snapshot.humanPlayerId);
+  // Dispatch needs a target player, so only owned rival colonies qualify.
+  const targetAsteroids = snapshot.asteroids.filter(
+    (a) => a.ownerId !== snapshot.humanPlayerId && (!perMissionHire || a.ownerId !== null),
+  );
 
-  if (!agent.owned) {
+  if (!agent.owned && !perMissionHire) {
     return (
       <div
         style={{
@@ -88,8 +95,13 @@ function AgentRow({
       <div style={{ fontWeight: "bold", color: "#8af" }}>
         {agent.name}
         <span style={{ fontSize: 11, color: "#7090b0", fontWeight: "normal", marginLeft: 8 }}>
-          Stealth {agent.stealth}
+          Skill {agent.stealth}
         </span>
+        {perMissionHire && (
+          <span style={{ fontSize: 10, color: "#668", fontWeight: "normal", marginLeft: 8 }}>
+            ₡{agent.hireCost.toLocaleString()}/mission
+          </span>
+        )}
       </div>
       {agent.missionKind !== null ? (
         <div style={{ fontSize: 11, color: "#4d8", marginTop: 2 }}>
@@ -159,8 +171,13 @@ export function EspionagePanel({ onCommand }: Props) {
 
   if (!open || !snapshot) return null;
 
-  const ownedAgents = snapshot.agents.filter((a) => a.owned);
-  const availableAgents = snapshot.agents.filter((a) => !a.owned);
+  const perMissionHire = isV2Snapshot(snapshot);
+  const ownedAgents = perMissionHire
+    ? snapshot.agents.filter((a) => a.missionKind !== null)
+    : snapshot.agents.filter((a) => a.owned);
+  const availableAgents = perMissionHire
+    ? snapshot.agents.filter((a) => a.missionKind === null)
+    : snapshot.agents.filter((a) => !a.owned);
 
   return (
     <div
@@ -187,20 +204,33 @@ export function EspionagePanel({ onCommand }: Props) {
       {ownedAgents.length > 0 && (
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: "#7090b0", marginBottom: 4 }}>
-            YOUR AGENTS ({ownedAgents.length})
+            {perMissionHire ? "ON MISSION" : "YOUR AGENTS"} ({ownedAgents.length})
           </div>
           {ownedAgents.map((a) => (
-            <AgentRow key={a.id} agent={a} snapshot={snapshot} onCommand={onCommand} />
+            <AgentRow
+              key={a.id}
+              agent={a}
+              snapshot={snapshot}
+              onCommand={onCommand}
+              perMissionHire={perMissionHire}
+            />
           ))}
         </div>
       )}
       {availableAgents.length > 0 && (
         <div>
           <div style={{ fontSize: 11, color: "#7090b0", marginBottom: 4 }}>
-            AVAILABLE FOR HIRE ({availableAgents.length})
+            {perMissionHire ? "OPERATIVES — PAID PER MISSION" : "AVAILABLE FOR HIRE"} (
+            {availableAgents.length})
           </div>
           {availableAgents.map((a) => (
-            <AgentRow key={a.id} agent={a} snapshot={snapshot} onCommand={onCommand} />
+            <AgentRow
+              key={a.id}
+              agent={a}
+              snapshot={snapshot}
+              onCommand={onCommand}
+              perMissionHire={perMissionHire}
+            />
           ))}
         </div>
       )}
