@@ -922,13 +922,10 @@ describe('commands.ts branches', () => {
   it('legacy/stub commands are silent no-ops', () => {
     const { world, playerId, asteroidId } = makeMiniWorld();
     const beforeEvents = world.eventQueue.length;
+    // opus Stage-1 delta: issueShipOrder is no longer a stub (see shipOrders.ts)
+    // and was removed from this list.
     const noops = [
       { kind: 'purchaseBlueprint', playerId, blueprint: 'bp.x' as BlueprintId },
-      {
-        kind: 'issueShipOrder',
-        ship: asShipId('ship.x'),
-        order: { kind: 'idle' } as const,
-      },
       {
         kind: 'sellOres',
         asteroid: asteroidId,

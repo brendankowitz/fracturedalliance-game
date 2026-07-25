@@ -28,6 +28,7 @@ import { handleCouncilVoteRespond } from './federalCouncil';
 import { startResearch } from './research';
 import { handleLaunchSatellite } from './satellites';
 import { handleSettleAsteroid } from './settlement';
+import { handleIssueShipOrder } from './shipOrders';
 
 interface HandlerResult {
   readonly ok: boolean;
@@ -101,7 +102,6 @@ const queueMarketOrder = (
 /** Legacy / stubbed command kinds that the sim intentionally ignores. */
 const LEGACY_NOOP_KINDS = new Set<PlayerCommand['kind']>([
   'purchaseBlueprint',
-  'issueShipOrder',
   'sellOres',
   'launchMission',
   'launchEngine',
@@ -171,6 +171,9 @@ export const applyCommand = (world: World, cmd: PlayerCommand): void => {
     // ── opus Stage-1 delta ──
     case 'settleAsteroid':
       dispatch(world, 'settleAsteroid', handleSettleAsteroid(world, cmd));
+      return;
+    case 'issueShipOrder':
+      dispatch(world, 'issueShipOrder', handleIssueShipOrder(world, cmd));
       return;
     default:
       // Legacy / stubbed commands — intentionally silent.
