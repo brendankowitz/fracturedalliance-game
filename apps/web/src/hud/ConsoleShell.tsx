@@ -48,12 +48,12 @@ export function ConsoleShell({
 }: ConsoleShellProps) {
   return (
     <div
+      className="fa-console-root"
       style={{
         position: "absolute",
         inset: 0,
         display: "flex",
         flexDirection: "column",
-        background: "#05070f",
         overflow: "hidden",
       }}
     >
@@ -62,12 +62,13 @@ export function ConsoleShell({
         {tabs}
       </header>
 
-      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+      <div style={{ flex: 1, display: "flex", minHeight: 0, pointerEvents: "none" }}>
         <aside style={railStyle("left")}>{leftRail}</aside>
 
         <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           {viewportHeader}
           <div
+            className="fa-console-viewport"
             style={{
               // Containing block for every absolutely-positioned panel rendered below.
               position: "relative",
