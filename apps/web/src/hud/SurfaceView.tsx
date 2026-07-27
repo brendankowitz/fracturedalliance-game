@@ -1,18 +1,15 @@
-import {
-  findBuildingDef,
-  getAllBuildingDefs,
-  getAllShipDefs,
-  getOreDef,
-  getRaceDef,
-} from "@fa/content";
+import { findBuildingDef, getAllShipDefs, getOreDef, getRaceDef } from "@fa/content";
 import { asteroidId as mkAsteroidId, shipId as mkShipId, SIZE_CLASS_GRID } from "@fa/domain";
 import type { Command } from "@fa/sim";
 import { ARRIVAL_RADIUS } from "@fa/sim";
 import { useState } from "react";
 import { assetUrl } from "../assetUrl.ts";
+import type { Cell } from "../game/views/surface/isoProjection.ts";
+import { selectPendingCells, useBuildStore } from "../store/buildStore.ts";
 import { useGameStore } from "../store/gameStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { BuildTemplates } from "./BuildTemplates.tsx";
+import { SurfaceCanvas } from "./SurfaceCanvas.tsx";
 
 interface SurfaceViewProps {
   onCommand: (cmd: Command) => void;
@@ -21,66 +18,6 @@ interface SurfaceViewProps {
 function formatKind(kind: string): string {
   return kind.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
 }
-
-const BUILDING_COLORS: Record<string, string> = {
-  airProcessor: "#0d2240",
-  cpu: "#0d1a40",
-  powerPlant: "#2a2000",
-  fusionReactor: "#2a2000",
-  geothermalTap: "#2a2000",
-  ecc: "#1a0d30",
-  radiationFilter: "#001a1a",
-  repairFacility: "#1a1a00",
-  mineMk1: "#2a1000",
-  mineMk2: "#2a1000",
-  deepBoreMine: "#3a1500",
-  oreRefinery: "#3a1000",
-  crystalSeparator: "#2a0a20",
-  naniteExtractor: "#1a0030",
-  astralMiner: "#1a0020",
-  antimatterDrill: "#200010",
-  shipYard: "#002020",
-  turretBattery: "#200010",
-  shieldGenerator: "#001020",
-  missileSilo: "#200010",
-  commandCentre: "#101a20",
-  ionCannon: "#200015",
-  antimatterMine: "#250010",
-  fortressWall: "#202020",
-  doomsdayDevice: "#300000",
-  livingQuarters: "#001820",
-  resiblock: "#001520",
-  megaHabitat: "#001a28",
-  arcology: "#00202a",
-  hydroponics: "#002000",
-  advHydroponics: "#003000",
-  hydrationPlant: "#001a2a",
-  medicalCentre: "#001a15",
-  pleasureDome: "#1a0a20",
-  securityCentre: "#1a1000",
-  storageTower: "#101010",
-  tradingPost: "#0a1a10",
-  blackMarket: "#100010",
-  smugglerBay: "#100015",
-  pricingOffice: "#0a1510",
-  federationLobby: "#0a0a1a",
-  creditMint: "#1a1500",
-  monopolyOffice: "#1a1000",
-  galacticExchange: "#150a10",
-  researchLab: "#001a25",
-  computingArray: "#001520",
-  xenologyLab: "#001a20",
-  materialsSynth: "#0a1020",
-  quantumProcessor: "#0a0a20",
-  warpResearch: "#00001a",
-  bioResearchLab: "#001510",
-  omniscienceNode: "#000a15",
-  biosphereDome: "#002010",
-  recyclingCentre: "#0a1000",
-  gravityPlating: "#101500",
-  gravityNullifier: "#151000",
-  atmosphericCondenser: "#001520",
-};
 
 const BUILDING_ICON: Record<string, string> = {
   airProcessor: assetUrl("/assets/buildings/airProc.png"),
@@ -142,65 +79,21 @@ const BUILDING_ICON: Record<string, string> = {
   atmosphericCondenser: assetUrl("/assets/buildings/airProc.png"),
 };
 
-const BUILDING_ABBR: Record<string, string> = {
-  airProcessor: "AP",
-  cpu: "CP",
-  powerPlant: "PP",
-  fusionReactor: "FR",
-  geothermalTap: "GT",
-  ecc: "EC",
-  radiationFilter: "RF",
-  repairFacility: "RP",
-  mineMk1: "M1",
-  mineMk2: "M2",
-  deepBoreMine: "DM",
-  oreRefinery: "OR",
-  crystalSeparator: "CS",
-  naniteExtractor: "NE",
-  astralMiner: "AM",
-  antimatterDrill: "AD",
-  shipYard: "SY",
-  turretBattery: "TB",
-  shieldGenerator: "SG",
-  missileSilo: "MS",
-  commandCentre: "CC",
-  ionCannon: "IC",
-  antimatterMine: "AX",
-  fortressWall: "FW",
-  doomsdayDevice: "DD",
-  livingQuarters: "LQ",
-  resiblock: "RB",
-  megaHabitat: "MH",
-  arcology: "AC",
-  hydroponics: "HY",
-  advHydroponics: "AH",
-  hydrationPlant: "HP",
-  medicalCentre: "MC",
-  pleasureDome: "PD",
-  securityCentre: "SC",
-  storageTower: "ST",
-  tradingPost: "TP",
-  blackMarket: "BM",
-  smugglerBay: "SB",
-  pricingOffice: "PO",
-  federationLobby: "FL",
-  creditMint: "CM",
-  monopolyOffice: "MO",
-  galacticExchange: "GE",
-  researchLab: "RL",
-  computingArray: "CA",
-  xenologyLab: "XL",
-  materialsSynth: "SY",
-  quantumProcessor: "QP",
-  warpResearch: "WR",
-  bioResearchLab: "BR",
-  omniscienceNode: "ON",
-  biosphereDome: "BD",
-  recyclingCentre: "RC",
-  gravityPlating: "GP",
-  gravityNullifier: "GN",
-  atmosphericCondenser: "AC",
-};
+interface CellItem {
+  readonly kind: string;
+  readonly cell: { readonly x: number; readonly y: number };
+}
+
+/** Stable, unique React keys for a per-cell list that may briefly contain repeats. */
+function withRowKeys<T extends CellItem>(items: ReadonlyArray<T>): Array<{ item: T; key: string }> {
+  const seen = new Map<string, number>();
+  return items.map((item) => {
+    const base = `${item.kind}-${item.cell.x},${item.cell.y}`;
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    return { item, key: n === 0 ? base : `${base}#${n}` };
+  });
+}
 
 interface EngineTargetSelectorProps {
   asteroidId: string;
@@ -277,10 +170,15 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
   const autoHireBudgets = useUiStore((s) => s.autoHireBudgets);
   const setAutoHireBudget = useUiStore((s) => s.setAutoHireBudget);
   const snapshot = useGameStore((s) => s.snapshot);
-  const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
   const [orderingShipId, setOrderingShipId] = useState<string | null>(null);
   const [shipOrderTarget, setShipOrderTarget] = useState<string>("");
   const [missileTarget, setMissileTarget] = useState<string>("");
+  // Shared with the console's build palette — either can arm a kind.
+  const armedKind = useBuildStore((s) => s.armedKind);
+  const setArmedKind = useBuildStore((s) => s.armKind);
+  const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
+  const pendingByAsteroid = useBuildStore((s) => s.pendingByAsteroid);
+  const addPending = useBuildStore((s) => s.addPending);
 
   if (!selectedId || !snapshot) return null;
 
@@ -298,8 +196,6 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
     asteroid.sizeClass
   ] ?? { width: 7, height: 7 };
 
-  const CELL_SIZE = Math.min(56, Math.floor(300 / gridDims.width));
-
   const occupiedCells = new Map<string, string>(
     asteroid.buildingsGrid.map((b) => [`${b.cell.x},${b.cell.y}`, b.kind]),
   );
@@ -314,14 +210,44 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
       ARRIVAL_RADIUS,
   );
 
-  const blueprintsOwned = new Set(snapshot.blueprintsOwned);
-  const allBuildingDefs = getAllBuildingDefs();
   const otherAsteroids = snapshot.asteroids.filter((a) => a.id !== asteroid.id);
 
   const selectedCellKey = selectedCell ? `${selectedCell.x},${selectedCell.y}` : null;
   const selectedCellBuilding = selectedCellKey
     ? (occupiedCells.get(selectedCellKey) ?? null)
     : null;
+
+  const surfaceBuildings = asteroid.buildingsGrid.map((b) => ({ kind: b.kind, cell: b.cell }));
+
+  // A pending cell survives only while the queue still holds work and nothing has been
+  // built there yet; that keeps the scaffolds honest without any sim state.
+  const pendingCells = selectPendingCells(
+    pendingByAsteroid,
+    asteroid.id,
+    asteroid.buildQueue.length,
+    (cell) => occupiedCells.has(`${cell.x},${cell.y}`),
+  );
+
+  const placeBuilding = (kind: string, cell: Cell): void => {
+    onCommand({ kind: "placeBuilding", asteroidId: asteroid.id, buildingKind: kind, cell });
+    addPending(asteroid.id, cell);
+    setBlockedNotice(null);
+  };
+
+  const isCellTaken = (cell: Cell): boolean =>
+    occupiedCells.has(`${cell.x},${cell.y}`) ||
+    pendingCells.some((p) => p.x === cell.x && p.y === cell.y);
+
+  const handleSurfaceClick = (cell: Cell | null): void => {
+    setBlockedNotice(null);
+    selectCell(cell);
+    if (!cell || !isOwnedByHuman || armedKind === null) return;
+    if (isCellTaken(cell)) {
+      setBlockedNotice(`Cell (${cell.x},${cell.y}) is already taken.`);
+      return;
+    }
+    placeBuilding(armedKind, cell);
+  };
 
   if (!isOwnedByHuman) {
     const ownerReputation =
@@ -353,17 +279,12 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
 
   // ── Layout constants ────────────────────────────────────────────────────────
 
+  // Fills the console viewport: the surface is the primary display, not a widget
+  // floating over one.
   const PANEL_STYLE: React.CSSProperties = {
     position: "absolute",
-    top: 72,
-    right: 0,
-    bottom: 0,
-    width: 560,
-    zIndex: 20,
-    overflowY: "auto",
-    background: "var(--bg-panel)",
-    backdropFilter: "blur(4px)",
-    borderLeft: "1px solid var(--border)",
+    inset: 0,
+    overflow: "hidden",
     fontFamily: "var(--font-data)",
     color: "var(--text)",
     fontSize: 12,
@@ -453,92 +374,6 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         </div>
       )}
 
-      {/* ── Stats row ── */}
-      <div
-        style={{
-          display: "flex",
-          gap: 0,
-          padding: "6px 12px",
-          borderBottom: "1px solid #224",
-          background: "rgba(0,5,15,0.4)",
-          flexShrink: 0,
-        }}
-      >
-        <StatPill label="Stability" value={`${Math.round(asteroid.stability * 100)}%`} />
-        <StatPill label="Happiness" value={`${Math.round(asteroid.happiness * 100)}%`} />
-        <StatPill
-          label="Power"
-          value={`${asteroid.powerBalance >= 0 ? "+" : ""}${asteroid.powerBalance}`}
-          valueColor={asteroid.powerBalance >= 0 ? "#44cc88" : "#cc4444"}
-        />
-        <StatPill label="Build Queue" value={String(asteroid.buildQueue.length)} />
-      </div>
-
-      {/* ── Build queue progress ── */}
-      {asteroid.buildQueue.length > 0 && (
-        <div
-          style={{
-            padding: "6px 12px",
-            borderBottom: "1px solid #112",
-            background: "rgba(0,5,15,0.3)",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 10,
-              color: "#8899bb",
-              marginBottom: 4,
-              textTransform: "uppercase",
-              letterSpacing: 1,
-            }}
-          >
-            Build Queue
-          </div>
-          {asteroid.buildQueue.map((item, i) => {
-            const pct =
-              item.totalTicks > 0 ? Math.round((item.progressTicks / item.totalTicks) * 100) : 0;
-            const label =
-              findBuildingDef(item.buildingKind)?.label ?? formatKind(item.buildingKind);
-            return (
-              // biome-ignore lint/suspicious/noArrayIndexKey: the queue carries no stable id and build templates can enqueue the same kind on the same tick, so position is the only identity
-              <div key={`${item.buildingKind}-${i}`} style={{ marginBottom: 5 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 11,
-                    marginBottom: 2,
-                  }}
-                >
-                  <span style={{ color: "#c8d8ff" }}>{label}</span>
-                  <span style={{ color: "#667" }}>{pct}%</span>
-                </div>
-                <div
-                  style={{
-                    height: 5,
-                    background: "#0a1428",
-                    border: "1px solid #224",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${pct}%`,
-                      height: "100%",
-                      background: "#2266aa",
-                      borderRadius: 2,
-                      transition: "width 0.3s",
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
       {/* ── Two-column body ── */}
       <div
         style={{
@@ -552,10 +387,10 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
         {/* ── Left: Surface grid ── */}
         <div
           style={{
-            flex: "0 0 auto",
-            padding: "10px 10px 10px 12px",
+            flex: 1,
+            minWidth: 0,
+            padding: "10px 12px",
             borderRight: "1px solid #1a2840",
-            overflowY: "auto",
             display: "flex",
             flexDirection: "column",
             gap: 8,
@@ -566,120 +401,29 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
           >
             Surface
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${gridDims.width}, ${CELL_SIZE}px)`,
-              gridTemplateRows: `repeat(${gridDims.height}, ${CELL_SIZE}px)`,
-              gap: 2,
-            }}
-          >
-            {Array.from({ length: gridDims.height }, (_, y) =>
-              Array.from({ length: gridDims.width }, (_, x) => {
-                const key = `${x},${y}`;
-                const buildingKind = occupiedCells.get(key);
-                const isSelected = selectedCell?.x === x && selectedCell?.y === y;
-                const isHovered = hoveredCell?.x === x && hoveredCell?.y === y;
-                const abbr = buildingKind
-                  ? (BUILDING_ABBR[buildingKind] ?? buildingKind.slice(0, 2).toUpperCase())
-                  : "";
-                const bgColor = buildingKind
-                  ? (BUILDING_COLORS[buildingKind] ?? "#122030")
-                  : isSelected
-                    ? "#0e2038"
-                    : isHovered
-                      ? "#0c1c30"
-                      : "#0a1420";
-                const borderColor = isSelected ? "#4488cc" : buildingKind ? "#2a4060" : "#1a2840";
-
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    title={
-                      buildingKind
-                        ? (findBuildingDef(buildingKind)?.label ?? formatKind(buildingKind))
-                        : `Cell (${x},${y})`
-                    }
-                    aria-label={
-                      buildingKind
-                        ? `${findBuildingDef(buildingKind)?.label ?? formatKind(buildingKind)} at ${x},${y}`
-                        : `Empty cell ${x},${y}`
-                    }
-                    onClick={() => {
-                      selectCell({ x, y });
-                    }}
-                    onMouseEnter={() => {
-                      setHoveredCell({ x, y });
-                    }}
-                    onMouseLeave={() => {
-                      setHoveredCell(null);
-                    }}
-                    style={{
-                      width: CELL_SIZE,
-                      height: CELL_SIZE,
-                      background: bgColor,
-                      border: `1px solid ${borderColor}`,
-                      color: buildingKind ? "#c8d8ff" : "#334466",
-                      fontFamily: "monospace",
-                      fontSize: CELL_SIZE >= 40 ? 10 : 7,
-                      cursor: "pointer",
-                      padding: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      lineHeight: 1.1,
-                      outline: isSelected ? "2px solid #4488cc" : "none",
-                      outlineOffset: -2,
-                    }}
-                  >
-                    {buildingKind &&
-                      (BUILDING_ICON[buildingKind] ? (
-                        <img
-                          src={BUILDING_ICON[buildingKind]}
-                          alt={abbr}
-                          style={{
-                            width: CELL_SIZE >= 40 ? CELL_SIZE - 12 : CELL_SIZE - 6,
-                            height: CELL_SIZE >= 40 ? CELL_SIZE - 12 : CELL_SIZE - 6,
-                            objectFit: "contain",
-                            imageRendering: "pixelated",
-                          }}
-                        />
-                      ) : (
-                        <span
-                          style={{
-                            fontSize: CELL_SIZE >= 40 ? 12 : 8,
-                            fontWeight: "bold",
-                            color: "var(--text-hi)",
-                          }}
-                        >
-                          {abbr}
-                        </span>
-                      ))}
-                    {!buildingKind && isOwnedByHuman && (
-                      <span
-                        style={{
-                          fontSize: CELL_SIZE >= 40 ? 16 : 10,
-                          color: "rgba(0,196,224,0.25)",
-                          lineHeight: 1,
-                        }}
-                      >
-                        +
-                      </span>
-                    )}
-                    {!buildingKind && !isOwnedByHuman && CELL_SIZE >= 40 && (
-                      <span style={{ fontSize: 8, color: "var(--text-lo)" }}>
-                        {x},{y}
-                      </span>
-                    )}
-                  </button>
+          <div style={{ flex: 1, minHeight: 260 }}>
+            <SurfaceCanvas
+              asteroidId={asteroid.id}
+              gridWidth={gridDims.width}
+              gridHeight={gridDims.height}
+              buildings={surfaceBuildings}
+              pending={pendingCells}
+              selected={selectedCell}
+              ghostKind={armedKind}
+              interactive={isOwnedByHuman}
+              onSelectCell={handleSurfaceClick}
+              onBlockedCell={(cell) => {
+                selectCell(null);
+                setBlockedNotice(
+                  `Cell (${cell.x},${cell.y}) is crater floor — nothing will stand there.`,
                 );
-              }),
-            )}
+              }}
+            />
           </div>
-          {selectedCell && (
+          {blockedNotice && (
+            <div style={{ fontSize: 10, color: "#ff6655", marginTop: 2 }}>⚠ {blockedNotice}</div>
+          )}
+          {!blockedNotice && selectedCell && (
             <div style={{ fontSize: 10, color: "#8899bb", marginTop: 2 }}>
               Selected: ({selectedCell.x},{selectedCell.y}){" — "}
               {selectedCellBuilding
@@ -687,12 +431,36 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                 : "empty"}
             </div>
           )}
+          {armedKind && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10 }}>
+              <span style={{ color: "#e8a04a" }}>
+                Placing: {findBuildingDef(armedKind)?.label ?? formatKind(armedKind)}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setArmedKind(null);
+                }}
+                style={{
+                  background: "transparent",
+                  border: "1px solid #334466",
+                  color: "#8899bb",
+                  fontFamily: "monospace",
+                  fontSize: 9,
+                  padding: "1px 6px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Right: Info column ── */}
         <div
           style={{
-            flex: 1,
+            flex: "0 0 260px",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
@@ -1218,11 +986,11 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
                 Installed ({asteroid.buildingsGrid.length})
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {asteroid.buildingsGrid.map((b) => {
+                {withRowKeys(asteroid.buildingsGrid).map(({ item: b, key }) => {
                   const label = findBuildingDef(b.kind)?.label ?? formatKind(b.kind);
                   return (
                     <div
-                      key={`${b.cell.x},${b.cell.y}`}
+                      key={key}
                       style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}
                     >
                       <span style={{ color: "#aabbcc" }}>{label}</span>
@@ -1255,136 +1023,6 @@ export function SurfaceView({ onCommand }: SurfaceViewProps) {
             Click any empty cell <span style={{ color: "var(--accent)" }}>+</span> on the grid above
             to place a building
           </span>
-        </div>
-      )}
-
-      {/* ── Bottom: Build actions ── */}
-      {selectedCell !== null && isOwnedByHuman && (
-        <div
-          style={{
-            borderTop: "1px solid #224",
-            padding: "10px 12px",
-            background: "rgba(0,5,15,0.5)",
-            flexShrink: 0,
-          }}
-        >
-          {selectedCellBuilding ? (
-            <div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "#8899bb",
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  marginBottom: 4,
-                }}
-              >
-                Occupied —{" "}
-                {findBuildingDef(selectedCellBuilding)?.label ?? formatKind(selectedCellBuilding)}
-              </div>
-              <div style={{ fontSize: 11, color: "#445566" }}>
-                Cell ({selectedCell.x},{selectedCell.y}) is occupied. Select an empty cell to build.
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--accent)",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.5,
-                  marginBottom: 8,
-                  fontFamily: "var(--font-head)",
-                }}
-              >
-                Build at cell ({selectedCell.x},{selectedCell.y})
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 5,
-                  maxHeight: 220,
-                  overflowY: "auto",
-                }}
-              >
-                {allBuildingDefs.map((def) => {
-                  const blueprintRequired = def.blueprintRequired;
-                  const isLocked =
-                    blueprintRequired != null && blueprintRequired !== ""
-                      ? !blueprintsOwned.has(blueprintRequired)
-                      : false;
-                  return (
-                    <button
-                      key={def.kind}
-                      type="button"
-                      disabled={isLocked}
-                      onClick={() => {
-                        if (isLocked || selectedCell === null) return;
-                        onCommand({
-                          kind: "placeBuilding",
-                          asteroidId: asteroid.id,
-                          buildingKind: def.kind,
-                          cell: selectedCell,
-                        });
-                      }}
-                      style={{
-                        background: isLocked ? "#08101e" : "#0a1828",
-                        border: `1px solid ${isLocked ? "#1a2030" : "#224466"}`,
-                        color: isLocked ? "#33445566" : "#c8d8ff",
-                        fontFamily: "monospace",
-                        fontSize: 10,
-                        cursor: isLocked ? "not-allowed" : "pointer",
-                        padding: "5px 8px",
-                        textAlign: "left",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 2,
-                        opacity: isLocked ? 0.45 : 1,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        {BUILDING_ICON[def.kind] && (
-                          <img
-                            src={BUILDING_ICON[def.kind]}
-                            alt=""
-                            style={{
-                              width: 24,
-                              height: 24,
-                              objectFit: "contain",
-                              imageRendering: "pixelated",
-                              opacity: isLocked ? 0.3 : 0.9,
-                            }}
-                          />
-                        )}
-                        <span
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: 11,
-                            flex: 1,
-                            marginLeft: BUILDING_ICON[def.kind] ? 6 : 0,
-                          }}
-                        >
-                          {def.label}
-                        </span>
-                        {isLocked && <span style={{ fontSize: 9, color: "#554466" }}>🔒</span>}
-                      </div>
-                      <span style={{ color: "#8899bb" }}>
-                        {def.costCredits.toLocaleString()} cr
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -1690,14 +1328,11 @@ function AsteroidIntelPanel({
           <div style={{ color: "var(--text-lo)", fontSize: 11 }}>No structures detected</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {buildingsGrid.map((b) => {
+            {withRowKeys(buildingsGrid).map(({ item: b, key }) => {
               const label = findBuildingDef(b.kind)?.label ?? formatKind(b.kind);
               const icon = BUILDING_ICON[b.kind];
               return (
-                <div
-                  key={`${b.cell.x},${b.cell.y}`}
-                  style={{ display: "flex", alignItems: "center", gap: 6 }}
-                >
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {icon ? (
                     <img
                       src={icon}
@@ -1907,31 +1542,3 @@ function AsteroidIntelPanel({
 }
 
 // ── StatPill ─────────────────────────────────────────────────────────────────
-
-interface StatPillProps {
-  label: string;
-  value: string;
-  valueColor?: string;
-}
-
-function StatPill({ label, value, valueColor = "#c8d8ff" }: StatPillProps) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "4px 0",
-        borderRight: "1px solid #1a2840",
-      }}
-    >
-      <span
-        style={{ fontSize: 9, color: "#445566", textTransform: "uppercase", letterSpacing: 0.5 }}
-      >
-        {label}
-      </span>
-      <span style={{ fontSize: 13, color: valueColor, fontWeight: "bold" }}>{value}</span>
-    </div>
-  );
-}

@@ -1,4 +1,5 @@
 import type { HudSnapshot } from "@fa/sim";
+import type { HudSnapshotV2 } from "@fa/sim-adapter";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BlueprintShop } from "../hud/BlueprintShop.tsx";
@@ -8,6 +9,18 @@ import { makeTestSnapshot } from "./testSnapshot.ts";
 
 function makeSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
   return makeTestSnapshot({ credits: 10000, ...overrides });
+}
+
+function makeV2Snapshot(overrides: Partial<HudSnapshotV2> = {}): HudSnapshotV2 {
+  return {
+    ...makeTestSnapshot({ credits: 10000 }),
+    transporterNextTick: 6000,
+    queuedOrders: [],
+    colonyExtras: {},
+    council: { embargoes: [], tariffs: [], openVotes: [] },
+    researchInProgress: null,
+    ...overrides,
+  };
 }
 
 afterEach(() => {
@@ -86,5 +99,46 @@ describe("BlueprintShop", () => {
     useUiStore.setState({ blueprintShopOpen: true });
     render(<BlueprintShop onCommand={vi.fn()} />);
     expect(screen.getByText("OWNED")).toBeTruthy();
+  });
+});
+
+describe("BlueprintShop — V2 (adopted sim) Sci-Tek storefront", () => {
+  it("renders vendored discipline tabs and entries", () => {
+    useGameStore.setState({ snapshot: makeV2Snapshot() });
+    useUiStore.setState({ blueprintShopOpen: true });
+    render(<BlueprintShop onCommand={vi.fn()} />);
+    expect(screen.getByText("extraction")).toBeTruthy();
+    expect(screen.getAllByText(/Mine Mk2/).length).toBeGreaterThan(0);
+  });
+
+  it("sends buyBlueprint with the vendored blueprint id", () => {
+    const onCommand = vi.fn();
+    useGameStore.setState({ snapshot: makeV2Snapshot({ credits: 10_000 }) });
+    useUiStore.setState({ blueprintShopOpen: true });
+    render(<BlueprintShop onCommand={onCommand} />);
+    const researchButtons = screen.getAllByText("Research");
+    fireEvent.click(researchButtons[0]!);
+    expect(onCommand).toHaveBeenCalledWith({
+      kind: "buyBlueprint",
+      blueprintId: "bp.extraction.mine-mk2",
+    });
+  });
+
+  it("shows research progress and blocks a second project", () => {
+    useGameStore.setState({
+      snapshot: makeV2Snapshot({
+        credits: 100_000,
+        researchInProgress: {
+          blueprintId: "bp.extraction.mine-mk2",
+          remainingTicks: 600,
+          totalTicks: 1200,
+        },
+      }),
+    });
+    useUiStore.setState({ blueprintShopOpen: true });
+    render(<BlueprintShop onCommand={vi.fn()} />);
+    expect(screen.getByText(/RESEARCHING/)).toBeTruthy();
+    expect(screen.getByText("IN PROGRESS")).toBeTruthy();
+    expect(screen.queryAllByText("Research")).toHaveLength(0);
   });
 });

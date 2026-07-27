@@ -12,7 +12,8 @@ describe("ResourceBar", () => {
       <ResourceBar
         credits={12345}
         federationStanding={50}
-        tick={100}
+        date="25-05-2496"
+        day={0}
         seed={42183}
         difficulty="manager"
       />,
@@ -20,11 +21,19 @@ describe("ResourceBar", () => {
     expect(screen.getByText(/12,345/)).toBeTruthy();
   });
 
-  it("displays tick count", () => {
+  it("displays the in-fiction calendar date", () => {
     render(
-      <ResourceBar credits={0} federationStanding={50} tick={42} seed={99} difficulty="manager" />,
+      <ResourceBar
+        credits={0}
+        federationStanding={50}
+        date="04-06-2496"
+        day={10}
+        seed={99}
+        difficulty="manager"
+      />,
     );
-    expect(screen.getByText(/42/)).toBeTruthy();
+    expect(screen.getByText("04-06-2496")).toBeTruthy();
+    expect(screen.getByText(/DAY 10/)).toBeTruthy();
   });
 
   it("displays seed", () => {
@@ -32,7 +41,8 @@ describe("ResourceBar", () => {
       <ResourceBar
         credits={0}
         federationStanding={50}
-        tick={0}
+        date="25-05-2496"
+        day={0}
         seed={42183}
         difficulty="director"
       />,
@@ -43,6 +53,8 @@ describe("ResourceBar", () => {
 
 const mockSnap: HudSnapshot = {
   tick: 1,
+  day: 0,
+  date: "25-05-2496",
   seed: 42,
   credits: 0,
   federationStanding: 50,

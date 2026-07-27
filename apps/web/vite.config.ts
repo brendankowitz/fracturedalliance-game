@@ -37,5 +37,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // e2e/ holds Playwright specs (playwright.config.ts), run via `playwright
+    // test`, not vitest — vitest's default include glob would otherwise pick
+    // up its *.spec.ts files too.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
   },
 });

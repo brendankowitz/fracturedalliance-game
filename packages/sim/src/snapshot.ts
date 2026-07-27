@@ -13,6 +13,7 @@ import { COMBAT_RADIUS } from "./systems/combatSystem.ts";
 import { computeGrudgeScore } from "./systems/diplomacySystem.ts";
 import { computePowerBalance } from "./systems/resourceSystem.ts";
 import { isTraderActive } from "./systems/traderSystem.ts";
+import { formatSimDate, simDay } from "./time.ts";
 
 export interface AgentSnapshot {
   id: string;
@@ -36,12 +37,21 @@ export interface AsteroidSnapshot {
   stability: number;
   happiness: number;
   buildingKinds: string[];
-  buildingsGrid: Array<{ kind: string; cell: { x: number; y: number } }>;
+  buildingsGrid: Array<{
+    kind: string;
+    cell: { x: number; y: number };
+    /** 0..maxHp damage sustained; drives the damaged-building visual. */
+    damage: number;
+    hp: number;
+    maxHp: number;
+  }>;
   buildQueue: Array<{
     buildingKind: string;
     progressTicks: number;
     totalTicks: number;
     queuedAt: number;
+    /** Target cell, so construction scaffolds survive a reload. */
+    cell: { x: number; y: number };
   }>;
   powerBalance: number;
   engines: {
@@ -78,6 +88,10 @@ export interface DiplomacyEntry {
 
 export interface HudSnapshot {
   tick: number;
+  /** Elapsed sim-days since the campaign start. */
+  day: number;
+  /** In-fiction calendar date, `DD-MM-YYYY`. */
+  date: string;
   seed: number;
   difficulty: DifficultyLevel;
   credits: number;
@@ -121,7 +135,15 @@ export function takeSnapshot(world: World): HudSnapshot {
     buildingsGrid: a.buildings.flatMap((bid) => {
       const b = world.buildings.get(bid);
       return b && b.constructionProgress >= 1
-        ? [{ kind: b.defKind, cell: { x: b.cell.x, y: b.cell.y } }]
+        ? [
+            {
+              kind: b.defKind,
+              cell: { x: b.cell.x, y: b.cell.y },
+              damage: b.damage,
+              hp: b.hp,
+              maxHp: b.maxHp,
+            },
+          ]
         : [];
     }),
     buildQueue: a.buildQueue.map((q) => ({
@@ -129,6 +151,7 @@ export function takeSnapshot(world: World): HudSnapshot {
       progressTicks: q.progressTicks,
       totalTicks: q.totalTicks,
       queuedAt: q.queuedAt,
+      cell: { x: q.cell.x, y: q.cell.y },
     })),
     powerBalance: computePowerBalance(world, a.id),
     engines: {
@@ -143,8 +166,12 @@ export function takeSnapshot(world: World): HudSnapshot {
     })(),
   }));
 
+  const day = simDay(world.tick);
+
   return {
     tick: world.tick,
+    day,
+    date: formatSimDate(day),
     seed: world.seed,
     difficulty: world.difficulty,
     credits: human.credits,

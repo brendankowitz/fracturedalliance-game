@@ -5,6 +5,15 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "files": {
+    "includes": [
+      "**",
+      "!packages/fab-domain",
+      "!packages/fab-content",
+      "!packages/fab-sim",
+      "!packages/fab-ai"
+    ]
+  },
   "assist": {
     "enabled": true,
     "actions": {
@@ -26,5 +35,15 @@
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "style": { "noNonNullAssertion": "off" }
+        }
+      }
+    }
+  ]
 }

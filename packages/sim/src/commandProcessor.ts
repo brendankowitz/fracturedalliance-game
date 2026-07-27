@@ -243,12 +243,13 @@ export function applyCommand(world: World, command: Command): void {
       if (!target) return;
       if (target.ownerId === human.id) return;
 
-      if (target.ownerId) {
+      const targetOwnerId = target.ownerId;
+      if (targetOwnerId) {
         const noCovertIdx = world.treaties.findIndex(
           (t) =>
             t.kind === "noCovert" &&
             t.parties.includes(human.id) &&
-            t.parties.includes(target.ownerId!),
+            t.parties.includes(targetOwnerId),
         );
         if (noCovertIdx !== -1) {
           world.treaties.splice(noCovertIdx, 1);
@@ -256,11 +257,11 @@ export function applyCommand(world: World, command: Command): void {
             kind: "treaty.broken",
             priority: "amber",
             by: human.id,
-            against: target.ownerId,
+            against: targetOwnerId,
             treaty: "noCovert",
           });
-          const rep = human.reputation.get(target.ownerId) ?? 0;
-          human.reputation.set(target.ownerId, rep - 20);
+          const rep = human.reputation.get(targetOwnerId) ?? 0;
+          human.reputation.set(targetOwnerId, rep - 20);
         }
       }
 

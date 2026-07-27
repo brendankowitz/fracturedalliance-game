@@ -4,6 +4,8 @@ import type { AsteroidSnapshot, HudSnapshot } from "@fa/sim";
 export function makeTestSnapshot(overrides: Partial<HudSnapshot> = {}): HudSnapshot {
   return {
     tick: 0,
+    day: 0,
+    date: "25-05-2496",
     seed: 1,
     difficulty: "manager",
     credits: 0,

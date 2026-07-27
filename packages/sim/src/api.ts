@@ -11,6 +11,7 @@ import { createWorld } from "./world.ts";
 export type { Command } from "./commands.ts";
 export { DIFFICULTY_PRESETS, type DifficultyLevel } from "./difficulty.ts";
 export { ARRIVAL_RADIUS } from "./systems/shipSystem.ts";
+export { formatSimDate, simDay, TICKS_PER_SIM_DAY } from "./time.ts";
 export type { AgentSnapshot, AsteroidSnapshot, DiplomacyEntry, HudSnapshot };
 
 export class SimApi {

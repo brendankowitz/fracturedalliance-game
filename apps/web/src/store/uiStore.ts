@@ -53,6 +53,20 @@ interface UiState {
   consumeEndTurn: () => void;
 }
 
+// Right-side panels share the same screen real estate (see BuildingPanel,
+// TradePanel, BlackMarketPanel, BlueprintShop, EspionagePanel, NotificationFeed,
+// and the colony/surface view driven by selectedAsteroidId). Opening one closes
+// the rest so at most one is visible at a time. buildingPanelOpen is excluded:
+// it is a drawer nested inside the surface view (it requires selectedAsteroidId
+// to render at all), not a sibling panel.
+const RIGHT_PANELS_CLOSED = {
+  tradePanelOpen: false,
+  blackMarketOpen: false,
+  blueprintShopOpen: false,
+  espionagePanelOpen: false,
+  notificationFeedOpen: false,
+} as const;
+
 export const useUiStore = create<UiState>((set) => ({
   selectedAsteroidId: null,
   lastSelectedAsteroidId: null,
@@ -75,6 +89,7 @@ export const useUiStore = create<UiState>((set) => ({
   },
   selectAsteroid: (id) =>
     set((s) => ({
+      ...(id !== null ? RIGHT_PANELS_CLOSED : {}),
       selectedAsteroidId: id,
       lastSelectedAsteroidId: id ?? s.lastSelectedAsteroidId,
     })),
@@ -82,12 +97,37 @@ export const useUiStore = create<UiState>((set) => ({
   toggleBuildingPanel: () => set((s) => ({ buildingPanelOpen: !s.buildingPanelOpen })),
   toggleSaveLoadPanel: () => set((s) => ({ saveLoadPanelOpen: !s.saveLoadPanelOpen })),
   toggleDiplomacyPanel: () => set((s) => ({ diplomacyPanelOpen: !s.diplomacyPanelOpen })),
-  toggleBlueprintShop: () => set((s) => ({ blueprintShopOpen: !s.blueprintShopOpen })),
-  toggleEspionagePanel: () => set((s) => ({ espionagePanelOpen: !s.espionagePanelOpen })),
-  toggleBlackMarket: () => set((s) => ({ blackMarketOpen: !s.blackMarketOpen })),
-  toggleTradePanel: () => set((s) => ({ tradePanelOpen: !s.tradePanelOpen })),
+  toggleBlueprintShop: () =>
+    set((s) =>
+      s.blueprintShopOpen
+        ? { blueprintShopOpen: false }
+        : { ...RIGHT_PANELS_CLOSED, blueprintShopOpen: true, selectedAsteroidId: null },
+    ),
+  toggleEspionagePanel: () =>
+    set((s) =>
+      s.espionagePanelOpen
+        ? { espionagePanelOpen: false }
+        : { ...RIGHT_PANELS_CLOSED, espionagePanelOpen: true, selectedAsteroidId: null },
+    ),
+  toggleBlackMarket: () =>
+    set((s) =>
+      s.blackMarketOpen
+        ? { blackMarketOpen: false }
+        : { ...RIGHT_PANELS_CLOSED, blackMarketOpen: true, selectedAsteroidId: null },
+    ),
+  toggleTradePanel: () =>
+    set((s) =>
+      s.tradePanelOpen
+        ? { tradePanelOpen: false }
+        : { ...RIGHT_PANELS_CLOSED, tradePanelOpen: true, selectedAsteroidId: null },
+    ),
   setPaused: (v) => set({ paused: v }),
-  toggleNotificationFeed: () => set((s) => ({ notificationFeedOpen: !s.notificationFeedOpen })),
+  toggleNotificationFeed: () =>
+    set((s) =>
+      s.notificationFeedOpen
+        ? { notificationFeedOpen: false }
+        : { ...RIGHT_PANELS_CLOSED, notificationFeedOpen: true, selectedAsteroidId: null },
+    ),
   setColorPalette: (p) => set({ colorPalette: p }),
   setFontScale: (v) => set({ fontScale: v }),
   setDifficulty: (d) => set({ selectedDifficulty: d }),

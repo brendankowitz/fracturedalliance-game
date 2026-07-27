@@ -27,3 +27,8 @@ Thumbs.db
 .superpowers/
 test-results/
 playwright-report/
+
+# Agent playtest scratch
+playtest-*.tmp.*
+play-*.jpeg
+play-*.png

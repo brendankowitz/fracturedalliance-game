@@ -23,9 +23,11 @@ export function tickMissiles(world: World): void {
     });
     if (destroyable.length > 0) {
       const idx = Math.floor(world.prng.next() * destroyable.length);
-      const victimId = destroyable[idx]!;
-      world.buildings.delete(victimId);
-      target.buildings = target.buildings.filter((id) => id !== victimId);
+      const victimId = destroyable[idx];
+      if (victimId !== undefined) {
+        world.buildings.delete(victimId);
+        target.buildings = target.buildings.filter((id) => id !== victimId);
+      }
     }
 
     world.eventQueue.push({

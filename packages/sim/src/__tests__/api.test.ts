@@ -34,7 +34,6 @@ describe("SimApi", () => {
     api.tick(50);
 
     const snap2 = api.getSnapshot();
-    // biome-ignore lint/style/noNonNullAssertion: test — asteroid must exist after tick
     const a2 = snap2.asteroids.find((a) => a.id === asteroid.id)!;
     expect(a2.buildQueue.length).toBe(1);
   });
@@ -54,7 +53,6 @@ describe("SimApi", () => {
     api.tick(50);
 
     const snap2 = api.getSnapshot();
-    // biome-ignore lint/style/noNonNullAssertion: test — asteroid must exist after tick
     const a2 = snap2.asteroids.find((a) => a.id === asteroid.id)!;
     expect(a2.buildQueue.length).toBe(0);
   });

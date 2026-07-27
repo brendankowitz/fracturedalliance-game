@@ -103,6 +103,43 @@
         to   { box-shadow: var(--glow-blue); }
       }
 
+      /* ── HUD overlay ────────────────────────────────────────
+         The overlay spans the viewport so panels can position
+         against it, but must not swallow pointer events bound for
+         the map canvas underneath. Each HUD element opts back in. */
+      .fa-hud-root {
+        pointer-events: none;
+      }
+
+      .fa-hud-root > * {
+        pointer-events: auto;
+      }
+
+      /* ── Console chrome ──────────────────────────────────────
+         The console frames the world rather than covering it: the
+         centre pane is transparent down to the map canvas and lets
+         pointer events through, while the chrome that paints over
+         that canvas — rails, header, footer — takes them back. */
+      /* Overrides `.fa-hud-root > *`, which would otherwise hand the whole
+         console back the pointer events its parent just gave up. */
+      .fa-console-root {
+        pointer-events: none;
+      }
+
+      .fa-console-root > header,
+      .fa-console-root > footer,
+      .fa-console-root aside {
+        pointer-events: auto;
+      }
+
+      .fa-console-viewport {
+        pointer-events: none;
+      }
+
+      .fa-console-viewport > * {
+        pointer-events: auto;
+      }
+
       /* ── HUD panel base ─────────────────────────────────── */
       .fa-panel {
         background: var(--bg-panel);

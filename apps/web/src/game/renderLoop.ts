@@ -1,12 +1,14 @@
 import type { AsteroidId } from "@fa/domain";
 import type { SaveV1 } from "@fa/persistence";
 import type { Command, DifficultyLevel, SimApi } from "@fa/sim";
+import { TICKS_PER_SIM_DAY } from "@fa/sim";
 import type { Remote } from "comlink";
 import * as Comlink from "comlink";
 import { Assets } from "pixi.js";
 import { musicPlayer, playSound, SFX } from "../audio.ts";
 import { detectAchievements } from "../store/achievementDetector.ts";
 import { useGameStore } from "../store/gameStore.ts";
+import { useTimeStore } from "../store/timeStore.ts";
 import { useUiStore } from "../store/uiStore.ts";
 import { getPixiApp } from "./pixiApp.ts";
 import type { ColorPalette } from "./views/sectorView.ts";
@@ -16,11 +18,22 @@ const FIXED_STEP_MS = 50;
 
 export interface RenderLoopHandle {
   stop: () => void;
-  setTimeScale: (scale: number) => void;
   sendCommand: (cmd: Command) => void;
   saveToSlot: (slot: number, label: string) => Promise<void>;
   loadFromSlot: (slot: number) => Promise<void>;
   setColorPalette: (p: ColorPalette) => void;
+}
+
+/**
+ * Phase C (Stage 1 adoption): the adopted engine (SimApiV2 over the vendored
+ * copilot-opus sim) is the default. `?sim=v1` selects the legacy sim — the
+ * documented rollback path until Phase E deletes it.
+ */
+function chooseSimWorker(LegacyWorkerClass: new () => Worker): Worker {
+  const wantsLegacy =
+    typeof location !== "undefined" && new URLSearchParams(location.search).get("sim") === "v1";
+  if (wantsLegacy) return new LegacyWorkerClass();
+  return new Worker(new URL("../workers/sim.worker.v2.ts", import.meta.url), { type: "module" });
 }
 
 export function startRenderLoop(
@@ -28,12 +41,12 @@ export function startRenderLoop(
   seed: number,
   difficulty: DifficultyLevel = "manager",
 ): RenderLoopHandle {
-  const rawWorker = new WorkerClass();
+  const rawWorker = chooseSimWorker(WorkerClass);
   const RemoteSimApi = Comlink.wrap<typeof SimApi>(rawWorker);
 
   let instance: Remote<InstanceType<typeof SimApi>> | null = null;
-  let timeScale = 1;
   let accumulator = 0;
+  let autoSelectedColony = false;
   let lastFrame = performance.now();
   let rafId = 0;
   let running = true;
@@ -63,6 +76,7 @@ export function startRenderLoop(
       lastFrame = now;
 
       const uiState = useUiStore.getState();
+      const timeScale = useTimeStore.getState().timeScale;
       const shouldTick = !uiState.paused && (!uiState.slowSimMode || uiState.pendingEndTurn);
 
       if (instance !== null && timeScale > 0 && shouldTick) {
@@ -85,72 +99,46 @@ export function startRenderLoop(
           useGameStore.getState().setSnapshot(snap);
           sectorView?.update(snap);
           detectAchievements(snap);
-          // Auto-select human colony on first tick so inspector is immediately visible
-          if (snap.tick === 1 && useUiStore.getState().selectedAsteroidId === null) {
+          // Open the player's colony as soon as one exists, so the game does not start
+          // on an empty map with the surface unreachable. This cannot key off a single
+          // tick: the accumulator runs a batch of ticks per frame and only snapshots
+          // afterwards, so tick 1 is routinely never observed. Latches after the first
+          // success so a deliberate deselection is never overridden.
+          if (!autoSelectedColony) {
             const colony = snap.asteroids.find((a) => a.ownerId === snap.humanPlayerId);
-            if (colony) useUiStore.getState().selectAsteroid(colony.id);
+            if (colony) {
+              autoSelectedColony = true;
+              if (useUiStore.getState().selectedAsteroidId === null) {
+                useUiStore.getState().selectAsteroid(colony.id);
+              }
+            }
           }
+          // Per-event SFX now live in NotificationFeed via the shared
+          // eventKindMeta table (one table, both sims' vocabularies, and the
+          // feed's dedup stops repeat-fire). The render loop keeps only the
+          // music-level transitions.
           for (const ev of snap.events) {
-            switch (ev.kind) {
-              case "asteroid.settled":
-                playSound(SFX.treatySigned);
-                break;
-              case "construction.done":
-                playSound(SFX.buildComplete);
-                break;
-              case "blackmarket.purchase":
-                playSound(SFX.blackMarket);
-                break;
-              case "asteroid.engine_charging":
-                playSound(SFX.engineCharging);
-                break;
-              case "asteroid.destroyed":
-                playSound(SFX.attack);
-                break;
-              case "missile.launched":
-                playSound(SFX.engineCharging);
-                break;
-              case "missile.impact":
-                playSound(SFX.attack);
-                break;
-              case "expedition.enforcer_arrived":
-                playSound(SFX.attack);
-                break;
-              case "agent.mission_failed":
-                playSound(SFX.espionage);
-                break;
-              case "bribe.accepted":
-                playSound(SFX.treatySigned);
-                break;
-              case "bribe.rejected":
-              case "treaty.broken":
-              case "colony.seceded":
-              case "trader.arrived":
-              case "federation.investigation_warning":
-              case "federation.license_revoked":
-              case "asteroid.independence":
-                playSound(SFX.notification);
-                break;
-              case "victory.independence":
-                playSound(SFX.victoryFanfare);
-                musicPlayer.stop();
-                break;
-              case "game.ended":
-                if (snap.gameEndState === "defeat") playSound(SFX.defeat);
-                else playSound(SFX.victoryFanfare);
-                musicPlayer.stop();
-                break;
+            if (ev.kind === "victory.independence") {
+              playSound(SFX.victoryFanfare);
+              musicPlayer.stop();
+            } else if (ev.kind === "game.ended" || ev.kind === "game.over") {
+              if (snap.gameEndState === "defeat") playSound(SFX.defeat);
+              else playSound(SFX.victoryFanfare);
+              musicPlayer.stop();
             }
           }
           if (
             snap.events.some(
-              (e) => e.kind === "asteroid.destroyed" || e.kind === "expedition.enforcer_arrived",
+              (e) =>
+                e.kind === "asteroid.destroyed" ||
+                e.kind === "expedition.enforcer_arrived" ||
+                e.kind === "colony.under_attack",
             )
           ) {
             musicPlayer.play("combat");
           }
-          // Autosave to slot -1 every 60 ticks (skip tick 0)
-          if (snap.tick > 0 && snap.tick % 60 === 0) {
+          // Autosave to slot -1 once per sim-day, so the cadence holds at any speed preset
+          if (snap.tick > 0 && snap.tick % TICKS_PER_SIM_DAY === 0) {
             void (async () => {
               try {
                 const blob = await instance.getSaveBlob();
@@ -181,9 +169,6 @@ export function startRenderLoop(
       sectorView = null;
       rawWorker.terminate();
       musicPlayer.stop();
-    },
-    setTimeScale(scale) {
-      timeScale = scale;
     },
     sendCommand(cmd) {
       pendingCommands.push(cmd);

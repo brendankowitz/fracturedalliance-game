@@ -74,10 +74,8 @@ export function App() {
       <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
       {gameParams === null && <NewGameScreen onStart={handleStart} />}
       {gameParams !== null && (
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-          <div style={{ pointerEvents: "auto", position: "relative", height: "100%" }}>
-            <HUD onSave={handleSave} onLoad={handleLoad} onCommand={handleCommand} />
-          </div>
+        <div className="fa-hud-root" style={{ position: "absolute", inset: 0 }}>
+          <HUD onSave={handleSave} onLoad={handleLoad} onCommand={handleCommand} />
         </div>
       )}
       <InstallPrompt />

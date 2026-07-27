@@ -128,7 +128,7 @@ export function NewGameScreen({ onStart }: NewGameScreenProps) {
                   {scenario.description}
                 </span>
                 <span style={{ opacity: 0.6, fontSize: 10, marginTop: 4 }}>
-                  {DIFFICULTY_PRESETS[scenario.difficulty]!.label} · Seed {scenario.seed}
+                  {DIFFICULTY_PRESETS[scenario.difficulty].label} · Seed {scenario.seed}
                 </span>
               </button>
             );
