@@ -22,6 +22,6 @@
     "fast-check": "^3.23.0",
     "mitata": "^1.0.34",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.2.6"
   }
 }
